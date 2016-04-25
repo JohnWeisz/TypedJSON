@@ -1,0 +1,5 @@
+﻿Polymorphism:
+ - Polymorphism with @JsonObject extending another @JsonObject (test1).
+ - Polymorphism with @JsonObject extending non-@JsonObject (test2).
+ - Polymorphism with non-@JsonObject extending a @JsonObject (test3).
+ - For both @JsonMember properties and array elements
