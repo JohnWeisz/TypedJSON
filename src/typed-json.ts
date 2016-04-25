@@ -86,7 +86,7 @@ if (!JSON) {
 
 var TypedJSON: TypedJSON = {
     stringify: function (value: any, settings?: SerializerSettings): string {
-        if (JsonObjectMetadata.getJsonObjectMetadataFromInstance(value)) {
+        if (JsonObjectMetadata.getFromInstance(value)) {
             // Use Serializer for custom serialization.
             return Serializer.writeObject(value, settings);
         } else {
@@ -95,7 +95,7 @@ var TypedJSON: TypedJSON = {
         }
     },
     parse: function (text: string, type?: any, settings?: SerializerSettings): any {
-        var metadata = JsonObjectMetadata.getJsonObjectMetadataFromType<any>(type);
+        var metadata = JsonObjectMetadata.getFromType<any>(type);
 
         if (typeof type === "function" && metadata && metadata.classType === type) {
             // Use Deserializer for custom deserialization using the provided class type.

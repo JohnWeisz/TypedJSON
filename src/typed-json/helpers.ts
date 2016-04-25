@@ -1,7 +1,7 @@
 ﻿import {Constructor, ParameterlessConstructor, TypeHint} from "./types";
 
 const RESERVED_NAMES = [
-    "__jsonTypesJsonObjectMetadataInformation__"
+    "__typedJsonJsonObjectMetadataInformation__"
 ];
 
 /**

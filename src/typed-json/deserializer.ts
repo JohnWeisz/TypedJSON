@@ -26,7 +26,7 @@ export abstract class Deserializer {
      * @throws Error if 'settings' specifies 'maxObjects', and the JSON string exceeds that limit.
      */
     public static readObject<T>(json: string, type: { new (...args: any[]): T }, settings?: SerializerSettings): T {
-        var objectMetadata = JsonObjectMetadata.getJsonObjectMetadataFromType(type);
+        var objectMetadata = JsonObjectMetadata.getFromType(type);
         var value = JSON.parse(json); // Parse text into basic object, which is then processed recursively.
         var instance: T;
 
@@ -143,10 +143,10 @@ export abstract class Deserializer {
                 }
 
                 ObjectType = settings.knownTypes[typeHint];
-                objectMetadata = JsonObjectMetadata.getJsonObjectMetadataFromType(settings.knownTypes[typeHint]);
+                objectMetadata = JsonObjectMetadata.getFromType(settings.knownTypes[typeHint]);
             } else {
                 ObjectType = settings.objectType;
-                objectMetadata = JsonObjectMetadata.getJsonObjectMetadataFromType(settings.objectType);
+                objectMetadata = JsonObjectMetadata.getFromType(settings.objectType);
             }
             
             if (objectMetadata) {

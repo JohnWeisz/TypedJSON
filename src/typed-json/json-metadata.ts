@@ -2,6 +2,7 @@
 import * as Helpers from "./helpers";
 
 export class JsonMemberMetadata<T> {
+    /** If set, a default value will be emitted for uninitialized members. */
     public emitDefaultValue: boolean;
 
     /** Member name as it appears in the serialized JSON. */
@@ -25,20 +26,17 @@ export class JsonMemberMetadata<T> {
 
 export class JsonObjectMetadata<T> {
     private _className: string;
-    private _classType: Constructor<T>;
     private _dataMembers: { [key: string]: JsonMemberMetadata<any> };
     private _knownTypes: Array<Constructor<any>>;
     private _knownTypeCache: { [key: string]: Constructor<any> };
-
-    public isParameterized: boolean;
-
+    
     /**
      * Gets the name of a class as it appears in a serialized JSON string.
      * @param type The JsonObject class.
      * @param inherited Whether to use inherited metadata information from base classes (if own metadata does not exist).
      */
     public static getJsonObjectName(type: Constructor<any>, inherited: boolean = true): string {
-        var metadata = this.getJsonObjectMetadataFromType(type, inherited);
+        var metadata = this.getFromType(type, inherited);
 
         if (metadata !== null) {
             return metadata.className;
@@ -51,9 +49,9 @@ export class JsonObjectMetadata<T> {
      * Gets JsonObject metadata information from a class or its prototype.
      * @param target The target class or prototype.
      * @param inherited Whether to use inherited metadata information from base classes (if own metadata does not exist).
-     * @see https://jsfiddle.net/m6ckc89v/ for demos related to this special inheritance case.
+     * @see https://jsfiddle.net/m6ckc89v/ for demos related to the special inheritance case when 'inherited' is set.
      */
-    public static getJsonObjectMetadataFromType<S>(target: Constructor<S> | any, inherited: boolean = true): JsonObjectMetadata<S> {
+    public static getFromType<S>(target: Constructor<S> | any, inherited: boolean = true): JsonObjectMetadata<S> {
         var targetPrototype: any;
 
         if (typeof target === "function") {
@@ -66,12 +64,12 @@ export class JsonObjectMetadata<T> {
             return null;
         }
 
-        if (targetPrototype.hasOwnProperty("__jsonTypesJsonObjectMetadataInformation__")) {
+        if (targetPrototype.hasOwnProperty("__typedJsonJsonObjectMetadataInformation__")) {
             // The class (prototype) contains an own Json Object metadata.
-            return targetPrototype.__jsonTypesJsonObjectMetadataInformation__;
-        } else if (inherited && targetPrototype.__jsonTypesJsonObjectMetadataInformation__) {
+            return targetPrototype.__typedJsonJsonObjectMetadataInformation__;
+        } else if (inherited && targetPrototype.__typedJsonJsonObjectMetadataInformation__) {
             // The class (prototype) does not contain own Json Object metadata, but it inherits, and inheritance is set to allowed.
-            return targetPrototype.__jsonTypesJsonObjectMetadataInformation__;
+            return targetPrototype.__typedJsonJsonObjectMetadataInformation__;
         }
 
         return null;
@@ -81,18 +79,18 @@ export class JsonObjectMetadata<T> {
      * Gets JsonObject metadata information from a class instance.
      * @param target The target instance.
      * @param inherited Whether to use inherited metadata information from base classes (if own metadata does not exist).
-     * @see https://jsfiddle.net/m6ckc89v/ for demos related to this special inheritance case.
+     * @see https://jsfiddle.net/m6ckc89v/ for demos related to the special inheritance case when 'inherited' is set.
      */
-    public static getJsonObjectMetadataFromInstance<S>(target: S, inherited: boolean = true): JsonObjectMetadata<S> {
-        return this.getJsonObjectMetadataFromType<S>(Object.getPrototypeOf(target), inherited);
+    public static getFromInstance<S>(target: S, inherited: boolean = true): JsonObjectMetadata<S> {
+        return this.getFromType<S>(Object.getPrototypeOf(target), inherited);
     }
 
     /**
      * Gets the known type name of a JsonObject class for type hint.
      * @param target The target class.
      */
-    public static getKnownTypeNameFromType<S>(target: { new (): S }): string {
-        var metadata = this.getJsonObjectMetadataFromType<S>(target, false);
+    public static getKnownTypeNameFromType<S>(target: Constructor<S>): string {
+        var metadata = this.getFromType<S>(target, false);
 
         if (metadata) {
             return metadata.className;
@@ -106,7 +104,7 @@ export class JsonObjectMetadata<T> {
      * @param target The target instance.
      */
     public static getKnownTypeNameFromInstance<S>(target: S): string {
-        var metadata = this.getJsonObjectMetadataFromInstance<S>(target, false);
+        var metadata = this.getFromInstance<S>(target, false);
 
         if (metadata) {
             return metadata.className;
@@ -120,13 +118,8 @@ export class JsonObjectMetadata<T> {
         return this._dataMembers;
     }
 
-    /** Gets or sets the type reference (constructor function) of the associated JsonObject. */
-    public get classType(): Constructor<T> {
-        return this._classType;
-    }
-    public set classType(value: Constructor<T>) {
-        this._classType = value;
-    }
+    /** Gets or sets the constructor function for the JsonObject. */
+    public classType: Constructor<T>;
 
     /** Gets or sets the name of the JsonObject as it appears in the serialized JSON. */
     public get className(): string {
@@ -170,7 +163,6 @@ export class JsonObjectMetadata<T> {
         this._dataMembers = {};
         this._knownTypes = [];
         this._knownTypeCache = null;
-        this.isParameterized = false;
     }
 
     /**

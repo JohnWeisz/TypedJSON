@@ -5,6 +5,38 @@ VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "src", "src\src.csproj", "{E8C2ED5E-6426-4C9D-8FFD-83CECFA8F461}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "js", "js", "{247DFF35-E562-4249-9B8F-D2A46C5A1543}"
+	ProjectSection(SolutionItems) = preProject
+		js\typed-json.js = js\typed-json.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{2C566F0E-C67A-45E1-98E7-3E4CD7287A86}"
+	ProjectSection(SolutionItems) = preProject
+		js\tests\object-compare.js = js\tests\object-compare.js
+		js\tests\test.js = js\tests\test.js
+		js\tests\test2.js = js\tests\test2.js
+		js\tests\test3.js = js\tests\test3.js
+		js\tests\test5.js = js\tests\test5.js
+		js\tests\test6.js = js\tests\test6.js
+		js\tests\test7.js = js\tests\test7.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "typed-json", "typed-json", "{3DE3BBC4-3EFE-4946-A3C5-A4886281AA03}"
+	ProjectSection(SolutionItems) = preProject
+		js\typed-json\deserializer.js = js\typed-json\deserializer.js
+		js\typed-json\helpers.js = js\typed-json\helpers.js
+		js\typed-json\json-metadata.js = js\typed-json\json-metadata.js
+		js\typed-json\polyfill.js = js\typed-json\polyfill.js
+		js\typed-json\serializer.js = js\typed-json\serializer.js
+		js\typed-json\types.js = js\typed-json\types.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "decorators", "decorators", "{8CCC6D75-C49D-404C-8646-E36F3FD141AC}"
+	ProjectSection(SolutionItems) = preProject
+		js\typed-json\decorators\json-member.js = js\typed-json\decorators\json-member.js
+		js\typed-json\decorators\json-object.js = js\typed-json\decorators\json-object.js
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +50,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{2C566F0E-C67A-45E1-98E7-3E4CD7287A86} = {247DFF35-E562-4249-9B8F-D2A46C5A1543}
+		{3DE3BBC4-3EFE-4946-A3C5-A4886281AA03} = {247DFF35-E562-4249-9B8F-D2A46C5A1543}
+		{8CCC6D75-C49D-404C-8646-E36F3FD141AC} = {3DE3BBC4-3EFE-4946-A3C5-A4886281AA03}
 	EndGlobalSection
 EndGlobal

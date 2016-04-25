@@ -23,7 +23,7 @@ interface WriteSettings {
 
 export abstract class Serializer {
     public static writeObject(object: any, settings?: SerializerSettings): string {
-        var objectMetadata = JsonObjectMetadata.getJsonObjectMetadataFromInstance(object);
+        var objectMetadata = JsonObjectMetadata.getFromInstance(object);
 
         if (!objectMetadata) {
             throw new Error("No metadata information found on the provided object.");
@@ -77,7 +77,7 @@ export abstract class Serializer {
             }
         } else {
             // Object with properties.
-            objectMetadata = JsonObjectMetadata.getJsonObjectMetadataFromInstance(object)
+            objectMetadata = JsonObjectMetadata.getFromInstance(object)
 
             if (objectMetadata && typeof objectMetadata.serializer === "function") {
                 json = objectMetadata.serializer(object);

@@ -43,11 +43,11 @@ export function JsonObject<T>(options?: JsonObjectOptionsInitializable<T>): (tar
         var parentMetadata: JsonObjectMetadata<T>;
         var i;
 
-        if (!target.prototype.hasOwnProperty("__jsonTypesJsonObjectMetadataInformation__")) {
+        if (!target.prototype.hasOwnProperty("__typedJsonJsonObjectMetadataInformation__")) {
             objectMetadata = new JsonObjectMetadata<T>();
 
             // If applicable, inherit @JsonMembers and @KnownTypes from parent @JsonObject.
-            if (parentMetadata = target.prototype.__jsonTypesJsonObjectMetadataInformation__) {
+            if (parentMetadata = target.prototype.__typedJsonJsonObjectMetadataInformation__) {
                 // @JsonMembers
                 Object.keys(parentMetadata.dataMembers).forEach(memberPropertyKey => {
                     objectMetadata.dataMembers[memberPropertyKey] = parentMetadata.dataMembers[memberPropertyKey];
@@ -59,14 +59,14 @@ export function JsonObject<T>(options?: JsonObjectOptionsInitializable<T>): (tar
                 });
             }
 
-            Object.defineProperty(target.prototype, "__jsonTypesJsonObjectMetadataInformation__", {
+            Object.defineProperty(target.prototype, "__typedJsonJsonObjectMetadataInformation__", {
                 enumerable: false,
                 configurable: false,
                 writable: false,
                 value: objectMetadata
             });
         } else {
-            objectMetadata = target.prototype.__jsonTypesJsonObjectMetadataInformation__;
+            objectMetadata = target.prototype.__typedJsonJsonObjectMetadataInformation__;
         }
 
         objectMetadata.classType = target;
