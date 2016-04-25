@@ -1,3 +1,3 @@
 # TypedJSON
 
-Typed JSON parsing and serialization that preserves type information.
+Advanced JSON parsing and serializing that preserves type information.
