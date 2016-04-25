@@ -1,4 +1,3 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25123.0
@@ -8,6 +7,41 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "js", "js", "{827455D6-4F27-4916-8F86-770DB447ECA1}"
 	ProjectSection(SolutionItems) = preProject
 		js\typed-json.js = js\typed-json.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{1A25267F-FDF3-4EFD-A536-7D070F7C0F6F}"
+	ProjectSection(SolutionItems) = preProject
+		js\tests\index.html = js\tests\index.html
+		js\tests\object-compare.js = js\tests\object-compare.js
+		js\tests\test.js = js\tests\test.js
+		js\tests\test2.js = js\tests\test2.js
+		js\tests\test3.js = js\tests\test3.js
+		js\tests\test5.js = js\tests\test5.js
+		js\tests\test6.js = js\tests\test6.js
+		js\tests\test7.js = js\tests\test7.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "typed-json", "typed-json", "{39479D8D-2AB4-4121-80D9-AD4E66394E0E}"
+	ProjectSection(SolutionItems) = preProject
+		js\typed-json\deserializer.js = js\typed-json\deserializer.js
+		js\typed-json\helpers.js = js\typed-json\helpers.js
+		js\typed-json\json-metadata.js = js\typed-json\json-metadata.js
+		js\typed-json\polyfill.js = js\typed-json\polyfill.js
+		js\typed-json\serializer.js = js\typed-json\serializer.js
+		js\typed-json\types.js = js\typed-json\types.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{5176931E-D4D3-4BB2-9BB8-22996D8F6E8A}"
+	ProjectSection(SolutionItems) = preProject
+		js\tests\scripts\r.js = js\tests\scripts\r.js
+		js\tests\scripts\reflect.js = js\tests\scripts\reflect.js
+		js\tests\scripts\require.js = js\tests\scripts\require.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "decorators", "decorators", "{17A09C19-267F-4397-B375-C01D207218CC}"
+	ProjectSection(SolutionItems) = preProject
+		js\typed-json\decorators\json-member.js = js\typed-json\decorators\json-member.js
+		js\typed-json\decorators\json-object.js = js\typed-json\decorators\json-object.js
 	EndProjectSection
 EndProject
 Global
@@ -23,5 +57,11 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1A25267F-FDF3-4EFD-A536-7D070F7C0F6F} = {827455D6-4F27-4916-8F86-770DB447ECA1}
+		{39479D8D-2AB4-4121-80D9-AD4E66394E0E} = {827455D6-4F27-4916-8F86-770DB447ECA1}
+		{5176931E-D4D3-4BB2-9BB8-22996D8F6E8A} = {1A25267F-FDF3-4EFD-A536-7D070F7C0F6F}
+		{17A09C19-267F-4397-B375-C01D207218CC} = {39479D8D-2AB4-4121-80D9-AD4E66394E0E}
 	EndGlobalSection
 EndGlobal
