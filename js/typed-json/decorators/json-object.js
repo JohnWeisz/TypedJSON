@@ -7,10 +7,10 @@ define(["require", "exports", "../json-metadata", "../helpers"], function (requi
             var objectMetadata;
             var parentMetadata;
             var i;
-            if (!target.prototype.hasOwnProperty("__jsonTypesJsonObjectMetadataInformation__")) {
+            if (!target.prototype.hasOwnProperty("__typedJsonJsonObjectMetadataInformation__")) {
                 objectMetadata = new json_metadata_1.JsonObjectMetadata();
                 // If applicable, inherit @JsonMembers and @KnownTypes from parent @JsonObject.
-                if (parentMetadata = target.prototype.__jsonTypesJsonObjectMetadataInformation__) {
+                if (parentMetadata = target.prototype.__typedJsonJsonObjectMetadataInformation__) {
                     // @JsonMembers
                     Object.keys(parentMetadata.dataMembers).forEach(function (memberPropertyKey) {
                         objectMetadata.dataMembers[memberPropertyKey] = parentMetadata.dataMembers[memberPropertyKey];
@@ -20,7 +20,7 @@ define(["require", "exports", "../json-metadata", "../helpers"], function (requi
                         objectMetadata.setKnownType(parentMetadata.knownTypes[key]);
                     });
                 }
-                Object.defineProperty(target.prototype, "__jsonTypesJsonObjectMetadataInformation__", {
+                Object.defineProperty(target.prototype, "__typedJsonJsonObjectMetadataInformation__", {
                     enumerable: false,
                     configurable: false,
                     writable: false,
@@ -28,7 +28,7 @@ define(["require", "exports", "../json-metadata", "../helpers"], function (requi
                 });
             }
             else {
-                objectMetadata = target.prototype.__jsonTypesJsonObjectMetadataInformation__;
+                objectMetadata = target.prototype.__typedJsonJsonObjectMetadataInformation__;
             }
             objectMetadata.classType = target;
             if (options.name) {

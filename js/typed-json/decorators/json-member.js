@@ -1,16 +1,5 @@
 define(["require", "exports", "../json-metadata", "../helpers"], function (require, exports, json_metadata_1, Helpers) {
     "use strict";
-    function duckTypeMetadataSetter(value, propertyType) {
-        var metadata;
-        if (!(value instanceof propertyType)) {
-            // The value assigned to this @JsonMember property is not of the correct type, but properties match.
-            // If the passed in value does not contain metadata information (but is an object), copy metadata.
-            metadata = json_metadata_1.JsonObjectMetadata.getJsonObjectMetadataFromType(propertyType);
-            if (metadata) {
-                value.__jsonTypesJsonObjectMetadataInformation__ = metadata;
-            }
-        }
-    }
     function JsonMember(options) {
         var memberMetadata = new json_metadata_1.JsonMemberMetadata();
         options = options || {};
@@ -32,7 +21,6 @@ define(["require", "exports", "../json-metadata", "../helpers"], function (requi
         return function (target, propertyKey) {
             var descriptor = Object.getOwnPropertyDescriptor(target, propertyKey.toString());
             ;
-            var originalSetter;
             var objectMetadata;
             var parentMetadata;
             var reflectType;
@@ -70,7 +58,7 @@ define(["require", "exports", "../json-metadata", "../helpers"], function (requi
                     // Get type information using reflect metadata.
                     memberMetadata.type = reflectType;
                 }
-                else if (memberMetadata.type !== reflectType && !Helpers.isSubtypeOf(memberMetadata.type, reflectType)) {
+                else if (memberMetadata.type !== reflectType) {
                     Helpers.warn("@JsonMember: 'type' specified for '" + propertyName + "' does not match detected type.");
                 }
             }
@@ -83,17 +71,17 @@ define(["require", "exports", "../json-metadata", "../helpers"], function (requi
                 throw new Error("@JsonMember: no valid 'elementType' specified for property '" + propertyName + "'.");
             }
             // Add JsonObject metadata to 'target' if not yet exists (implicit @JsonObject, 'target' is the prototype).
-            if (!target.hasOwnProperty("__jsonTypesJsonObjectMetadataInformation__")) {
+            if (!target.hasOwnProperty("__typedJsonJsonObjectMetadataInformation__")) {
                 objectMetadata = new json_metadata_1.JsonObjectMetadata();
-                // If applicable, inherit @JsonMembers from parent @JsonObject.
-                if (parentMetadata = target.__jsonTypesJsonObjectMetadataInformation__) {
+                // Where applicable, inherit @JsonMembers from parent @JsonObject.
+                if (parentMetadata = target.__typedJsonJsonObjectMetadataInformation__) {
                     // @JsonMembers
                     Object.keys(parentMetadata.dataMembers).forEach(function (memberPropertyKey) {
                         objectMetadata.dataMembers[memberPropertyKey] = parentMetadata.dataMembers[memberPropertyKey];
                     });
                 }
                 // 'target' is the prototype of the involved class (metadata information is added to the class prototype).
-                Object.defineProperty(target, "__jsonTypesJsonObjectMetadataInformation__", {
+                Object.defineProperty(target, "__typedJsonJsonObjectMetadataInformation__", {
                     enumerable: false,
                     configurable: false,
                     writable: false,
@@ -102,29 +90,14 @@ define(["require", "exports", "../json-metadata", "../helpers"], function (requi
             }
             else {
                 // JsonObjectMetadata already exists on target.
-                objectMetadata = target.__jsonTypesJsonObjectMetadataInformation__;
-            }
-            if (options.duckTyping) {
-                originalSetter = descriptor.set;
-                // Add setter that will copy metadata information to value.
-                if (originalSetter) {
-                    descriptor.set = function (value) {
-                        duckTypeMetadataSetter(value, memberMetadata.type);
-                        originalSetter.apply(this, arguments);
-                    };
-                }
-                else {
-                    descriptor.set = function (value) {
-                        duckTypeMetadataSetter(value, memberMetadata.type);
-                    };
-                }
+                objectMetadata = target.__typedJsonJsonObjectMetadataInformation__;
             }
             // Automatically add known types.
-            if (options.type) {
-                objectMetadata.setKnownType(options.type);
+            if (memberMetadata.type) {
+                objectMetadata.setKnownType(memberMetadata.type);
             }
-            if (options.elementType) {
-                objectMetadata.setKnownType(options.elementType);
+            if (memberMetadata.elementType) {
+                objectMetadata.setKnownType(memberMetadata.elementType);
             }
             // Register @JsonMember with @JsonObject (will overwrite previous member when used multiple times on same property).
             try {

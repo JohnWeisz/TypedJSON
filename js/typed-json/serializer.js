@@ -12,7 +12,7 @@ define(["require", "exports", "./polyfill", "./types", "./json-metadata", "./hel
         function Serializer() {
         }
         Serializer.writeObject = function (object, settings) {
-            var objectMetadata = json_metadata_1.JsonObjectMetadata.getJsonObjectMetadataFromInstance(object);
+            var objectMetadata = json_metadata_1.JsonObjectMetadata.getFromInstance(object);
             if (!objectMetadata) {
                 throw new Error("No metadata information found on the provided object.");
             }
@@ -64,7 +64,7 @@ define(["require", "exports", "./polyfill", "./types", "./json-metadata", "./hel
             }
             else {
                 // Object with properties.
-                objectMetadata = json_metadata_1.JsonObjectMetadata.getJsonObjectMetadataFromInstance(object);
+                objectMetadata = json_metadata_1.JsonObjectMetadata.getFromInstance(object);
                 if (objectMetadata && typeof objectMetadata.serializer === "function") {
                     json = objectMetadata.serializer(object);
                 }

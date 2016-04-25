@@ -11,7 +11,6 @@ define(["require", "exports", "./helpers"], function (require, exports, Helpers)
             this._dataMembers = {};
             this._knownTypes = [];
             this._knownTypeCache = null;
-            this.isParameterized = false;
         }
         /**
          * Gets the name of a class as it appears in a serialized JSON string.
@@ -20,7 +19,7 @@ define(["require", "exports", "./helpers"], function (require, exports, Helpers)
          */
         JsonObjectMetadata.getJsonObjectName = function (type, inherited) {
             if (inherited === void 0) { inherited = true; }
-            var metadata = this.getJsonObjectMetadataFromType(type, inherited);
+            var metadata = this.getFromType(type, inherited);
             if (metadata !== null) {
                 return metadata.className;
             }
@@ -32,9 +31,9 @@ define(["require", "exports", "./helpers"], function (require, exports, Helpers)
          * Gets JsonObject metadata information from a class or its prototype.
          * @param target The target class or prototype.
          * @param inherited Whether to use inherited metadata information from base classes (if own metadata does not exist).
-         * @see https://jsfiddle.net/m6ckc89v/ for demos related to this special inheritance case.
+         * @see https://jsfiddle.net/m6ckc89v/ for demos related to the special inheritance case when 'inherited' is set.
          */
-        JsonObjectMetadata.getJsonObjectMetadataFromType = function (target, inherited) {
+        JsonObjectMetadata.getFromType = function (target, inherited) {
             if (inherited === void 0) { inherited = true; }
             var targetPrototype;
             if (typeof target === "function") {
@@ -46,13 +45,13 @@ define(["require", "exports", "./helpers"], function (require, exports, Helpers)
             if (!targetPrototype) {
                 return null;
             }
-            if (targetPrototype.hasOwnProperty("__jsonTypesJsonObjectMetadataInformation__")) {
+            if (targetPrototype.hasOwnProperty("__typedJsonJsonObjectMetadataInformation__")) {
                 // The class (prototype) contains an own Json Object metadata.
-                return targetPrototype.__jsonTypesJsonObjectMetadataInformation__;
+                return targetPrototype.__typedJsonJsonObjectMetadataInformation__;
             }
-            else if (inherited && targetPrototype.__jsonTypesJsonObjectMetadataInformation__) {
+            else if (inherited && targetPrototype.__typedJsonJsonObjectMetadataInformation__) {
                 // The class (prototype) does not contain own Json Object metadata, but it inherits, and inheritance is set to allowed.
-                return targetPrototype.__jsonTypesJsonObjectMetadataInformation__;
+                return targetPrototype.__typedJsonJsonObjectMetadataInformation__;
             }
             return null;
         };
@@ -60,18 +59,18 @@ define(["require", "exports", "./helpers"], function (require, exports, Helpers)
          * Gets JsonObject metadata information from a class instance.
          * @param target The target instance.
          * @param inherited Whether to use inherited metadata information from base classes (if own metadata does not exist).
-         * @see https://jsfiddle.net/m6ckc89v/ for demos related to this special inheritance case.
+         * @see https://jsfiddle.net/m6ckc89v/ for demos related to the special inheritance case when 'inherited' is set.
          */
-        JsonObjectMetadata.getJsonObjectMetadataFromInstance = function (target, inherited) {
+        JsonObjectMetadata.getFromInstance = function (target, inherited) {
             if (inherited === void 0) { inherited = true; }
-            return this.getJsonObjectMetadataFromType(Object.getPrototypeOf(target), inherited);
+            return this.getFromType(Object.getPrototypeOf(target), inherited);
         };
         /**
          * Gets the known type name of a JsonObject class for type hint.
          * @param target The target class.
          */
         JsonObjectMetadata.getKnownTypeNameFromType = function (target) {
-            var metadata = this.getJsonObjectMetadataFromType(target, false);
+            var metadata = this.getFromType(target, false);
             if (metadata) {
                 return metadata.className;
             }
@@ -84,7 +83,7 @@ define(["require", "exports", "./helpers"], function (require, exports, Helpers)
          * @param target The target instance.
          */
         JsonObjectMetadata.getKnownTypeNameFromInstance = function (target) {
-            var metadata = this.getJsonObjectMetadataFromInstance(target, false);
+            var metadata = this.getFromInstance(target, false);
             if (metadata) {
                 return metadata.className;
             }
@@ -96,17 +95,6 @@ define(["require", "exports", "./helpers"], function (require, exports, Helpers)
             /** Gets the metadata of all JsonMembers of the JsonObject as key-value pairs. */
             get: function () {
                 return this._dataMembers;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(JsonObjectMetadata.prototype, "classType", {
-            /** Gets or sets the type reference (constructor function) of the associated JsonObject. */
-            get: function () {
-                return this._classType;
-            },
-            set: function (value) {
-                this._classType = value;
             },
             enumerable: true,
             configurable: true

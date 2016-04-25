@@ -7,7 +7,7 @@ define(["require", "exports", "./typed-json/polyfill", "./typed-json/json-metada
     }
     var TypedJSON = {
         stringify: function (value, settings) {
-            if (json_metadata_1.JsonObjectMetadata.getJsonObjectMetadataFromInstance(value)) {
+            if (json_metadata_1.JsonObjectMetadata.getFromInstance(value)) {
                 // Use Serializer for custom serialization.
                 return serializer_1.Serializer.writeObject(value, settings);
             }
@@ -17,7 +17,7 @@ define(["require", "exports", "./typed-json/polyfill", "./typed-json/json-metada
             }
         },
         parse: function (text, type, settings) {
-            var metadata = json_metadata_1.JsonObjectMetadata.getJsonObjectMetadataFromType(type);
+            var metadata = json_metadata_1.JsonObjectMetadata.getFromType(type);
             if (typeof type === "function" && metadata && metadata.classType === type) {
                 // Use Deserializer for custom deserialization using the provided class type.
                 return deserializer_1.Deserializer.readObject(text, type, settings);

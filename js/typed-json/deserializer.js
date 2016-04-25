@@ -15,7 +15,7 @@ define(["require", "exports", "./polyfill", "./types", "./json-metadata", "./hel
          * @throws Error if 'settings' specifies 'maxObjects', and the JSON string exceeds that limit.
          */
         Deserializer.readObject = function (json, type, settings) {
-            var objectMetadata = json_metadata_1.JsonObjectMetadata.getJsonObjectMetadataFromType(type);
+            var objectMetadata = json_metadata_1.JsonObjectMetadata.getFromType(type);
             var value = JSON.parse(json); // Parse text into basic object, which is then processed recursively.
             var instance;
             if (!objectMetadata) {
@@ -118,11 +118,11 @@ define(["require", "exports", "./polyfill", "./types", "./json-metadata", "./hel
                         throw new Error("'" + typeHint + "' is not a known type.");
                     }
                     ObjectType = settings.knownTypes[typeHint];
-                    objectMetadata = json_metadata_1.JsonObjectMetadata.getJsonObjectMetadataFromType(settings.knownTypes[typeHint]);
+                    objectMetadata = json_metadata_1.JsonObjectMetadata.getFromType(settings.knownTypes[typeHint]);
                 }
                 else {
                     ObjectType = settings.objectType;
-                    objectMetadata = json_metadata_1.JsonObjectMetadata.getJsonObjectMetadataFromType(settings.objectType);
+                    objectMetadata = json_metadata_1.JsonObjectMetadata.getFromType(settings.objectType);
                 }
                 if (objectMetadata) {
                     if (typeof objectMetadata.initializer === "function") {

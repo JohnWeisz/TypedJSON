@@ -1,7 +1,7 @@
 define(["require", "exports", "./types"], function (require, exports, types_1) {
     "use strict";
     var RESERVED_NAMES = [
-        "__jsonTypesJsonObjectMetadataInformation__"
+        "__typedJsonJsonObjectMetadataInformation__"
     ];
     /**
      * Polyfill for Object.assign, used to copy the values of all enumerable own properties from one or more source objects to a target object.
