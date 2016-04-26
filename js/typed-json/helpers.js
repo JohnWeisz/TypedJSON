@@ -3,12 +3,6 @@ define(["require", "exports", "./types"], function (require, exports, types_1) {
     var RESERVED_NAMES = [
         "__typedJsonJsonObjectMetadataInformation__"
     ];
-    /**
-     * Polyfill for Object.assign, used to copy the values of all enumerable own properties from one or more source objects to a target object.
-     * It will return the target object.
-     * @param target The target object.
-     * @param sources The source object(s).
-     */
     function assign(target) {
         var sources = [];
         for (var _i = 1; _i < arguments.length; _i++) {
@@ -33,12 +27,6 @@ define(["require", "exports", "./types"], function (require, exports, types_1) {
         return output;
     }
     exports.assign = assign;
-    /**
-     * Returns a boolean indicating whether a given property exists on a class (constructor function), or inherited classes.
-     * @param constructor The class to check.
-     * @param propertyKey The property key to search for.
-     * @param searchBaseClasses Whether to search on base classes as well.
-     */
     function constructorHasProperty(constructor, propertyKey, searchBaseClasses) {
         if (searchBaseClasses === void 0) { searchBaseClasses = true; }
         var prototype;
@@ -73,19 +61,15 @@ define(["require", "exports", "./types"], function (require, exports, types_1) {
     function getClassName(target) {
         var targetType;
         if (typeof target === "function") {
-            // target is constructor function.
             targetType = target;
         }
         else {
-            // target is class prototype.
             targetType = target.constructor;
         }
         if ("name" in targetType && typeof targetType.name === "string") {
-            // ES6 constructor.name // Awesome!
             return targetType.name;
         }
         else {
-            // Extract class name from string representation of constructor function. // Meh...
             return targetType.toString().match(/function (\w*)/)[1];
         }
     }
@@ -170,7 +154,6 @@ define(["require", "exports", "./types"], function (require, exports, types_1) {
     exports.isReservedMemberName = isReservedMemberName;
     function isSubtypeOf(A, B) {
         var aPrototype = A.prototype;
-        // "A" is a class.
         if (A === B) {
             return true;
         }

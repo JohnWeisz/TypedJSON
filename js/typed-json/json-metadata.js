@@ -12,11 +12,6 @@ define(["require", "exports", "./helpers"], function (require, exports, Helpers)
             this._knownTypes = [];
             this._knownTypeCache = null;
         }
-        /**
-         * Gets the name of a class as it appears in a serialized JSON string.
-         * @param type The JsonObject class.
-         * @param inherited Whether to use inherited metadata information from base classes (if own metadata does not exist).
-         */
         JsonObjectMetadata.getJsonObjectName = function (type, inherited) {
             if (inherited === void 0) { inherited = true; }
             var metadata = this.getFromType(type, inherited);
@@ -27,12 +22,6 @@ define(["require", "exports", "./helpers"], function (require, exports, Helpers)
                 return Helpers.getClassName(type);
             }
         };
-        /**
-         * Gets JsonObject metadata information from a class or its prototype.
-         * @param target The target class or prototype.
-         * @param inherited Whether to use inherited metadata information from base classes (if own metadata does not exist).
-         * @see https://jsfiddle.net/m6ckc89v/ for demos related to the special inheritance case when 'inherited' is set.
-         */
         JsonObjectMetadata.getFromType = function (target, inherited) {
             if (inherited === void 0) { inherited = true; }
             var targetPrototype;
@@ -46,29 +35,17 @@ define(["require", "exports", "./helpers"], function (require, exports, Helpers)
                 return null;
             }
             if (targetPrototype.hasOwnProperty("__typedJsonJsonObjectMetadataInformation__")) {
-                // The class (prototype) contains an own Json Object metadata.
                 return targetPrototype.__typedJsonJsonObjectMetadataInformation__;
             }
             else if (inherited && targetPrototype.__typedJsonJsonObjectMetadataInformation__) {
-                // The class (prototype) does not contain own Json Object metadata, but it inherits, and inheritance is set to allowed.
                 return targetPrototype.__typedJsonJsonObjectMetadataInformation__;
             }
             return null;
         };
-        /**
-         * Gets JsonObject metadata information from a class instance.
-         * @param target The target instance.
-         * @param inherited Whether to use inherited metadata information from base classes (if own metadata does not exist).
-         * @see https://jsfiddle.net/m6ckc89v/ for demos related to the special inheritance case when 'inherited' is set.
-         */
         JsonObjectMetadata.getFromInstance = function (target, inherited) {
             if (inherited === void 0) { inherited = true; }
             return this.getFromType(Object.getPrototypeOf(target), inherited);
         };
-        /**
-         * Gets the known type name of a JsonObject class for type hint.
-         * @param target The target class.
-         */
         JsonObjectMetadata.getKnownTypeNameFromType = function (target) {
             var metadata = this.getFromType(target, false);
             if (metadata) {
@@ -78,10 +55,6 @@ define(["require", "exports", "./helpers"], function (require, exports, Helpers)
                 return Helpers.getClassName(target);
             }
         };
-        /**
-         * Gets the known type name of a JsonObject instance for type hint.
-         * @param target The target instance.
-         */
         JsonObjectMetadata.getKnownTypeNameFromInstance = function (target) {
             var metadata = this.getFromInstance(target, false);
             if (metadata) {
@@ -92,7 +65,6 @@ define(["require", "exports", "./helpers"], function (require, exports, Helpers)
             }
         };
         Object.defineProperty(JsonObjectMetadata.prototype, "dataMembers", {
-            /** Gets the metadata of all JsonMembers of the JsonObject as key-value pairs. */
             get: function () {
                 return this._dataMembers;
             },
@@ -100,7 +72,6 @@ define(["require", "exports", "./helpers"], function (require, exports, Helpers)
             configurable: true
         });
         Object.defineProperty(JsonObjectMetadata.prototype, "className", {
-            /** Gets or sets the name of the JsonObject as it appears in the serialized JSON. */
             get: function () {
                 if (this._className !== null && typeof this._className !== "undefined") {
                     return this._className;
@@ -116,7 +87,6 @@ define(["require", "exports", "./helpers"], function (require, exports, Helpers)
             configurable: true
         });
         Object.defineProperty(JsonObjectMetadata.prototype, "knownTypes", {
-            /** Gets a key-value collection of the currently known types for this JsonObject. */
             get: function () {
                 var knownTypes;
                 var knownTypeName;
@@ -126,7 +96,6 @@ define(["require", "exports", "./helpers"], function (require, exports, Helpers)
                 else {
                     knownTypes = {};
                     this._knownTypes.forEach(function (knownType) {
-                        // KnownType names are not inherited from JsonObject settings, as it would render them useless.
                         knownTypeName = JsonObjectMetadata.getKnownTypeNameFromType(knownType);
                         knownTypes[knownTypeName] = knownType;
                     });
@@ -137,21 +106,12 @@ define(["require", "exports", "./helpers"], function (require, exports, Helpers)
             enumerable: true,
             configurable: true
         });
-        /**
-         * Sets a known type.
-         * @param type The known type.
-         */
         JsonObjectMetadata.prototype.setKnownType = function (type) {
             if (this._knownTypes.indexOf(type) === -1) {
                 this._knownTypes.push(type);
                 this._knownTypeCache = null;
             }
         };
-        /**
-         * Adds a JsonMember to the JsonObject.
-         * @param member The JsonMember metadata.
-         * @throws Error if a JsonMember with the same name already exists.
-         */
         JsonObjectMetadata.prototype.addMember = function (member) {
             var _this = this;
             Object.keys(this._dataMembers).forEach(function (propertyKey) {
@@ -161,11 +121,6 @@ define(["require", "exports", "./helpers"], function (require, exports, Helpers)
             });
             this._dataMembers[member.key] = member;
         };
-        /**
-         * Sorts data members:
-         *  1. Ordered members in defined order
-         *  2. Unordered members in alphabetical order
-         */
         JsonObjectMetadata.prototype.sortMembers = function () {
             var _this = this;
             var memberArray = [];
@@ -180,7 +135,6 @@ define(["require", "exports", "./helpers"], function (require, exports, Helpers)
         };
         JsonObjectMetadata.prototype.sortMembersCompare = function (a, b) {
             if (typeof a.order !== "number" && typeof b.order !== "number") {
-                // a and b both both implicitly ordered, alphabetical order
                 if (a.name < b.name) {
                     return -1;
                 }
@@ -189,15 +143,12 @@ define(["require", "exports", "./helpers"], function (require, exports, Helpers)
                 }
             }
             else if (typeof a.order !== "number") {
-                // a is implicitly ordered, comes after b (compare: a is greater)
                 return 1;
             }
             else if (typeof b.order !== "number") {
-                // b is implicitly ordered, comes after a (compare: b is greater)
                 return -1;
             }
             else {
-                // a and b are both explicitly ordered
                 if (a.order < b.order) {
                     return -1;
                 }
@@ -205,7 +156,6 @@ define(["require", "exports", "./helpers"], function (require, exports, Helpers)
                     return 1;
                 }
                 else {
-                    // ordering is the same, use alphabetical order
                     if (a.name < b.name) {
                         return -1;
                     }

@@ -1,5 +1,7 @@
 bin
 node_modules
+nuget
+nupkg
 obj
 Properties
 temp
@@ -12,3 +14,9 @@ temp
 *.js.map
 *.d.ts
 *.config
+*.nupkg
+*.nupkg.zip
+**\*.nupkg.zip
+**\*.nupkg
+**\nuget
+**\nupkg

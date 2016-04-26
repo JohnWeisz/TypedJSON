@@ -5,11 +5,9 @@ define(["require", "exports", "../json-metadata", "../helpers"], function (requi
         var options;
         var decorator;
         if (typeof propertyKey === "string" || typeof propertyKey === "symbol") {
-            // JsonMember is being used as a decorator, directly.
             options = {};
         }
         else {
-            // JsonMember is being used as a decorator factory.
             options = optionsOrTarget || {};
         }
         memberMetadata = Helpers.assign(memberMetadata, options);
@@ -20,62 +18,48 @@ define(["require", "exports", "../json-metadata", "../helpers"], function (requi
             var parentMetadata;
             var reflectType;
             var propertyName = Helpers.getPropertyDisplayName(target, propertyKey);
-            // Static members are not supported (when a property decorator is applied to a static member, target is the constructor function).
             if (typeof target === "function") {
                 throw new TypeError("@JsonMember cannot be used on a static property ('" + propertyName + "').");
             }
-            // Functions (methods) cannot be serialized.
             if (typeof target[propertyKey] === "function") {
                 throw new TypeError("@JsonMember cannot be used on a method ('" + propertyName + "').");
             }
             memberMetadata.key = propertyKey.toString();
-            memberMetadata.name = options.name || propertyKey.toString(); // Property key is used as default member name if not specified.
-            // Check for reserved member names.
+            memberMetadata.name = options.name || propertyKey.toString();
             if (Helpers.isReservedMemberName(memberMetadata.name)) {
                 throw new Error("@JsonMember: '" + memberMetadata.name + "' is a reserved name.");
             }
-            // It is a common error for types to exist at compile time, but not at runtime (often caused by improper/misbehaving imports).
             if (options.hasOwnProperty("type") && typeof options.type === "undefined") {
                 throw new TypeError("@JsonMember: 'type' of property '" + propertyName + "' is undefined.");
             }
-            // ... same for elementType.
             if (options.hasOwnProperty("elementType") && typeof options.elementType === "undefined") {
                 throw new TypeError("@JsonMember: 'elementType' of property '" + propertyName + "' is undefined.");
             }
-            //#region "Reflect Metadata support"
             if (typeof Reflect === "object" && typeof Reflect.getMetadata === "function") {
                 reflectType = Reflect.getMetadata("design:type", target, propertyKey);
                 if (typeof reflectType === "undefined") {
-                    // If Reflect.getMetadata exists, functionality for *setting* metadata should also exist, and metadata *should* be set.
                     throw new TypeError("@JsonMember: type detected for property '" + propertyName + "' is undefined.");
                 }
                 if (!memberMetadata.type || typeof memberMetadata.type !== "function") {
-                    // Get type information using reflect metadata.
                     memberMetadata.type = reflectType;
                 }
                 else if (memberMetadata.type !== reflectType) {
                     Helpers.warn("@JsonMember: 'type' specified for '" + propertyName + "' does not match detected type.");
                 }
             }
-            //#endregion "Reflect Metadata support"
-            // Ensure valid types have been specified ('type' at all times, 'elementType' for arrays).
             if (typeof memberMetadata.type !== "function") {
                 throw new Error("@JsonMember: no valid 'type' specified for property '" + propertyName + "'.");
             }
             else if (memberMetadata.type === Array && typeof memberMetadata.elementType !== "function") {
                 throw new Error("@JsonMember: no valid 'elementType' specified for property '" + propertyName + "'.");
             }
-            // Add JsonObject metadata to 'target' if not yet exists (implicit @JsonObject, 'target' is the prototype).
             if (!target.hasOwnProperty("__typedJsonJsonObjectMetadataInformation__")) {
                 objectMetadata = new json_metadata_1.JsonObjectMetadata();
-                // Where applicable, inherit @JsonMembers from parent @JsonObject.
                 if (parentMetadata = target.__typedJsonJsonObjectMetadataInformation__) {
-                    // @JsonMembers
                     Object.keys(parentMetadata.dataMembers).forEach(function (memberPropertyKey) {
                         objectMetadata.dataMembers[memberPropertyKey] = parentMetadata.dataMembers[memberPropertyKey];
                     });
                 }
-                // 'target' is the prototype of the involved class (metadata information is added to the class prototype).
                 Object.defineProperty(target, "__typedJsonJsonObjectMetadataInformation__", {
                     enumerable: false,
                     configurable: false,
@@ -84,17 +68,14 @@ define(["require", "exports", "../json-metadata", "../helpers"], function (requi
                 });
             }
             else {
-                // JsonObjectMetadata already exists on target.
                 objectMetadata = target.__typedJsonJsonObjectMetadataInformation__;
             }
-            // Automatically add known types.
             if (memberMetadata.type) {
                 objectMetadata.setKnownType(memberMetadata.type);
             }
             if (memberMetadata.elementType) {
                 objectMetadata.setKnownType(memberMetadata.elementType);
             }
-            // Register @JsonMember with @JsonObject (will overwrite previous member when used multiple times on same property).
             try {
                 objectMetadata.addMember(memberMetadata);
             }
@@ -104,11 +85,9 @@ define(["require", "exports", "../json-metadata", "../helpers"], function (requi
             }
         };
         if (typeof propertyKey === "string" || typeof propertyKey === "symbol") {
-            // JsonMember is being used as a decorator, directly.
             return decorator(optionsOrTarget, propertyKey);
         }
         else {
-            // JsonMember is being used as a decorator factory.
             return decorator;
         }
     }

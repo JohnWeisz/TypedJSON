@@ -3,11 +3,9 @@ define(["require", "exports", "../json-metadata", "../helpers"], function (requi
     function JsonObject(optionsOrTarget) {
         var options;
         if (typeof optionsOrTarget === "function") {
-            // JsonObject is being used as a decorator, directly.
             options = {};
         }
         else {
-            // JsonObject is being used as a decorator factory.
             options = optionsOrTarget || {};
         }
         var initializer = options.initializer;
@@ -17,13 +15,10 @@ define(["require", "exports", "../json-metadata", "../helpers"], function (requi
             var i;
             if (!target.prototype.hasOwnProperty("__typedJsonJsonObjectMetadataInformation__")) {
                 objectMetadata = new json_metadata_1.JsonObjectMetadata();
-                // If applicable, inherit @JsonMembers and @KnownTypes from parent @JsonObject.
                 if (parentMetadata = target.prototype.__typedJsonJsonObjectMetadataInformation__) {
-                    // @JsonMembers
                     Object.keys(parentMetadata.dataMembers).forEach(function (memberPropertyKey) {
                         objectMetadata.dataMembers[memberPropertyKey] = parentMetadata.dataMembers[memberPropertyKey];
                     });
-                    // @KnownTypes
                     Object.keys(parentMetadata.knownTypes).forEach(function (key) {
                         objectMetadata.setKnownType(parentMetadata.knownTypes[key]);
                     });
@@ -53,7 +48,6 @@ define(["require", "exports", "../json-metadata", "../helpers"], function (requi
                     });
                 }
                 catch (e) {
-                    // The missing known type might not cause trouble at all, thus the error is printed, but not thrown.
                     Helpers.error(new TypeError(("@JsonObject (on " + Helpers.getClassName(target) + "): ") + e.message));
                 }
             }
@@ -62,11 +56,9 @@ define(["require", "exports", "../json-metadata", "../helpers"], function (requi
             }
         };
         if (typeof optionsOrTarget === "function") {
-            // JsonObject is being used as a decorator, directly.
             return decorator(optionsOrTarget);
         }
         else {
-            // JsonObject is being used as a decorator factory.
             return decorator;
         }
     }

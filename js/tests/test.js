@@ -111,7 +111,6 @@ define(["require", "exports", "./object-compare", "../typed-json"], function (re
         ], Company);
         return Company;
     }());
-    // Create a Company.
     var company = new Company();
     company.name = "Json Types";
     switch (Math.floor(Math.random() * 4)) {
@@ -128,7 +127,6 @@ define(["require", "exports", "./object-compare", "../typed-json"], function (re
             company.owner = new Person("John", "White");
             break;
     }
-    // Add employees.
     for (var j = 0; j < 20; j++) {
         if (Math.random() < 0.2) {
             var newPartTimeEmployee = new PartTimeEmployee("firstname_" + j, "lastname_" + j, Math.floor(Math.random() * 80000), new Date(Date.now() - Math.floor(Math.random() * 80000)));
@@ -143,7 +141,7 @@ define(["require", "exports", "./object-compare", "../typed-json"], function (re
     var reparsed = typed_json_1.TypedJSON.parse(json, Company);
     console.log("Test 1: @JsonObject extending @JsonObject.");
     console.log(company);
-    console.log(typed_json_1.TypedJSON.parse(json)); // Will parse using 'JSON.parse'.
+    console.log(typed_json_1.TypedJSON.parse(json));
     console.log(reparsed);
     console.log("Match: " + object_compare_1.isEqual(company, reparsed));
 });

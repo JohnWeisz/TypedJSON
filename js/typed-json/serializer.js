@@ -18,7 +18,6 @@ define(["require", "exports", "./polyfill", "./types", "./json-metadata", "./hel
             }
             objectMetadata.sortMembers();
             settings = Helpers.assign({
-                // Default settings.
                 typeHinting: types_1.TypeHint.DataContract
             }, settings || {});
             return JSON.stringify(this.writeToJsonObject(object, {
@@ -26,17 +25,11 @@ define(["require", "exports", "./polyfill", "./types", "./json-metadata", "./hel
                 typeHintSyntax: settings.typeHinting
             }));
         };
-        /**
-         * Convert a @JsonObject class instance to a JSON object for serialization.
-         * @param object The instance to convert.
-         * @param settings Settings defining how the instance should be serialized.
-         */
         Serializer.writeToJsonObject = function (object, settings) {
             var _this = this;
             var json;
             var objectMetadata;
             if (object === null || typeof object === "undefined") {
-                // Uninitialized or null object returned "as-is" (or default value if set).
                 if (settings.emitDefault) {
                     json = Helpers.getDefaultValue(settings.objectType);
                 }
@@ -45,16 +38,10 @@ define(["require", "exports", "./polyfill", "./types", "./json-metadata", "./hel
                 }
             }
             else if (Helpers.isPrimitiveType(object) || object instanceof Date) {
-                // Primitive types and Date stringified "as-is".
                 json = object;
             }
             else if (object instanceof Array) {
                 json = [];
-                /*
-                if (!settings.elementType) {
-                    // TODO: attempt to auto-infer elementType from array elements?
-                }
-                */
                 for (var i = 0, n = object.length; i < n; i++) {
                     json.push(this.writeToJsonObject(object[i], {
                         objectType: settings.elementType,
@@ -63,14 +50,12 @@ define(["require", "exports", "./polyfill", "./types", "./json-metadata", "./hel
                 }
             }
             else {
-                // Object with properties.
                 objectMetadata = json_metadata_1.JsonObjectMetadata.getFromInstance(object);
                 if (objectMetadata && typeof objectMetadata.serializer === "function") {
                     json = objectMetadata.serializer(object);
                 }
                 else {
                     json = {};
-                    // Add type-hint.
                     if (object.constructor !== settings.objectType || settings.typeHint === TypeHintMode.Always) {
                         var typeHint = this.getTypeHint(settings.typeHintSyntax, object);
                         if (typeHint !== null) {
@@ -78,7 +63,6 @@ define(["require", "exports", "./polyfill", "./types", "./json-metadata", "./hel
                         }
                     }
                     if (objectMetadata) {
-                        // Serialize @JsonMember properties.
                         objectMetadata.sortMembers();
                         Object.keys(objectMetadata.dataMembers).forEach(function (propertyKey) {
                             var propertyMetadata = objectMetadata.dataMembers[propertyKey];
@@ -86,12 +70,11 @@ define(["require", "exports", "./polyfill", "./types", "./json-metadata", "./hel
                                 objectType: propertyMetadata.type,
                                 typeHintSyntax: settings.typeHintSyntax,
                                 emitDefault: propertyMetadata.emitDefaultValue,
-                                elementType: propertyMetadata.elementType // Might be undefined, doesn't matter.
+                                elementType: propertyMetadata.elementType
                             });
                         });
                     }
                     else {
-                        // Serialize all own properties. Type-hints for objects are provided for deserialization.
                         Object.keys(object).forEach(function (propertyKey) {
                             json[propertyKey] = _this.writeToJsonObject(object[propertyKey], {
                                 objectType: object.constructor,
