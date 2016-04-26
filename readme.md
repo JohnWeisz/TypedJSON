@@ -31,7 +31,7 @@ clone === person; // false
  - Deserialize JSON into actual class instances
  - Seamlessly integrate into existing code with decorators
  - Customize serialization and deserialization process, like custom names and ordering
- - Handles complex nested objects and polymorhpism
+ - Handles complex nested objects and polymorphism
  - Functionally a superset of the built-in `JSON` object
 
 ## Install & Use
