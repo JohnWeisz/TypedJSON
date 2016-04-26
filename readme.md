@@ -54,7 +54,7 @@ clone === person; // false
 
 ## Documentation
 
-[API reference](wiki)
+[API reference](https://github.com/JohnWhiteTB/TypedJSON/wiki)
 
 ## License
 
