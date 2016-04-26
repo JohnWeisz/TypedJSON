@@ -50,17 +50,11 @@ interface TypedJSON {
      * @param space Adds indentation, white space, and line break characters to the return-value JSON text to make it easier to read.
      */
     stringify(value: any, replacer: any[], space: string | number): string;
-
+    
     /**
      * Converts a JavaScript value to a JavaScript Object Notation (JSON) string.
-     * @param value A JavaScript value to be converted.
-     */
-    stringify(value: any): string;
-
-    /**
-     * Converts a JavaScript value to a JavaScript Object Notation (JSON) string.
-     * @param value A JavaScript value to be converted.
-     * @param settings Serializer settings.
+     * @param value A JavaScript value, usually an object or array, to be converted.
+     * @param settings Serializer settings for typed serialization.
      */
     stringify(value: any, settings: SerializerSettings): string;
 
@@ -75,7 +69,7 @@ interface TypedJSON {
      * Converts a JavaScript Object Notation (JSON) string into an instance of the provided class.
      * @param text A valid JSON string.
      * @param type A class from which an instance is created using the provided JSON string.
-     * @param settings Serializer settings.
+     * @param settings Serializer settings for typed deserialization.
      */
     parse<T>(text: string, type: { new (): T }, settings: SerializerSettings): T;
 }
