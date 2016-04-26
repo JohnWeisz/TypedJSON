@@ -2,7 +2,7 @@
 
 *Experimental source preview*
 
-Typed JSON parsing and serializing that preserves type information. Recommended (but not required) to be used with [reflect-metadata](https://github.com/rbuckton/ReflectDecorators).
+Typed JSON parsing and serializing that preserves type information. Parse JSON into actual class instances. Recommended (but not required) to be used with [reflect-metadata](https://github.com/rbuckton/ReflectDecorators).
 
 ## Install & Use
 
