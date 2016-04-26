@@ -36,9 +36,10 @@ clone === person; // false
 
 ## Install & Use
 
-This is an experimental preview release, `.ts` source is available as a NuGet package:
+This is an experimental source preview release, grab the `typed-json.ts` file and the `typed-json` folder and import them into your project:
 
 ```none
-Install-Package TypedJSON
+import {TypedJSON, JsonObject, JsonMember} from "./typed-json";
 ```
 
+A NuGet package is underway.
