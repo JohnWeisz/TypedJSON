@@ -1,4 +1,0 @@
-D:\OneDrive\Projektek\TypedJSON\src\bin\src.dll
-D:\OneDrive\Projektek\TypedJSON\src\bin\src.pdb
-D:\OneDrive\Projektek\TypedJSON\src\obj\Debug\src.dll
-D:\OneDrive\Projektek\TypedJSON\src\obj\Debug\src.pdb
