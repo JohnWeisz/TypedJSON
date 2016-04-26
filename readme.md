@@ -44,7 +44,7 @@ import {TypedJSON, JsonObject, JsonMember} from "./typed-json";
 
  1. Snap `@JsonObject` on a class to make it serializable,
  2. Snap `@JsonMember` on properties to mark them for serialization,
-   - Pass a configuration object containing a `type` setting to specify property type (and other settings), or
+   - Pass a configuration object containing a `type` setting to specify property type, or
    - Install [reflect-metadata](https://github.com/rbuckton/ReflectDecorators) to auto-determine property type (recommended),
  3. Let `TypedJSON` consume your instances and classes as shown above.
 
