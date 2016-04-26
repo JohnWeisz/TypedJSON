@@ -42,4 +42,8 @@ This is an experimental source preview release, grab the `typed-json.ts` file an
 import {TypedJSON, JsonObject, JsonMember} from "./typed-json";
 ```
 
-A NuGet package is underway.
+ 1. Snap `@JsonObject` on a class to make it serializable
+ 2. Annotate properties with `@JsonMember` to mark them for serialization
+ 3. Let the TypedJSON object consume your instances and classes as shown above
+
+(a NuGet package for the `.ts` source is underway)
