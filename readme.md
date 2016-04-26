@@ -36,7 +36,7 @@ clone === person; // false
 
 ## Install & Use
 
-This is an experimental source preview, grab the `typed-json.ts` file and the `typed-json` folder and import them into your project:
+This is an experimental source preview, grab the `typed-json.ts` module and the `typed-json` folder and import:
 
 ```typescript
 import {TypedJSON, JsonObject, JsonMember} from "./typed-json";
@@ -46,6 +46,6 @@ import {TypedJSON, JsonObject, JsonMember} from "./typed-json";
  2. Snap `@JsonMember` on properties to mark them for serialization,
    - Pass a configuration object containing a `type` setting to specify property type, or
    - Install [reflect-metadata](https://github.com/rbuckton/ReflectDecorators) to auto-determine property type (recommended),
- 3. Let `TypedJSON` consume your instances and classes as shown above.
+ 3. Compile and let `TypedJSON` consume your instances and classes as shown above
 
 A NuGet package for the `.ts` source is underway. An optimized, single-file distribution is coming soon as well.
