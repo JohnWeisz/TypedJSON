@@ -36,7 +36,7 @@ clone === person; // false
 
 ## Install & Use
 
-Currently, the experimental source preview is available as a NuGet package:
+The experimental source preview is available as a [NuGet package](https://www.nuget.org/packages/TypedJSON/):
 
 ```none
 Install-Package TypedJSON
@@ -48,8 +48,6 @@ Install-Package TypedJSON
    - Pass a configuration object containing a `type` setting to specify property type, or
    - Install [reflect-metadata](https://github.com/rbuckton/ReflectDecorators) to auto-determine property type (recommended),
  4. Compile and let `TypedJSON` consume your instances and classes as shown above
-
-A NuGet package for the `.ts` source is underway. An optimized, single-file distribution is coming soon as well.
 
 ## License
 
