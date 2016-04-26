@@ -11,3 +11,4 @@ temp
 *.suo
 *.js.map
 *.d.ts
+*.config
