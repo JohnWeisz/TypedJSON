@@ -23,6 +23,11 @@ export function JsonObject(): (target: ParameterlessConstructor<any>) => void;
 
 /**
  * Specifies that the type is serializable to and deserializable from a JSON string.
+ */
+export function JsonObject<T>(target: Constructor<T>): void;
+
+/**
+ * Specifies that the type is serializable to and deserializable from a JSON string.
  * @param options Configuration settings.
  */
 export function JsonObject<T>(options: JsonObjectOptions<T>): (target: ParameterlessConstructor<T>) => void;
@@ -33,12 +38,21 @@ export function JsonObject<T>(options: JsonObjectOptions<T>): (target: Parameter
  */
 export function JsonObject<T>(options: JsonObjectOptionsInitializable<T>): (target: Constructor<T>) => void;
 
-export function JsonObject<T>(options?: JsonObjectOptionsInitializable<T>): (target: Constructor<T>) => void {
-    options = options || {} as any;
+export function JsonObject<T>(
+    optionsOrTarget?: JsonObjectOptionsInitializable<T> | Constructor<T>
+): (target: Constructor<T>) => void | void {
+    var options: JsonObjectOptions<T>;
 
+    if (typeof optionsOrTarget === "function") {
+        // JsonObject is being used as a decorator, directly.
+        options = {};
+    } else {
+        // JsonObject is being used as a decorator factory.
+        options = optionsOrTarget || {};
+    }
+    
     var initializer = options.initializer;
-
-    return function (target: Constructor<T>): Constructor<T> | void {
+    var decorator = function (target: Constructor<T>): void {
         var objectMetadata: JsonObjectMetadata<T>;
         var parentMetadata: JsonObjectMetadata<T>;
         var i;
@@ -95,7 +109,13 @@ export function JsonObject<T>(options?: JsonObjectOptionsInitializable<T>): (tar
         if (typeof initializer === "function") {
             objectMetadata.initializer = initializer;
         }
-
-        return target;
     };
+
+    if (typeof optionsOrTarget === "function") {
+        // JsonObject is being used as a decorator, directly.
+        return decorator(optionsOrTarget as Constructor<T>) as any;
+    } else {
+        // JsonObject is being used as a decorator factory.
+        return decorator;
+    }
 }

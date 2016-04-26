@@ -1,9 +1,17 @@
 define(["require", "exports", "../json-metadata", "../helpers"], function (require, exports, json_metadata_1, Helpers) {
     "use strict";
-    function JsonObject(options) {
-        options = options || {};
+    function JsonObject(optionsOrTarget) {
+        var options;
+        if (typeof optionsOrTarget === "function") {
+            // JsonObject is being used as a decorator, directly.
+            options = {};
+        }
+        else {
+            // JsonObject is being used as a decorator factory.
+            options = optionsOrTarget || {};
+        }
         var initializer = options.initializer;
-        return function (target) {
+        var decorator = function (target) {
             var objectMetadata;
             var parentMetadata;
             var i;
@@ -52,8 +60,15 @@ define(["require", "exports", "../json-metadata", "../helpers"], function (requi
             if (typeof initializer === "function") {
                 objectMetadata.initializer = initializer;
             }
-            return target;
         };
+        if (typeof optionsOrTarget === "function") {
+            // JsonObject is being used as a decorator, directly.
+            return decorator(optionsOrTarget);
+        }
+        else {
+            // JsonObject is being used as a decorator factory.
+            return decorator;
+        }
     }
     exports.JsonObject = JsonObject;
 });

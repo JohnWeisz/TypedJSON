@@ -1,24 +1,19 @@
 define(["require", "exports", "../json-metadata", "../helpers"], function (require, exports, json_metadata_1, Helpers) {
     "use strict";
-    function JsonMember(options) {
+    function JsonMember(optionsOrTarget, propertyKey) {
         var memberMetadata = new json_metadata_1.JsonMemberMetadata();
-        options = options || {};
-        if (options.hasOwnProperty("isRequired")) {
-            memberMetadata.isRequired = options.isRequired;
+        var options;
+        var decorator;
+        if (typeof propertyKey === "string" || typeof propertyKey === "symbol") {
+            // JsonMember is being used as a decorator, directly.
+            options = {};
         }
-        if (options.hasOwnProperty("order")) {
-            memberMetadata.order = options.order;
+        else {
+            // JsonMember is being used as a decorator factory.
+            options = optionsOrTarget || {};
         }
-        if (options.hasOwnProperty("type")) {
-            memberMetadata.type = options.type;
-        }
-        if (options.hasOwnProperty("elementType")) {
-            memberMetadata.elementType = options.elementType;
-        }
-        if (options.hasOwnProperty("emitDefaultValue")) {
-            memberMetadata.emitDefaultValue = options.emitDefaultValue;
-        }
-        return function (target, propertyKey) {
+        memberMetadata = Helpers.assign(memberMetadata, options);
+        decorator = function (target, propertyKey) {
             var descriptor = Object.getOwnPropertyDescriptor(target, propertyKey.toString());
             ;
             var objectMetadata;
@@ -108,6 +103,14 @@ define(["require", "exports", "../json-metadata", "../helpers"], function (requi
                 throw new Error("@JsonMember: member '" + memberMetadata.name + "' already exists on '" + className + "'.");
             }
         };
+        if (typeof propertyKey === "string" || typeof propertyKey === "symbol") {
+            // JsonMember is being used as a decorator, directly.
+            return decorator(optionsOrTarget, propertyKey);
+        }
+        else {
+            // JsonMember is being used as a decorator factory.
+            return decorator;
+        }
     }
     exports.JsonMember = JsonMember;
 });

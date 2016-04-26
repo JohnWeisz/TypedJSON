@@ -11,8 +11,6 @@ Planned features:
      Currently, custom initializers must be used to resolve this.
 
 Troubleshooting:
- - "Expected value to be 'x', got 'x'."
-     Occurs when using multiple frames: the two 'x' types are not the same objects, because they are not from the same frame.
  - "Argument of type 'typeof *' is not assignable to parameter of type 'new () => any'."
      The referenced class does not contain a parameterless constructor.
      To fix, add a parameterless constructor to the class, or an initializer function to @JsonObject settings.

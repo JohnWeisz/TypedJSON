@@ -28,9 +28,15 @@ export interface JsonMemberOptions<T> {
 
 /**
  * Specifies that the property is part of the object when serializing.
- * Parameterless use requires reflect metadata to determine member type.
+ * Parameterless use requires reflect-metadata to determine member type.
  */
 export function JsonMember(): PropertyDecorator;
+
+/**
+ * Specifies that the property is part of the object when serializing.
+ * Parameterless use requires reflect-metadata to determine member type.
+ */
+export function JsonMember(target: any, propertyKey: string | symbol): void;
 
 /**
  * Specifies that the property is part of the object when serializing.
@@ -38,32 +44,22 @@ export function JsonMember(): PropertyDecorator;
  */
 export function JsonMember<T>(options: JsonMemberOptions<T>): PropertyDecorator;
 
-export function JsonMember<T>(options?: JsonMemberOptions<T>): PropertyDecorator {
+export function JsonMember<T>(optionsOrTarget?: JsonMemberOptions<T> | any, propertyKey?: string | symbol): PropertyDecorator | void {
     var memberMetadata = new JsonMemberMetadata<T>();
+    var options: JsonMemberOptions<T>;
+    var decorator: PropertyDecorator;
 
-    options = options || {};
-
-    if (options.hasOwnProperty("isRequired")) {
-        memberMetadata.isRequired = options.isRequired;
+    if (typeof propertyKey === "string" || typeof propertyKey === "symbol") {
+        // JsonMember is being used as a decorator, directly.
+        options = {};
+    } else {
+        // JsonMember is being used as a decorator factory.
+        options = optionsOrTarget || {};
     }
 
-    if (options.hasOwnProperty("order")) {
-        memberMetadata.order = options.order;
-    }
+    memberMetadata = Helpers.assign(memberMetadata, options);
 
-    if (options.hasOwnProperty("type")) {
-        memberMetadata.type = options.type;
-    }
-
-    if (options.hasOwnProperty("elementType")) {
-        memberMetadata.elementType = options.elementType;
-    }
-
-    if (options.hasOwnProperty("emitDefaultValue")) {
-        memberMetadata.emitDefaultValue = options.emitDefaultValue;
-    }
-
-    return function (target: any, propertyKey: string | symbol): void {
+    decorator = function (target: any, propertyKey: string | symbol): void {
         var descriptor = Object.getOwnPropertyDescriptor(target, propertyKey.toString());;
         var objectMetadata: JsonObjectMetadata<any>;
         var parentMetadata: JsonObjectMetadata<any>;
@@ -146,7 +142,7 @@ export function JsonMember<T>(options?: JsonMemberOptions<T>): PropertyDecorator
             // JsonObjectMetadata already exists on target.
             objectMetadata = target.__typedJsonJsonObjectMetadataInformation__;
         }
-        
+
         // Automatically add known types.
         if (memberMetadata.type) {
             objectMetadata.setKnownType(memberMetadata.type);
@@ -164,4 +160,12 @@ export function JsonMember<T>(options?: JsonMemberOptions<T>): PropertyDecorator
             throw new Error(`@JsonMember: member '${memberMetadata.name}' already exists on '${className}'.`);
         }
     };
+
+    if (typeof propertyKey === "string" || typeof propertyKey === "symbol") {
+        // JsonMember is being used as a decorator, directly.
+        return decorator(optionsOrTarget, propertyKey);
+    } else {
+        // JsonMember is being used as a decorator factory.
+        return decorator;
+    }
 }

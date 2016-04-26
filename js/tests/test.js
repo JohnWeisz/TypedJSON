@@ -22,15 +22,15 @@ define(["require", "exports", "./object-compare", "../typed-json"], function (re
             }
         }
         __decorate([
-            typed_json_1.JsonMember(), 
+            typed_json_1.JsonMember, 
             __metadata('design:type', String)
         ], Person.prototype, "firstName", void 0);
         __decorate([
-            typed_json_1.JsonMember(), 
+            typed_json_1.JsonMember, 
             __metadata('design:type', String)
         ], Person.prototype, "lastName", void 0);
         Person = __decorate([
-            typed_json_1.JsonObject(), 
+            typed_json_1.JsonObject, 
             __metadata('design:paramtypes', [String, String])
         ], Person);
         return Person;
@@ -45,15 +45,15 @@ define(["require", "exports", "./object-compare", "../typed-json"], function (re
             }
         }
         __decorate([
-            typed_json_1.JsonMember(), 
+            typed_json_1.JsonMember, 
             __metadata('design:type', Number)
         ], Employee.prototype, "salary", void 0);
         __decorate([
-            typed_json_1.JsonMember(), 
+            typed_json_1.JsonMember, 
             __metadata('design:type', Date)
         ], Employee.prototype, "joined", void 0);
         Employee = __decorate([
-            typed_json_1.JsonObject(), 
+            typed_json_1.JsonObject, 
             __metadata('design:paramtypes', [String, String, Number, Date])
         ], Employee);
         return Employee;

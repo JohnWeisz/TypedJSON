@@ -1,12 +1,12 @@
 ﻿import {isEqual} from "./object-compare";
 import {JsonObject, JsonMember, TypedJSON} from "../typed-json";
 
-@JsonObject()
+@JsonObject
 class Person {
-    @JsonMember()
+    @JsonMember
     public firstName: string;
 
-    @JsonMember()
+    @JsonMember
     public lastName: string;
 
     constructor();
@@ -19,12 +19,12 @@ class Person {
     }
 }
 
-@JsonObject()
+@JsonObject
 class Employee extends Person {
-    @JsonMember()
+    @JsonMember
     public salary: number;
 
-    @JsonMember()
+    @JsonMember
     public joined: Date;
 
     constructor();
