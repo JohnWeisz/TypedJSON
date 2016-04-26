@@ -1,3 +1,14 @@
+bin
+node_modules
+obj
+Properties
+temp
+*.csproj
+*.csproj.user
+*.nuspec
+*.sln
+*.suo
+
 **/bin
 **/node_modules
 **/obj
