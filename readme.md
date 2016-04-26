@@ -38,7 +38,7 @@ clone === person; // false
 
 This is an experimental source preview release, grab the `typed-json.ts` file and the `typed-json` folder and import them into your project:
 
-```none
+```typescript
 import {TypedJSON, JsonObject, JsonMember} from "./typed-json";
 ```
 
