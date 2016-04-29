@@ -1,5 +1,6 @@
 bin
 node_modules
+packages
 nuget
 nupkg
 obj
@@ -20,3 +21,4 @@ temp
 **\*.nupkg
 **\nuget
 **\nupkg
+__*

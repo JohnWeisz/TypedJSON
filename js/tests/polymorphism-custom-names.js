@@ -12,8 +12,17 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define(["require", "exports", "./object-compare", "../typed-json"], function (require, exports, object_compare_1, typed_json_1) {
+(function (factory) {
+    if (typeof module === 'object' && typeof module.exports === 'object') {
+        var v = factory(require, exports); if (v !== undefined) module.exports = v;
+    }
+    else if (typeof define === 'function' && define.amd) {
+        define(["require", "exports", "./object-compare", "../typed-json"], factory);
+    }
+})(function (require, exports) {
     "use strict";
+    var object_compare_1 = require("./object-compare");
+    var typed_json_1 = require("../typed-json");
     var Person = (function () {
         function Person(firstName, lastName) {
             if (firstName && lastName) {
@@ -63,6 +72,14 @@ define(["require", "exports", "./object-compare", "../typed-json"], function (re
         function PartTimeEmployee() {
             _super.apply(this, arguments);
         }
+        __decorate([
+            typed_json_1.JsonMember({ name: "work-hours" }), 
+            __metadata('design:type', Number)
+        ], PartTimeEmployee.prototype, "workHours", void 0);
+        PartTimeEmployee = __decorate([
+            typed_json_1.JsonObject({ name: "part-time-employee" }), 
+            __metadata('design:paramtypes', [])
+        ], PartTimeEmployee);
         return PartTimeEmployee;
     }(Employee));
     var Investor = (function (_super) {
@@ -71,6 +88,14 @@ define(["require", "exports", "./object-compare", "../typed-json"], function (re
             _super.call(this, firstName, lastName);
             this.investAmount = investAmount || 0;
         }
+        __decorate([
+            typed_json_1.JsonMember({ name: "invest-amount" }), 
+            __metadata('design:type', Number)
+        ], Investor.prototype, "investAmount", void 0);
+        Investor = __decorate([
+            typed_json_1.JsonObject(), 
+            __metadata('design:paramtypes', [String, String, Number])
+        ], Investor);
         return Investor;
     }(Person));
     var Company = (function () {
@@ -95,38 +120,49 @@ define(["require", "exports", "./object-compare", "../typed-json"], function (re
         ], Company);
         return Company;
     }());
-    var company = new Company();
-    company.name = "Json Types";
-    switch (Math.floor(Math.random() * 4)) {
-        case 0:
-            company.owner = new Employee("John", "White", 240000, new Date(1992, 5, 27));
-            break;
-        case 1:
-            company.owner = new Investor("John", "White", 1700000);
-            break;
-        case 2:
-            company.owner = new PartTimeEmployee("John", "White", 160000, new Date(1992, 5, 27));
-            break;
-        default:
-            company.owner = new Person("John", "White");
-            break;
-    }
-    for (var j = 0; j < 20; j++) {
-        if (Math.random() < 0.2) {
-            var newPartTimeEmployee = new PartTimeEmployee("firstname_" + j, "lastname_" + j, Math.floor(Math.random() * 80000), new Date(Date.now() - Math.floor(Math.random() * 80000)));
-            newPartTimeEmployee.workHours = Math.floor(Math.random() * 40);
-            company.employees.push(newPartTimeEmployee);
+    function test(log) {
+        // Create a Company.
+        var company = new Company();
+        company.name = "Json Types";
+        switch (Math.floor(Math.random() * 4)) {
+            case 0:
+                company.owner = new Employee("John", "White", 240000, new Date(1992, 5, 27));
+                break;
+            case 1:
+                company.owner = new Investor("John", "White", 1700000);
+                break;
+            case 2:
+                company.owner = new PartTimeEmployee("John", "White", 160000, new Date(1992, 5, 27));
+                company.owner.workHours = Math.floor(Math.random() * 40);
+                break;
+            default:
+                company.owner = new Person("John", "White");
+                break;
         }
-        else {
-            company.employees.push(new Employee("firstname_" + j, "lastname_" + j, Math.floor(Math.random() * 80000), new Date(Date.now() - Math.floor(Math.random() * 80000))));
+        // Add employees.
+        for (var j = 0; j < 20; j++) {
+            if (Math.random() < 0.2) {
+                var newPartTimeEmployee = new PartTimeEmployee("firstname_" + j, "lastname_" + j, Math.floor(Math.random() * 80000), new Date(Date.now() - Math.floor(Math.random() * 80000)));
+                newPartTimeEmployee.workHours = Math.floor(Math.random() * 40);
+                company.employees.push(newPartTimeEmployee);
+            }
+            else {
+                company.employees.push(new Employee("firstname_" + j, "lastname_" + j, Math.floor(Math.random() * 80000), new Date(Date.now() - Math.floor(Math.random() * 80000))));
+            }
         }
+        typed_json_1.TypedJSON.config({
+            enableTypeHints: true
+        });
+        var json = typed_json_1.TypedJSON.stringify(company);
+        var reparsed = typed_json_1.TypedJSON.parse(json, Company);
+        if (log) {
+            console.log("Test: polymorphism with custom names...");
+            console.log(company);
+            console.log(typed_json_1.TypedJSON.parse(json)); // Will parse using 'JSON.parse'.
+            console.log(reparsed);
+            console.log("Test finished.");
+        }
+        return object_compare_1.isEqual(company, reparsed);
     }
-    var json = typed_json_1.TypedJSON.stringify(company);
-    var reparsed = typed_json_1.TypedJSON.parse(json, Company);
-    console.log("Test 3: non-@JsonObject extending @JsonObject.");
-    console.log("Non-annotated properties on derived types will be missing in deserialized object.");
-    console.log(company);
-    console.log(typed_json_1.TypedJSON.parse(json));
-    console.log(reparsed);
-    console.log("Match: " + object_compare_1.isEqual(company, reparsed));
+    exports.test = test;
 });

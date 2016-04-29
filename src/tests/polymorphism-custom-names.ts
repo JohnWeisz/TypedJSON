@@ -77,57 +77,67 @@ class Company {
     }
 }
 
-// Create a Company.
-var company = new Company();
-company.name = "Json Types";
+export function test(log: boolean) {
+    // Create a Company.
+    var company = new Company();
+    company.name = "Json Types";
 
-switch (Math.floor(Math.random() * 4)) {
-    case 0:
-        company.owner = new Employee("John", "White", 240000, new Date(1992, 5, 27));
-        break;
+    switch (Math.floor(Math.random() * 4)) {
+        case 0:
+            company.owner = new Employee("John", "White", 240000, new Date(1992, 5, 27));
+            break;
 
-    case 1:
-        company.owner = new Investor("John", "White", 1700000);
-        break;
+        case 1:
+            company.owner = new Investor("John", "White", 1700000);
+            break;
 
-    case 2:
-        company.owner = new PartTimeEmployee("John", "White", 160000, new Date(1992, 5, 27));
-        (company.owner as PartTimeEmployee).workHours = Math.floor(Math.random() * 40);
-        break;
+        case 2:
+            company.owner = new PartTimeEmployee("John", "White", 160000, new Date(1992, 5, 27));
+            (company.owner as PartTimeEmployee).workHours = Math.floor(Math.random() * 40);
+            break;
 
-    default:
-        company.owner = new Person("John", "White");
-        break;
-}
-
-// Add employees.
-for (var j = 0; j < 20; j++) {
-    if (Math.random() < 0.2) {
-        var newPartTimeEmployee = new PartTimeEmployee(
-            `firstname_${j}`,
-            `lastname_${j}`,
-            Math.floor(Math.random() * 80000),
-            new Date(Date.now() - Math.floor(Math.random() * 80000))
-        );
-
-        newPartTimeEmployee.workHours = Math.floor(Math.random() * 40);
-
-        company.employees.push(newPartTimeEmployee);
-    } else {
-        company.employees.push(new Employee(
-            `firstname_${j}`,
-            `lastname_${j}`,
-            Math.floor(Math.random() * 80000),
-            new Date(Date.now() - Math.floor(Math.random() * 80000))
-        ));
+        default:
+            company.owner = new Person("John", "White");
+            break;
     }
+
+    // Add employees.
+    for (var j = 0; j < 20; j++) {
+        if (Math.random() < 0.2) {
+            var newPartTimeEmployee = new PartTimeEmployee(
+                `firstname_${j}`,
+                `lastname_${j}`,
+                Math.floor(Math.random() * 80000),
+                new Date(Date.now() - Math.floor(Math.random() * 80000))
+            );
+
+            newPartTimeEmployee.workHours = Math.floor(Math.random() * 40);
+
+            company.employees.push(newPartTimeEmployee);
+        } else {
+            company.employees.push(new Employee(
+                `firstname_${j}`,
+                `lastname_${j}`,
+                Math.floor(Math.random() * 80000),
+                new Date(Date.now() - Math.floor(Math.random() * 80000))
+            ));
+        }
+    }
+
+    TypedJSON.config({
+        enableTypeHints: true
+    });
+
+    var json = TypedJSON.stringify(company);
+    var reparsed = TypedJSON.parse(json, Company);
+
+    if (log) {
+        console.log("Test: polymorphism with custom names...");
+        console.log(company);
+        console.log(TypedJSON.parse(json)); // Will parse using 'JSON.parse'.
+        console.log(reparsed);
+        console.log("Test finished.");
+    }
+
+    return isEqual(company, reparsed);
 }
-
-var json = TypedJSON.stringify(company);
-var reparsed = TypedJSON.parse(json, Company);
-
-console.log("Test 5: polymorhpism with @JsonObject extending @JsonObject with custom names.");
-console.log(company);
-console.log(TypedJSON.parse(json)); // Will parse using 'JSON.parse'.
-console.log(reparsed);
-console.log("Match: " + isEqual(company, reparsed));

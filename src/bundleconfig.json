@@ -1,0 +1,12 @@
+﻿[
+    {
+        "outputFileName": "../js/typed-json.js",
+        "includeInProject": false,
+        "inputFiles": [
+            "../js/typed-json.js"
+        ],
+        "minify": {
+            "enabled": true
+        }
+    }
+]

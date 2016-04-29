@@ -1,6 +1,6 @@
 # TypedJSON
 
-*Experimental source preview*
+*v0.1.2 experimental preview*
 
 Typed JSON parsing and serializing that preserves type information. Parse JSON into actual class instances. Recommended (but not required) to be used with [reflect-metadata](https://github.com/rbuckton/ReflectDecorators).
 
@@ -32,6 +32,10 @@ class Person {
         this.firstName = firstName;
         this.lastName = lastName;
     }
+
+    public getFullname() {
+        return this.firstName + " " + this.lastName;
+    }
 }
 
 var person = new Person("John", "Doe");
@@ -41,6 +45,7 @@ var clone = TypedJSON.parse(json, Person);
 clone instanceof Person; // true
 clone.firstName === person.firstName; // true
 clone.lastName === person.lastName; // true
+clone.getFullname() === person.getFullname(); // true
 clone === person; // false
 ```
 
@@ -54,7 +59,8 @@ clone === person; // false
 
 ## Documentation
 
-[API reference](https://github.com/JohnWhiteTB/TypedJSON/wiki)
+ - [Getting started](https://github.com/JohnWhiteTB/TypedJSON/wiki)
+ - [API reference](https://github.com/JohnWhiteTB/TypedJSON/wiki)
 
 ## License
 

@@ -18,7 +18,11 @@ export function isEqual<T>(a: any, b: any): boolean {
         } else {
             // Alphabetical iteration over object property keys.
             return Object.keys(a).sort().reduce((acc, k) => {
-                return acc && isEqual(a[k], b[k]);
+                if (typeof a[k] === "function" && typeof b[k] === "function") {
+                    return true;
+                } else {
+                    return acc && isEqual(a[k], b[k]);
+                }
             }, true);
         }
     } else if (a instanceof Array && b instanceof Array) {
