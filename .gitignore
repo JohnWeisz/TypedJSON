@@ -10,6 +10,7 @@ temp
 *.csproj
 *.csproj.user
 *.json
+*.bindings
 *.nuspec
 *.sln
 *.suo
