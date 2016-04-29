@@ -9,11 +9,11 @@ temp
 *.cs
 *.csproj
 *.csproj.user
+*.json
 *.nuspec
 *.sln
 *.suo
 *.js.map
-*.d.ts
 *.config
 *.nupkg
 *.nupkg.zip
