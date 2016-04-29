@@ -59,7 +59,6 @@ clone === person; // false
 
 ## Documentation
 
- - [Getting started](https://github.com/JohnWhiteTB/TypedJSON/wiki)
  - [API reference](https://github.com/JohnWhiteTB/TypedJSON/wiki)
 
 ## License
