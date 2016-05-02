@@ -1222,7 +1222,11 @@ var TypedJSON: TypedJSON = {
         return Serializer.writeObject(value, configSettings);
     },
     parse: function (json: string, type?: any): any {
-        return Deserializer.readObject(json, type, configSettings);
+        if (JsonObjectMetadata.getFromType(type)) {
+            return Deserializer.readObject(json, type, configSettings);
+        } else {
+            return JSON.parse.apply(JSON, arguments);
+        }
     }
 };
 //#endregion

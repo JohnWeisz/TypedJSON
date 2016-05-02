@@ -1,6 +1,6 @@
 # TypedJSON
 
-*v0.1.3 experimental release*
+*v0.1.4 experimental release*
 
 Typed JSON parsing and serializing that preserves type information. Parse JSON into actual class instances. Recommended (but not required) to be used with [reflect-metadata](https://github.com/rbuckton/ReflectDecorators), a prototype for an ES7 Reflection API for Decorator Metadata.
 
