@@ -1,5 +1,5 @@
 /*!
-TypedJSON v0.1.2 - https://github.com/JohnWhiteTB/TypedJSON
+TypedJSON v0.1.3 - https://github.com/JohnWhiteTB/TypedJSON
 
 Typed JSON parsing and serializing that preserves type information. Parse JSON into actual class instances. Recommended (but not required)
 to be used with reflect-metadata (global installation): https://github.com/rbuckton/ReflectDecorators.
@@ -176,7 +176,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             }
         }
         Helpers.isArray = isArray;
-        function isPrimitiveType(obj) {
+        function isPrimitive(obj) {
             switch (typeof obj) {
                 case "string":
                 case "number":
@@ -190,7 +190,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             }
             return false;
         }
-        Helpers.isPrimitiveType = isPrimitiveType;
+        Helpers.isPrimitive = isPrimitive;
         function isReservedMemberName(name) {
             return (name === METADATA_FIELD_KEY);
         }
@@ -308,6 +308,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         JsonObjectMetadata.getFromType = function (target, inherited) {
             if (inherited === void 0) { inherited = true; }
             var targetPrototype;
+            var metadata;
             if (typeof target === "function") {
                 targetPrototype = target.prototype;
             }
@@ -319,13 +320,19 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             }
             if (targetPrototype.hasOwnProperty(METADATA_FIELD_KEY)) {
                 // The class prototype contains own JsonObject metadata.
-                return targetPrototype[METADATA_FIELD_KEY];
+                metadata = targetPrototype[METADATA_FIELD_KEY];
             }
             else if (inherited && targetPrototype[METADATA_FIELD_KEY]) {
                 // The class prototype inherits JsonObject metadata.
-                return targetPrototype[METADATA_FIELD_KEY];
+                metadata = targetPrototype[METADATA_FIELD_KEY];
             }
-            return null;
+            if (metadata && metadata.isExplicitlyMarked) {
+                // Ignore implicitly added JsonObject.
+                return metadata;
+            }
+            else {
+                return null;
+            }
         };
         /**
          * Gets JsonObject metadata information from a class instance.
@@ -545,7 +552,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 }
                 catch (e) {
                     // The missing known type might not cause trouble at all, thus the error is printed, but not thrown.
-                    Helpers.error(new TypeError(("@JsonObject (on " + Helpers.getClassName(target) + "): ") + e.message));
+                    Helpers.error(new TypeError("@JsonObject: " + e.message + " (on '" + Helpers.getClassName(target) + "')"));
                 }
             }
             if (typeof initializer === "function") {
@@ -684,12 +691,15 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
         Serializer.writeObject = function (object, settings) {
             var objectMetadata = JsonObjectMetadata.getFromInstance(object);
-            if (!objectMetadata || !objectMetadata.isExplicitlyMarked) {
-                throw new Error("Type being serialized is not a @JsonObject.");
+            var ObjectType;
+            if (objectMetadata) {
+                ObjectType = objectMetadata.classType;
             }
-            objectMetadata.sortMembers();
+            else {
+                ObjectType = object.constructor;
+            }
             return JSON.stringify(this.writeToJsonObject(object, {
-                objectType: objectMetadata.classType,
+                objectType: ObjectType,
                 enableTypeHints: settings.enableTypeHints,
                 typeHintPropertyKey: settings.typeHintPropertyKey
             }), settings.replacer);
@@ -712,17 +722,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                     json = object;
                 }
             }
-            else if (Helpers.isPrimitiveType(object) || object instanceof Date) {
+            else if (Helpers.isPrimitive(object) || object instanceof Date) {
                 // Primitive types and Date stringified "as-is".
                 json = object;
             }
             else if (object instanceof Array) {
                 json = [];
-                /*
-                if (!settings.elementType) {
-                    // TODO: attempt to auto-infer elementType from array elements?
-                }
-                */
                 for (var i = 0, n = object.length; i < n; i++) {
                     json.push(this.writeToJsonObject(object[i], Helpers.merge(settings, {
                         objectType: settings.elementType || Object
@@ -732,9 +737,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             else {
                 // Object with properties.
                 objectMetadata = JsonObjectMetadata.getFromInstance(object);
-                if (objectMetadata && !objectMetadata.isExplicitlyMarked) {
-                    throw new Error("Class is not JsonObject.");
-                }
                 if (objectMetadata && typeof objectMetadata.serializer === "function") {
                     json = objectMetadata.serializer(object);
                 }
@@ -780,31 +782,24 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
          * @param json The JSON string to deserialize.
          * @param type The type to deserialize into.
          * @param settings Serializer settings.
-         * @throws Error if the provided type is not decorated with JsonObject.
          * @throws Error if 'settings' specifies 'maxObjects', and the JSON string exceeds that limit.
          */
         Deserializer.readObject = function (json, type, settings) {
-            var objectMetadata;
             var value;
             var instance;
-            objectMetadata = JsonObjectMetadata.getFromType(type);
+            var metadata = JsonObjectMetadata.getFromType(type);
             value = JSON.parse(json, settings.reviver); // Parse text into basic object, which is then processed recursively.
-            if (!objectMetadata || !objectMetadata.isExplicitlyMarked) {
-                throw new Error("The provided class '" + Helpers.getClassName(type) + "' is not a @JsonObject.");
-            }
             if (typeof settings.maxObjects === "number") {
                 if (this.countObjects(value) > settings.maxObjects) {
                     throw new Error("JSON exceeds object count limit (" + settings.maxObjects + ").");
                 }
             }
-            // Sort JsonMembers so that deserialization happens as set by ordering.
-            objectMetadata.sortMembers();
             instance = this.readJsonToInstance(value, {
                 objectType: type,
                 typeHintPropertyKey: settings.typeHintPropertyKey,
                 enableTypeHints: settings.enableTypeHints,
                 strictTypeHintMode: true,
-                knownTypes: {}
+                knownTypes: metadata ? metadata.knownTypes : {}
             });
             return instance;
         };
@@ -844,26 +839,28 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             var ObjectType;
             var typeHint;
             var temp;
+            var knownTypes;
             if (typeof json === "undefined" || json === null) {
                 if (settings.isRequired) {
                     throw new Error("Missing required member.");
                 }
             }
-            else if (Helpers.isPrimitiveType(settings.objectType)) {
+            else if (Helpers.isPrimitive(settings.objectType)) {
                 // number, string, boolean: assign directly.
                 if (json.constructor !== settings.objectType) {
-                    var expectedTypeName = Helpers.getClassName(settings.objectType);
-                    var foundTypeName = Helpers.getClassName(json.constructor);
+                    var expectedTypeName = Helpers.getClassName(settings.objectType).toLowerCase();
+                    var foundTypeName = Helpers.getClassName(json.constructor).toLowerCase();
                     throw new TypeError("Expected value to be of type '" + expectedTypeName + "', got '" + foundTypeName + "'.");
                 }
                 object = json;
             }
             else if (settings.objectType === Array) {
-                // 'json' is expected to be an array.
+                // 'json' is expected to be an Array.
                 if (!Helpers.isArray(json)) {
                     throw new TypeError("Expected value to be of type 'Array', got '" + Helpers.getClassName(json.constructor) + "'.");
                 }
                 object = [];
+                // Read array elements recursively.
                 json.forEach(function (element) {
                     object.push(_this.readJsonToInstance(element, Helpers.merge(settings, {
                         objectType: settings.elementType || Object,
@@ -872,8 +869,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 });
             }
             else if (settings.objectType === Date) {
-                // Built-in support for Date with ISO 8601.
-                // Spec.: https://www.w3.org/TR/NOTE-datetime
+                // Built-in support for Date with ISO 8601 format.
+                // ISO 8601 spec.: https://www.w3.org/TR/NOTE-datetime
                 if (typeof json === "string") {
                     object = new Date(json);
                 }
@@ -882,11 +879,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 }
             }
             else {
-                // 'json' can only be an object, instatiate.
+                // 'json' can only be an object.
+                // Check if a type-hint is present.
                 typeHint = json[settings.typeHintPropertyKey];
                 if (typeHint && settings.enableTypeHints) {
                     if (typeof typeHint !== "string") {
-                        throw new TypeError("Type-hint must be a string.");
+                        throw new TypeError("Type-hint (" + settings.typeHintPropertyKey + ") must be a string.");
                     }
                     // Check if type-hint refers to a known type.
                     if (!settings.knownTypes[typeHint]) {
@@ -896,8 +894,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                     if (settings.strictTypeHintMode && !Helpers.isSubtypeOf(settings.knownTypes[typeHint], settings.objectType)) {
                         throw new Error("'" + typeHint + "' is not a subtype of '" + Helpers.getClassName(settings.objectType) + "'.");
                     }
+                    // Type-hinting was enabled and a valid type-hint has been found.
                     ObjectType = settings.knownTypes[typeHint];
-                    objectMetadata = JsonObjectMetadata.getFromType(settings.knownTypes[typeHint]);
+                    objectMetadata = JsonObjectMetadata.getFromType(ObjectType);
                 }
                 else {
                     if (settings.enableTypeHints && settings.requireTypeHints) {
@@ -907,9 +906,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                     objectMetadata = JsonObjectMetadata.getFromType(settings.objectType);
                 }
                 if (objectMetadata) {
-                    if (!objectMetadata.isExplicitlyMarked) {
-                        throw new Error("Class it not JsonObject.");
-                    }
                     if (typeof objectMetadata.initializer === "function") {
                         // Let the initializer function handle it.
                         object = objectMetadata.initializer(json) || null;
@@ -923,7 +919,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                                 objectType: propertyMetadata.type,
                                 elementType: propertyMetadata.elementType,
                                 isRequired: propertyMetadata.isRequired,
-                                knownTypes: Helpers.merge(settings.knownTypes, objectMetadata.knownTypes),
+                                knownTypes: objectMetadata.knownTypes,
                                 requireTypeHints: propertyMetadata.forceEnableTypeHinting || false
                             }));
                             // Do not create undefined/null properties.
@@ -935,13 +931,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 }
                 else {
                     // Deserialize each property of (from) 'json'.
-                    object = new ObjectType();
+                    object = {};
                     Object.keys(json).forEach(function (propertyKey) {
                         // Skip type-hint when copying properties.
                         if (propertyKey !== settings.typeHintPropertyKey) {
                             object[propertyKey] = _this.readJsonToInstance(json[propertyKey], Helpers.merge(settings, {
-                                objectType: json[propertyKey].constructor,
-                                knownTypes: settings.knownTypes
+                                objectType: json[propertyKey].constructor || Object
                             }));
                         }
                     });
@@ -959,30 +954,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var TypedJSON = {
         config: function (settings) {
             configSettings = Helpers.merge(configSettings, settings);
-            // For chained calls, like 'TypedJSON.config(...).parse(...)'.
-            return this;
         },
         stringify: function (value) {
-            var metadata = JsonObjectMetadata.getFromInstance(value);
-            if (metadata && metadata.isExplicitlyMarked) {
-                // Use Serializer for custom serialization.
-                return Serializer.writeObject(value, configSettings);
-            }
-            else {
-                // Call original 'JSON.stringify'.
-                return JSON.stringify.apply(JSON, arguments);
-            }
+            return Serializer.writeObject(value, configSettings);
         },
-        parse: function (text, type) {
-            var metadata = JsonObjectMetadata.getFromType(type);
-            if (typeof type === "function" && metadata && metadata.classType === type && metadata.isExplicitlyMarked) {
-                // Use Deserializer for custom deserialization using the provided class type.
-                return Deserializer.readObject(text, type, configSettings);
-            }
-            else {
-                // Call original 'JSON.parse'.
-                return JSON.parse.apply(JSON, arguments);
-            }
+        parse: function (json, type) {
+            return Deserializer.readObject(json, type, configSettings);
         }
     };
     exports.TypedJSON = TypedJSON;

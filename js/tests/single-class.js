@@ -12,16 +12,13 @@ var __metadata = (this && this.__metadata) || function (k, v) {
         var v = factory(require, exports); if (v !== undefined) module.exports = v;
     }
     else if (typeof define === 'function' && define.amd) {
-        define(["require", "exports", "./object-compare", "../typed-json"], factory);
+        define(["require", "exports", "../typed-json"], factory);
     }
 })(function (require, exports) {
     "use strict";
-    var object_compare_1 = require("./object-compare");
     var typed_json_1 = require("../typed-json");
     var Person = (function () {
-        function Person(firstName, lastName) {
-            this.firstName = firstName;
-            this.lastName = lastName;
+        function Person() {
         }
         Person.prototype.getFullname = function () {
             return this.firstName + " " + this.lastName;
@@ -36,22 +33,15 @@ var __metadata = (this && this.__metadata) || function (k, v) {
         ], Person.prototype, "lastName", void 0);
         Person = __decorate([
             typed_json_1.JsonObject, 
-            __metadata('design:paramtypes', [String, String])
+            __metadata('design:paramtypes', [])
         ], Person);
         return Person;
     }());
     function test(log) {
-        var person = new Person("John", "Doe");
-        var json = typed_json_1.TypedJSON.stringify(person);
-        var clone = typed_json_1.TypedJSON.parse(json, Person);
-        if (log) {
-            console.log("Test: single class...");
-            console.log(person);
-            console.log(JSON.parse(json));
-            console.log(clone);
-            console.log("Test finished.");
-        }
-        return object_compare_1.isEqual(person, clone);
+        var person = typed_json_1.TypedJSON.parse('{ "firstName": "John", "lastName": "Doe" }', Person);
+        person instanceof Person; // true
+        person.getFullname(); // "John Doe"
+        return person.getFullname() === "John Doe" && person instanceof Person;
     }
     exports.test = test;
 });

@@ -73,11 +73,11 @@ var __metadata = (this && this.__metadata) || function (k, v) {
             _super.apply(this, arguments);
         }
         __decorate([
-            typed_json_1.JsonMember(), 
+            typed_json_1.JsonMember, 
             __metadata('design:type', Number)
         ], PartTimeEmployee.prototype, "workHours", void 0);
         PartTimeEmployee = __decorate([
-            typed_json_1.JsonObject(), 
+            typed_json_1.JsonObject, 
             __metadata('design:paramtypes', [])
         ], PartTimeEmployee);
         return PartTimeEmployee;
@@ -93,7 +93,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
             __metadata('design:type', Number)
         ], Investor.prototype, "investAmount", void 0);
         Investor = __decorate([
-            typed_json_1.JsonObject(), 
+            typed_json_1.JsonObject, 
             __metadata('design:paramtypes', [String, String, Number])
         ], Investor);
         return Investor;
@@ -158,7 +158,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
         if (log) {
             console.log("Test: polymorphism...");
             console.log(company);
-            console.log(typed_json_1.TypedJSON.parse(json)); // Will parse using 'JSON.parse'.
+            console.log(JSON.parse(json));
             console.log(reparsed);
             console.log("Test finished.");
         }

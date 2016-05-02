@@ -1,5 +1,5 @@
 ﻿/*!
-TypedJSON v0.1.2 - https://github.com/JohnWhiteTB/TypedJSON
+TypedJSON v0.1.3 - https://github.com/JohnWhiteTB/TypedJSON
 
 Typed JSON parsing and serializing that preserves type information. Parse JSON into actual class instances. Recommended (but not required)
 to be used with reflect-metadata (global installation): https://github.com/rbuckton/ReflectDecorators. 
@@ -196,7 +196,7 @@ namespace Helpers {
         }
     }
 
-    export function isPrimitiveType(obj: any) {
+    export function isPrimitive(obj: any) {
         switch (typeof obj) {
             case "string":
             case "number":
@@ -361,6 +361,7 @@ class JsonObjectMetadata<T> {
 
     public static getFromType<S>(target: { new (): S } | any, inherited: boolean = true): JsonObjectMetadata<S> {
         var targetPrototype: any;
+        var metadata: JsonObjectMetadata<S>;
 
         if (typeof target === "function") {
             targetPrototype = target.prototype;
@@ -374,13 +375,18 @@ class JsonObjectMetadata<T> {
 
         if (targetPrototype.hasOwnProperty(METADATA_FIELD_KEY)) {
             // The class prototype contains own JsonObject metadata.
-            return targetPrototype[METADATA_FIELD_KEY];
+            metadata = targetPrototype[METADATA_FIELD_KEY];
         } else if (inherited && targetPrototype[METADATA_FIELD_KEY]) {
             // The class prototype inherits JsonObject metadata.
-            return targetPrototype[METADATA_FIELD_KEY];
+            metadata = targetPrototype[METADATA_FIELD_KEY];
         }
 
-        return null;
+        if (metadata && metadata.isExplicitlyMarked) {
+            // Ignore implicitly added JsonObject.
+            return metadata;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -646,7 +652,7 @@ function JsonObject<T>(optionsOrTarget?: JsonObjectOptions<T> | { new (): T }): 
                 });
             } catch (e) {
                 // The missing known type might not cause trouble at all, thus the error is printed, but not thrown.
-                Helpers.error(new TypeError(`@JsonObject (on ${Helpers.getClassName(target)}): ` + e.message));
+                Helpers.error(new TypeError(`@JsonObject: ${e.message} (on '${Helpers.getClassName(target)}')`));
             }
         }
 
@@ -853,15 +859,16 @@ interface WriteSettings {
 abstract class Serializer {
     public static writeObject(object: any, settings: SerializerSettings): string {
         var objectMetadata = JsonObjectMetadata.getFromInstance(object);
+        var ObjectType: any;
 
-        if (!objectMetadata || !objectMetadata.isExplicitlyMarked) {
-            throw new Error("Type being serialized is not a @JsonObject.");
+        if (objectMetadata) {
+            ObjectType = objectMetadata.classType;
+        } else {
+            ObjectType = object.constructor;
         }
 
-        objectMetadata.sortMembers();
-
         return JSON.stringify(this.writeToJsonObject(object, {
-            objectType: objectMetadata.classType,
+            objectType: ObjectType,
             enableTypeHints: settings.enableTypeHints,
             typeHintPropertyKey: settings.typeHintPropertyKey
         }), settings.replacer);
@@ -883,18 +890,12 @@ abstract class Serializer {
             } else {
                 json = object;
             }
-        } else if (Helpers.isPrimitiveType(object) || object instanceof Date) {
+        } else if (Helpers.isPrimitive(object) || object instanceof Date) {
             // Primitive types and Date stringified "as-is".
             json = object;
         } else if (object instanceof Array) {
             json = [];
-
-            /*
-            if (!settings.elementType) {
-                // TODO: attempt to auto-infer elementType from array elements?
-            }
-            */
-
+            
             for (var i = 0, n = (object as any).length; i < n; i++) {
                 json.push(this.writeToJsonObject(object[i], Helpers.merge(settings, {
                     objectType: settings.elementType || Object
@@ -904,10 +905,6 @@ abstract class Serializer {
             // Object with properties.
             objectMetadata = JsonObjectMetadata.getFromInstance(object)
             
-            if (objectMetadata && !objectMetadata.isExplicitlyMarked) {
-                throw new Error("Class is not JsonObject.");
-            }
-
             if (objectMetadata && typeof objectMetadata.serializer === "function") {
                 json = objectMetadata.serializer(object);
             } else {
@@ -967,36 +964,27 @@ abstract class Deserializer {
      * @param json The JSON string to deserialize.
      * @param type The type to deserialize into.
      * @param settings Serializer settings.
-     * @throws Error if the provided type is not decorated with JsonObject.
      * @throws Error if 'settings' specifies 'maxObjects', and the JSON string exceeds that limit.
      */
     public static readObject<T>(json: string, type: { new (): T }, settings: SerializerSettings): T {
-        var objectMetadata: JsonObjectMetadata<T>;
         var value: any;
         var instance: T;
-        
-        objectMetadata = JsonObjectMetadata.getFromType(type);
+        var metadata = JsonObjectMetadata.getFromType(type);
+
         value = JSON.parse(json, settings.reviver); // Parse text into basic object, which is then processed recursively.
-
-        if (!objectMetadata || !objectMetadata.isExplicitlyMarked) {
-            throw new Error(`The provided class '${Helpers.getClassName(type)}' is not a @JsonObject.`);
-        }
-
+        
         if (typeof settings.maxObjects === "number") {
             if (this.countObjects(value) > settings.maxObjects) {
                 throw new Error(`JSON exceeds object count limit (${settings.maxObjects}).`);
             }
         }
-
-        // Sort JsonMembers so that deserialization happens as set by ordering.
-        objectMetadata.sortMembers();
-
+        
         instance = this.readJsonToInstance(value, {
             objectType: type,
             typeHintPropertyKey: settings.typeHintPropertyKey,
             enableTypeHints: settings.enableTypeHints,
             strictTypeHintMode: true,
-            knownTypes: {}
+            knownTypes: metadata ? metadata.knownTypes : {}
         });
 
         return instance;
@@ -1043,30 +1031,32 @@ abstract class Deserializer {
         var objectMetadata: JsonObjectMetadata<any>;
         var ObjectType: Constructor<T>;
         var typeHint: string;
-        var temp: any
+        var temp: any;
+        var knownTypes: { [name: string]: Constructor<any> };
         
         if (typeof json === "undefined" || json === null) {
             if (settings.isRequired) {
                 throw new Error(`Missing required member.`);
             }
-        } else if (Helpers.isPrimitiveType(settings.objectType)) {
+        } else if (Helpers.isPrimitive(settings.objectType)) {
             // number, string, boolean: assign directly.
             if (json.constructor !== settings.objectType) {
-                let expectedTypeName = Helpers.getClassName(settings.objectType);
-                let foundTypeName = Helpers.getClassName(json.constructor);
+                let expectedTypeName = Helpers.getClassName(settings.objectType).toLowerCase();
+                let foundTypeName = Helpers.getClassName(json.constructor).toLowerCase();
 
                 throw new TypeError(`Expected value to be of type '${expectedTypeName}', got '${foundTypeName}'.`);
             }
 
             object = json;
         } else if (settings.objectType as any === Array) {
-            // 'json' is expected to be an array.
+            // 'json' is expected to be an Array.
             if (!Helpers.isArray(json)) {
                 throw new TypeError(`Expected value to be of type 'Array', got '${Helpers.getClassName(json.constructor)}'.`);
             }
 
             object = [];
 
+            // Read array elements recursively.
             json.forEach(element => {
                 object.push(this.readJsonToInstance(element, Helpers.merge(settings, {
                     objectType: settings.elementType || Object,
@@ -1074,20 +1064,21 @@ abstract class Deserializer {
                 })));
             });
         } else if (settings.objectType as any === Date) {
-            // Built-in support for Date with ISO 8601.
-            // Spec.: https://www.w3.org/TR/NOTE-datetime
+            // Built-in support for Date with ISO 8601 format.
+            // ISO 8601 spec.: https://www.w3.org/TR/NOTE-datetime
             if (typeof json === "string") {
                 object = new Date(json);
             } else {
                 throw new TypeError(`Expected value to be of type 'string', got '${typeof json}'.`);
             }
         } else {
-            // 'json' can only be an object, instatiate.
+            // 'json' can only be an object.
+            // Check if a type-hint is present.
             typeHint = json[settings.typeHintPropertyKey];
-
+            
             if (typeHint && settings.enableTypeHints) {
                 if (typeof typeHint !== "string") {
-                    throw new TypeError("Type-hint must be a string.");
+                    throw new TypeError(`Type-hint (${settings.typeHintPropertyKey}) must be a string.`);
                 }
 
                 // Check if type-hint refers to a known type.
@@ -1100,8 +1091,9 @@ abstract class Deserializer {
                     throw new Error(`'${typeHint}' is not a subtype of '${Helpers.getClassName(settings.objectType)}'.`);
                 }
 
+                // Type-hinting was enabled and a valid type-hint has been found.
                 ObjectType = settings.knownTypes[typeHint];
-                objectMetadata = JsonObjectMetadata.getFromType(settings.knownTypes[typeHint]);
+                objectMetadata = JsonObjectMetadata.getFromType(ObjectType);
             } else {
                 if (settings.enableTypeHints && settings.requireTypeHints) {
                     throw new Error("Missing required type-hint.");
@@ -1110,12 +1102,8 @@ abstract class Deserializer {
                 ObjectType = settings.objectType;
                 objectMetadata = JsonObjectMetadata.getFromType(settings.objectType);
             }
-            
-            if (objectMetadata) {
-                if (!objectMetadata.isExplicitlyMarked) {
-                    throw new Error("Class it not JsonObject.");
-                }
 
+            if (objectMetadata) {
                 if (typeof objectMetadata.initializer === "function") {
                     // Let the initializer function handle it.
                     object = objectMetadata.initializer(json) || null;
@@ -1128,9 +1116,9 @@ abstract class Deserializer {
 
                         temp = this.readJsonToInstance(json[propertyMetadata.name], Helpers.merge(settings, {
                             objectType: propertyMetadata.type,
-                            elementType: propertyMetadata.elementType, // Might be undefined, doesn't matter.
+                            elementType: propertyMetadata.elementType,
                             isRequired: propertyMetadata.isRequired,
-                            knownTypes: Helpers.merge(settings.knownTypes, objectMetadata.knownTypes),
+                            knownTypes: objectMetadata.knownTypes,
                             requireTypeHints: propertyMetadata.forceEnableTypeHinting || false
                         }));
 
@@ -1142,14 +1130,13 @@ abstract class Deserializer {
                 }
             } else {
                 // Deserialize each property of (from) 'json'.
-                object = new ObjectType();
+                object = {};
 
                 Object.keys(json).forEach(propertyKey => {
                     // Skip type-hint when copying properties.
                     if (propertyKey !== settings.typeHintPropertyKey) {
                         object[propertyKey] = this.readJsonToInstance(json[propertyKey], Helpers.merge(settings, {
-                            objectType: json[propertyKey].constructor,
-                            knownTypes: settings.knownTypes
+                            objectType: json[propertyKey].constructor || Object
                         }));
                     }
                 });
@@ -1218,7 +1205,7 @@ interface TypedJSON {
      * Configures TypedJSON with custom settings. New settings will be assigned to existing settings.
      * @param settings The settings object.
      */
-    config(settings: SerializerSettings): TypedJSON;
+    config(settings: SerializerSettings): void;
 }
 
 // Default settings.
@@ -1230,31 +1217,12 @@ var configSettings: SerializerSettings = {
 var TypedJSON: TypedJSON = {
     config: function (settings: SerializerSettings) {
         configSettings = Helpers.merge(configSettings, settings);
-
-        // For chained calls, like 'TypedJSON.config(...).parse(...)'.
-        return this;
     },
     stringify: function (value: any): string {
-        var metadata = JsonObjectMetadata.getFromInstance(value);
-
-        if (metadata && metadata.isExplicitlyMarked) {
-            // Use Serializer for custom serialization.
-            return Serializer.writeObject(value, configSettings);
-        } else {
-            // Call original 'JSON.stringify'.
-            return JSON.stringify.apply(JSON, arguments);
-        }
+        return Serializer.writeObject(value, configSettings);
     },
-    parse: function (text: string, type?: any): any {
-        var metadata = JsonObjectMetadata.getFromType<any>(type);
-
-        if (typeof type === "function" && metadata && metadata.classType === type && metadata.isExplicitlyMarked) {
-            // Use Deserializer for custom deserialization using the provided class type.
-            return Deserializer.readObject(text, type, configSettings);
-        } else {
-            // Call original 'JSON.parse'.
-            return JSON.parse.apply(JSON, arguments);
-        }
+    parse: function (json: string, type?: any): any {
+        return Deserializer.readObject(json, type, configSettings);
     }
 };
 //#endregion

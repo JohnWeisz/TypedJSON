@@ -1,5 +1,5 @@
 /*!
-TypedJSON v0.1.2 - https://github.com/JohnWhiteTB/TypedJSON
+TypedJSON v0.1.3 - https://github.com/JohnWhiteTB/TypedJSON
 
 Typed JSON parsing and serializing that preserves type information. Parse JSON into actual class instances. Recommended (but not required)
 to be used with reflect-metadata (global installation): https://github.com/rbuckton/ReflectDecorators.
@@ -139,7 +139,7 @@ interface TypedJSON {
      * Configures TypedJSON with custom settings. New settings will be assigned to existing settings.
      * @param settings The settings object.
      */
-    config(settings: SerializerSettings): TypedJSON;
+    config(settings: SerializerSettings): void;
 }
 declare var TypedJSON: TypedJSON;
 export { SerializerSettings, TypedJSON, JsonObjectOptions, JsonObject, JsonMemberOptions, JsonMember };

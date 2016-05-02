@@ -40,13 +40,13 @@ class Employee extends Person {
     }
 }
 
-@JsonObject()
+@JsonObject
 class PartTimeEmployee extends Employee {
-    @JsonMember()
+    @JsonMember
     public workHours: number;
 }
 
-@JsonObject()
+@JsonObject
 class Investor extends Person {
     @JsonMember()
     public investAmount: number;
@@ -134,7 +134,7 @@ export function test(log: boolean) {
     if (log) {
         console.log("Test: polymorphism...");
         console.log(company);
-        console.log(TypedJSON.parse(json)); // Will parse using 'JSON.parse'.
+        console.log(JSON.parse(json));
         console.log(reparsed);
         console.log("Test finished.");
     }

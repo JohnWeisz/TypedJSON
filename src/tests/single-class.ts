@@ -9,28 +9,16 @@ class Person {
     @JsonMember
     lastName: string;
 
-    constructor(firstName?: string, lastName?: string) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-    }
-
     public getFullname() {
         return this.firstName + " " + this.lastName;
     }
 }
 
 export function test(log: boolean) {
-    var person = new Person("John", "Doe");
-    var json = TypedJSON.stringify(person);
-    var clone = TypedJSON.parse(json, Person);
-    
-    if (log) {
-        console.log("Test: single class...");
-        console.log(person);
-        console.log(JSON.parse(json));
-        console.log(clone);
-        console.log("Test finished.");
-    }
-    
-    return isEqual(person, clone);
+    var person = TypedJSON.parse('{ "firstName": "John", "lastName": "Doe" }', Person);
+
+    person instanceof Person; // true
+    person.getFullname(); // "John Doe"
+
+    return person.getFullname() === "John Doe" && person instanceof Person;
 }

@@ -134,7 +134,7 @@ export function test(log: boolean) {
     if (log) {
         console.log("Test: polymorphism with custom names...");
         console.log(company);
-        console.log(TypedJSON.parse(json)); // Will parse using 'JSON.parse'.
+        console.log(JSON.parse(json));
         console.log(reparsed);
         console.log("Test finished.");
     }

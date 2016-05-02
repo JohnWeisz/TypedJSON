@@ -158,7 +158,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
         if (log) {
             console.log("Test: polymorphism with custom names...");
             console.log(company);
-            console.log(typed_json_1.TypedJSON.parse(json)); // Will parse using 'JSON.parse'.
+            console.log(JSON.parse(json));
             console.log(reparsed);
             console.log("Test finished.");
         }
