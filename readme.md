@@ -6,7 +6,7 @@ Typed JSON parsing and serializing that preserves type information. Parse JSON i
 
 ## Install & Use
 
-The latest version is available as a [NuGet package](https://www.nuget.org/packages/TypedJSON/):
+The latest release is available as a [NuGet package](https://www.nuget.org/packages/TypedJSON/):
 
 ```none
 Install-Package TypedJSON
