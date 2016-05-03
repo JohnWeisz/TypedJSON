@@ -13,11 +13,11 @@ Install-Package TypedJSON
 ```
 
  1. Import the 'typed-json' module
- 2. Snap @JsonObject on a class
- 3. Snap @JsonMember on some properties to mark them for serialization
+ 2. Snap the @JsonObject [class decorator](https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md#class-decorators) on a class
+ 3. Snap the @JsonMember [property decorator](https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md#property-decorators) on some properties to mark them for serialization
    - Use [ReflectDecorators](https://github.com/rbuckton/ReflectDecorators) to auto-determine property types (recommended), or
    - Pass options object with 'type' setting to specify property types
-     - `@JsonMember({ type: String }) ...`
+     - syntax: `@JsonMember({ type: String }) ...`
  4. Parse/stringify with TypedJSON:
 
 ```typescript
