@@ -40,7 +40,7 @@ person instanceof Person; // true
 person.getFullname(); // "John Doe"
 ```
 
-[Learn more about decorators](https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md)
+[Learn more about decorators in TypeScript](https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md)
 
 ## Features
 
