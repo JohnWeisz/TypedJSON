@@ -2,7 +2,7 @@
 
 *v0.1.4 experimental release*
 
-Typed JSON parsing and serializing that preserves type information. Parse JSON into actual class instances. Recommended (but not required) to be used with [reflect-metadata](https://github.com/rbuckton/ReflectDecorators), a prototype for an ES7 Reflection API for Decorator Metadata.
+Typed JSON parsing and serializing that preserves type information. Parse JSON into actual class instances. Recommended (but not required) to be used with [ReflectDecorators](https://github.com/rbuckton/ReflectDecorators), a prototype for an ES7 Reflection API for Decorator Metadata.
 
 ## Install & Use
 
@@ -12,11 +12,11 @@ The latest version is available as a [NuGet package](https://www.nuget.org/packa
 Install-Package TypedJSON
 ```
 
- 1. Import the 'typed-json' module,
- 2. Snap @JsonObject on a class,
- 3. Snap @JsonMember on some properties to mark them for serialization,
-   - Use [reflect-metadata](https://github.com/rbuckton/ReflectDecorators) to auto-determine property types (recommended), or
-   - Pass options object with 'type' setting to specify property types,
+ 1. Import the 'typed-json' module
+ 2. Snap @JsonObject on a class
+ 3. Snap @JsonMember on some properties to mark them for serialization
+   - Use [ReflectDecorators](https://github.com/rbuckton/ReflectDecorators) to auto-determine property types (recommended), or
+   - Pass options object with 'type' setting to specify property types
      - `@JsonMember({ type: String }) ...`
  4. Parse/stringify with TypedJSON:
 
