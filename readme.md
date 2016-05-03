@@ -15,7 +15,7 @@ Install-Package TypedJSON
  1. Import the 'typed-json' module
  2. Snap @JsonObject on a class
  3. Snap @JsonMember on some properties to mark them for serialization
-   - Use [ReflectDecorators](https://github.com/rbuckton/ReflectDecorators) (recommended), or set 'type' option (eg.: `@JsonMember({ type: String }) ...`)
+   - Install/include [ReflectDecorators](https://github.com/rbuckton/ReflectDecorators) (recommended), or set 'type' option (eg.: `@JsonMember({ type: String }) ...`)
  4. Parse/stringify with TypedJSON:
 
 ```typescript
