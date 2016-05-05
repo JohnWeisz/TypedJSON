@@ -1,5 +1,5 @@
 /*!
-TypedJSON v0.1.3 - https://github.com/JohnWhiteTB/TypedJSON
+TypedJSON v0.2.0 - https://github.com/JohnWhiteTB/TypedJSON
 
 Typed JSON parsing and serializing that preserves type information. Parse JSON into actual class instances. Recommended (but not required)
 to be used with reflect-metadata (global installation): https://github.com/rbuckton/ReflectDecorators.
@@ -131,10 +131,17 @@ interface TypedJSON {
      * Converts a JavaScript Object Notation (JSON) string into an instance of the provided class.
      * @param text A valid JSON string.
      * @param type A class from which an instance is created using the provided JSON string.
+     * @param settings Per-use serializer settings. Unspecified keys are assigned from global config.
      */
     parse<T>(text: string, type: {
         new (): T;
-    }): T;
+    }, settings?: SerializerSettings): T;
+    /**
+     * Converts a JavaScript value to a JavaScript Object Notation (JSON) string.
+     * @param value A JavaScript value, usually an object or array, to be converted.
+     * @param settings Per-use serializer settings. Unspecified keys are assigned from global config.
+     */
+    stringify(value: any, settings?: SerializerSettings): string;
     /**
      * Configures TypedJSON with custom settings. New settings will be assigned to existing settings.
      * @param settings The settings object.

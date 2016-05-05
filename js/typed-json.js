@@ -1,5 +1,5 @@
 /*!
-TypedJSON v0.1.3 - https://github.com/JohnWhiteTB/TypedJSON
+TypedJSON v0.2.0 - https://github.com/JohnWhiteTB/TypedJSON
 
 Typed JSON parsing and serializing that preserves type information. Parse JSON into actual class instances. Recommended (but not required)
 to be used with reflect-metadata (global installation): https://github.com/rbuckton/ReflectDecorators.
@@ -955,12 +955,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         config: function (settings) {
             configSettings = Helpers.merge(configSettings, settings);
         },
-        stringify: function (value) {
-            return Serializer.writeObject(value, configSettings);
+        stringify: function (value, settings) {
+            return Serializer.writeObject(value, Helpers.merge(configSettings, settings || {}));
         },
-        parse: function (json, type) {
+        parse: function (json, type, settings) {
             if (JsonObjectMetadata.getFromType(type)) {
-                return Deserializer.readObject(json, type, configSettings);
+                return Deserializer.readObject(json, type, Helpers.merge(configSettings, settings || {}));
             }
             else {
                 return JSON.parse.apply(JSON, arguments);
