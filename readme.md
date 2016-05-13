@@ -44,9 +44,9 @@ person.getFullname(); // "John Doe"
 
 ## Features
 
- - Parse regular JSON into actual class instances, *safely*, no need for type data
+ - Parse regular JSON into actual class instances safely
  - Seamlessly integrate into existing code with decorators
- - Customize serialization and deserialization process, like custom names and ordering
+ - Customize serialization and deserialization process, like custom names, default values, and ordering
  - Handles complex nested objects and polymorphism
 
 ## Documentation
