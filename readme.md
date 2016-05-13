@@ -51,7 +51,7 @@ person.getFullname(); // "John Doe"
 
 ## Documentation
 
- - [API reference](https://github.com/JohnWhiteTB/TypedJSON/wiki)
+ - [API reference](https://github.com/JohnWhiteTB/TypedJSON/wiki/API-reference)
 
 ## License
 
