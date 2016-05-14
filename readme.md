@@ -2,7 +2,7 @@
 
 *v0.1.4 experimental release*
 
-Typed JSON parsing and serializing for TypeScript that preserves type information. Parse JSON into actual class instances. Recommended (but not required) to be used with [ReflectDecorators](https://github.com/rbuckton/ReflectDecorators), a prototype for an ES7 Reflection API for Decorator Metadata.
+Typed JSON parsing and serializing for TypeScript that preserves type information using decorators. Parse JSON into actual class instances. Recommended (but not required) to be used with [ReflectDecorators](https://github.com/rbuckton/ReflectDecorators), a prototype for an ES7 Reflection API for Decorator Metadata.
 
 ## Install & Use
 
@@ -44,14 +44,14 @@ person.getFullname(); // "John Doe"
 
 ## Features
 
- - Parse regular JSON into actual class instances, *safely*, no need for type data
+ - Parse regular JSON into actual class instances safely
  - Seamlessly integrate into existing code with decorators
- - Customize serialization and deserialization process, like custom names and ordering
+ - Customize serialization and deserialization process, like custom names, default values, and ordering
  - Handles complex nested objects and polymorphism
 
 ## Documentation
 
- - [API reference](https://github.com/JohnWhiteTB/TypedJSON/wiki)
+ - [API reference](https://github.com/JohnWhiteTB/TypedJSON/wiki/API-reference)
 
 ## License
 
