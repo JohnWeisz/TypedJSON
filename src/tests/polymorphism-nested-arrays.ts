@@ -35,7 +35,7 @@ class Graph {
     @JsonMember({ elements: { elements: Node } })
     items: Array<Array<Node>>;
 
-    @JsonMember({ elements: { elements: Node } })
+    @JsonMember({ elements: { elements: SmallNode } })
     smallItems: Array<Array<SmallNode>>;
 
     constructor() {

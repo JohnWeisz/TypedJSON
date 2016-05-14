@@ -82,7 +82,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
             __metadata('design:type', Array)
         ], Graph.prototype, "items", void 0);
         __decorate([
-            typed_json_1.JsonMember({ elements: { elements: Node } }), 
+            typed_json_1.JsonMember({ elements: { elements: SmallNode } }), 
             __metadata('design:type', Array)
         ], Graph.prototype, "smallItems", void 0);
         Graph = __decorate([

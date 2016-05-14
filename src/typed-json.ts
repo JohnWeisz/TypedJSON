@@ -775,28 +775,16 @@ function JsonMember<TFunction extends Function>(optionsOrTarget?: JsonMemberOpti
         options = optionsOrTarget || {};
     }
 
-    // 'elementType' is deprecated, but provide backwards compatibility.
-    if (options.hasOwnProperty("elementType")) {
-        Helpers.warn("@JsonMember: the 'elementType' option is deprecated, use 'elements' instead.");
-        options.elements = options.elementType;
-
-        if (options.elementType === Array) {
-            memberMetadata.forceEnableTypeHinting = true;
-        }
-    }
-    
-    memberMetadata = Helpers.assign(memberMetadata, options);
-
     decorator = function (target: any, propertyKey: string | symbol): void {
         var descriptor = Object.getOwnPropertyDescriptor(target, propertyKey.toString());;
         var objectMetadata: JsonObjectMetadata<any>;
         var parentMetadata: JsonObjectMetadata<any>;
         var reflectType: any;
-        var propertyName = Helpers.getPropertyDisplayName(target, propertyKey);
+        var propertyName = Helpers.getPropertyDisplayName(target, propertyKey); // For error messages.
         
         // When a property decorator is applied to a static member, 'target' is a constructor function.
         // See: https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md#property-decorators
-        // Static members are however not supported.
+        // And static members are not supported.
         if (typeof target === "function") {
             throw new TypeError(`@JsonMember cannot be used on a static property ('${propertyName}').`);
         }
@@ -805,6 +793,18 @@ function JsonMember<TFunction extends Function>(optionsOrTarget?: JsonMemberOpti
         if (typeof target[propertyKey] === "function") {
             throw new TypeError(`@JsonMember cannot be used on a method property ('${propertyName}').`);
         }
+
+        // 'elementType' is deprecated, but still provide backwards compatibility for now.
+        if (options.hasOwnProperty("elementType")) {
+            Helpers.warn(`${propertyName}: the 'elementType' option is deprecated, use 'elements' instead.`);
+            options.elements = options.elementType;
+
+            if (options.elementType === Array) {
+                memberMetadata.forceEnableTypeHinting = true;
+            }
+        }
+
+        memberMetadata = Helpers.assign(memberMetadata, options);
 
         memberMetadata.key = propertyKey.toString();
         memberMetadata.name = options.name || propertyKey.toString(); // Property key is used as default member name if not specified.
@@ -816,7 +816,7 @@ function JsonMember<TFunction extends Function>(optionsOrTarget?: JsonMemberOpti
 
         // It is a common error for types to exist at compile time, but not at runtime (often caused by improper/misbehaving imports).
         if (options.hasOwnProperty("type") && typeof options.type === "undefined") {
-            throw new TypeError(`@JsonMember: 'type' of property '${propertyName}' is undefined.`);
+            throw new TypeError(`@JsonMember: 'type' of '${propertyName}' is undefined.`);
         }
 
         // ReflectDecorators support to auto-infer property types.
@@ -826,7 +826,7 @@ function JsonMember<TFunction extends Function>(optionsOrTarget?: JsonMemberOpti
 
             if (typeof reflectType === "undefined") {
                 // If Reflect.getMetadata exists, functionality for *setting* metadata should also exist, and metadata *should* be set.
-                throw new TypeError(`@JsonMember: type detected for property '${propertyName}' is undefined.`);
+                throw new TypeError(`@JsonMember: type detected for '${propertyName}' is undefined.`);
             }
 
             if (!memberMetadata.type || typeof memberMetadata.type !== "function") {
@@ -1115,7 +1115,7 @@ abstract class Deserializer {
                     elements: settings.elements ? settings.elements.elements : null,
                     enableTypeHints: settings.enableTypeHints,
                     knownTypes: settings.knownTypes,
-                    objectType: settings.elements ? settings.elements.type : Object,
+                    objectType: settings.elements ? settings.elements.type : element.constructor,
                     requireTypeHints: settings.requireTypeHints,
                     strictTypeHintMode: settings.strictTypeHintMode,
                     typeHintPropertyKey: settings.typeHintPropertyKey
@@ -1178,7 +1178,7 @@ abstract class Deserializer {
                             elements: propertyMetadata.elements,
                             enableTypeHints: settings.enableTypeHints,
                             isRequired: propertyMetadata.isRequired,
-                            knownTypes: Helpers.merge(settings.knownTypes, objectMetadata.knownTypes),
+                            knownTypes: Helpers.merge(settings.knownTypes, objectMetadata.knownTypes || {}),
                             objectType: propertyMetadata.type,
                             requireTypeHints: settings.requireTypeHints,
                             strictTypeHintMode: settings.strictTypeHintMode,
@@ -1201,7 +1201,7 @@ abstract class Deserializer {
                         object[propertyKey] = this.readJsonToInstance(json[propertyKey], {
                             enableTypeHints: settings.enableTypeHints,
                             knownTypes: settings.knownTypes,
-                            objectType: Object,
+                            objectType: json[propertyKey].constructor,
                             requireTypeHints: settings.requireTypeHints,
                             typeHintPropertyKey: settings.typeHintPropertyKey
                         });
