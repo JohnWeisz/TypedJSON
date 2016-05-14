@@ -89,7 +89,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
             this.investAmount = investAmount || 0;
         }
         __decorate([
-            typed_json_1.JsonMember(), 
+            typed_json_1.JsonMember, 
             __metadata('design:type', Number)
         ], Investor.prototype, "investAmount", void 0);
         Investor = __decorate([
@@ -103,15 +103,15 @@ var __metadata = (this && this.__metadata) || function (k, v) {
             this.employees = [];
         }
         __decorate([
-            typed_json_1.JsonMember(), 
+            typed_json_1.JsonMember, 
             __metadata('design:type', String)
         ], Company.prototype, "name", void 0);
         __decorate([
-            typed_json_1.JsonMember({ elementType: Employee }), 
+            typed_json_1.JsonMember({ elements: Employee }), 
             __metadata('design:type', Array)
         ], Company.prototype, "employees", void 0);
         __decorate([
-            typed_json_1.JsonMember(), 
+            typed_json_1.JsonMember, 
             __metadata('design:type', Person)
         ], Company.prototype, "owner", void 0);
         Company = __decorate([

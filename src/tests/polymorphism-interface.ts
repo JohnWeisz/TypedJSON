@@ -29,10 +29,10 @@ class BigNode implements Point {
     @JsonMember
     y: number;
 
-    @JsonMember({ elementType: String })
+    @JsonMember({ elements: String })
     inputs: string[];
 
-    @JsonMember({ elementType: String })
+    @JsonMember({ elements: String })
     outputs: string[];
 
     constructor() {
@@ -45,7 +45,7 @@ class BigNode implements Point {
     knownTypes: [BigNode, SmallNode]
 })
 class GraphGrid {
-    @JsonMember({ elementType: Object, refersAbstractType: true })
+    @JsonMember({ elements: Object, refersAbstractType: true })
     points: Point[];
 
     @JsonMember({ refersAbstractType: true })

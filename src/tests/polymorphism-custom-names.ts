@@ -1,7 +1,7 @@
 ﻿import {isEqual} from "./object-compare";
 import {JsonObject, JsonMember, TypedJSON} from "../typed-json";
 
-@JsonObject()
+@JsonObject
 class Person {
     @JsonMember({ name: "first-name" })
     public firstName: string;
@@ -19,12 +19,12 @@ class Person {
     }
 }
 
-@JsonObject()
+@JsonObject
 class Employee extends Person {
-    @JsonMember()
+    @JsonMember
     public salary: number;
 
-    @JsonMember()
+    @JsonMember
     public joined: Date;
 
     constructor();
@@ -63,13 +63,13 @@ class Investor extends Person {
 
 @JsonObject({ name: "company", knownTypes: [PartTimeEmployee, Investor] })
 class Company {
-    @JsonMember()
+    @JsonMember
     public name: string;
 
-    @JsonMember({ elementType: Employee })
+    @JsonMember({ elements: Employee })
     public employees: Array<Employee>;
 
-    @JsonMember()
+    @JsonMember
     public owner: Person;
 
     constructor() {

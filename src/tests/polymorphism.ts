@@ -48,7 +48,7 @@ class PartTimeEmployee extends Employee {
 
 @JsonObject
 class Investor extends Person {
-    @JsonMember()
+    @JsonMember
     public investAmount: number;
 
     constructor();
@@ -63,13 +63,13 @@ class Investor extends Person {
 
 @JsonObject({ name: "company", knownTypes: [PartTimeEmployee, Investor] })
 class Company {
-    @JsonMember()
+    @JsonMember
     public name: string;
 
-    @JsonMember({ elementType: Employee })
+    @JsonMember({ elements: Employee })
     public employees: Array<Employee>;
 
-    @JsonMember()
+    @JsonMember
     public owner: Person;
 
     constructor() {

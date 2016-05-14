@@ -59,11 +59,11 @@ var __metadata = (this && this.__metadata) || function (k, v) {
             this.outputs = [];
         }
         __decorate([
-            typed_json_1.JsonMember({ elementType: String }), 
+            typed_json_1.JsonMember({ elements: String }), 
             __metadata('design:type', Array)
         ], BigNode.prototype, "inputs", void 0);
         __decorate([
-            typed_json_1.JsonMember({ elementType: String }), 
+            typed_json_1.JsonMember({ elements: String }), 
             __metadata('design:type', Array)
         ], BigNode.prototype, "outputs", void 0);
         BigNode = __decorate([
@@ -77,7 +77,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
             this.nodes = [];
         }
         __decorate([
-            typed_json_1.JsonMember({ elementType: Node, refersAbstractType: true }), 
+            typed_json_1.JsonMember({ elements: Node, refersAbstractType: true }), 
             __metadata('design:type', Array)
         ], Graph.prototype, "nodes", void 0);
         __decorate([

@@ -17,10 +17,10 @@ class SmallNode extends Node {
 
 @JsonObject
 class BigNode extends Node {
-    @JsonMember({ elementType: String })
+    @JsonMember({ elements: String })
     inputs: string[];
 
-    @JsonMember({ elementType: String })
+    @JsonMember({ elements: String })
     outputs: string[];
 
     constructor() {
@@ -32,10 +32,10 @@ class BigNode extends Node {
 
 @JsonObject({ knownTypes: [BigNode, SmallNode] })
 class Graph {
-    @JsonMember({ elementType: Array })
+    @JsonMember({ elements: { elements: Node } })
     items: Array<Array<Node>>;
 
-    @JsonMember({ elementType: Array })
+    @JsonMember({ elements: { elements: Node } })
     smallItems: Array<Array<SmallNode>>;
 
     constructor() {

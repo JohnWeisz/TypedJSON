@@ -313,8 +313,8 @@ class JsonMemberMetadata<T> {
     /** If set, indicates that the member must be present when deserializing. */
     public isRequired: boolean;
 
-    /** If the json member is an array, sets the type of array elements. */
-    public elementType: { new (): any };
+    /** If the json member is an array, sets options of array elements. */
+    public elements: JsonMemberMetadata<any>;
 
     /** Serialization/deserialization order. */
     public order: number;
@@ -679,8 +679,11 @@ interface JsonMemberOptions<TFunction extends Function> {
     /** Sets the json member type. Optional if reflect metadata is available. */
     type?: TFunction;
 
-    /** When the json member is an array, sets the type of array elements. Required for arrays. */
+    /** Deprecated. When the json member is an array, sets the type of array elements. Required for arrays. */
     elementType?: Function;
+
+    /** Deprecated. When the json member is an array, sets the type of array elements. Required for arrays. */
+    elements?: JsonMemberOptions<any> | Function;
 
     /** When set, indicates that the member must be present when deserializing a JSON string. */
     isRequired?: boolean;
@@ -693,6 +696,52 @@ interface JsonMemberOptions<TFunction extends Function> {
 
     /** When set, type-hint is mandatory when deserializing. Set for properties with interface or abstract types/element-types. */
     refersAbstractType?: boolean;
+}
+
+function jsonMemberTypeInit<T>(metadata: JsonMemberMetadata<T>, propertyName: string, warnArray = false) {
+    if (metadata.elements) {
+        // 'elements' type shorthand.
+        if (typeof metadata.elements === "function") {
+            // Type shorthand was used.
+            metadata.elements = {
+                type: metadata.elements
+            } as any;
+        }
+
+        if (!metadata.type) {
+            // If the 'elements' option is set, 'type' is automatically assumed to be 'Array' unless specified.
+            metadata.type = Array as any;
+        }
+    }
+
+    if (metadata.type as any === Array) {
+        if (!metadata.elements) {
+            if (warnArray) {
+                // Provide backwards compatibility.
+                Helpers.warn(`No valid 'elements' option was specified for '${propertyName}'.`);
+            } else {
+                throw new Error(`No valid 'elements' option was specified for '${propertyName}'.`);
+            }
+        } else {
+            jsonMemberTypeInit(metadata.elements, propertyName + '[]', true);
+        }
+    }
+
+    if (typeof metadata.type !== "function") {
+        throw new Error(`No valid 'type' option was specified for '${propertyName}'.`);
+    }
+}
+
+function jsonMemberKnownTypes<T>(metadata: JsonMemberMetadata<T>) {
+    var knownTypes = new Array<{ new (): any }>();
+
+    knownTypes.push(metadata.type);
+
+    if (metadata.elements) {
+        knownTypes = knownTypes.concat(jsonMemberKnownTypes(metadata.elements));
+    }
+
+    return knownTypes;
 }
 
 /**
@@ -726,6 +775,16 @@ function JsonMember<TFunction extends Function>(optionsOrTarget?: JsonMemberOpti
         options = optionsOrTarget || {};
     }
 
+    // 'elementType' is deprecated, but provide backwards compatibility.
+    if (options.hasOwnProperty("elementType")) {
+        Helpers.warn("@JsonMember: the 'elementType' option is deprecated, use 'elements' instead.");
+        options.elements = options.elementType;
+
+        if (options.elementType === Array) {
+            memberMetadata.forceEnableTypeHinting = true;
+        }
+    }
+    
     memberMetadata = Helpers.assign(memberMetadata, options);
 
     decorator = function (target: any, propertyKey: string | symbol): void {
@@ -734,15 +793,17 @@ function JsonMember<TFunction extends Function>(optionsOrTarget?: JsonMemberOpti
         var parentMetadata: JsonObjectMetadata<any>;
         var reflectType: any;
         var propertyName = Helpers.getPropertyDisplayName(target, propertyKey);
-
-        // Static members are not supported (when a property decorator is applied to a static member, 'target' is constructor function).
+        
+        // When a property decorator is applied to a static member, 'target' is a constructor function.
+        // See: https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md#property-decorators
+        // Static members are however not supported.
         if (typeof target === "function") {
             throw new TypeError(`@JsonMember cannot be used on a static property ('${propertyName}').`);
         }
 
-        // Functions (methods) cannot be serialized.
+        // Methods cannot be serialized.
         if (typeof target[propertyKey] === "function") {
-            throw new TypeError(`@JsonMember cannot be used on a method ('${propertyName}').`);
+            throw new TypeError(`@JsonMember cannot be used on a method property ('${propertyName}').`);
         }
 
         memberMetadata.key = propertyKey.toString();
@@ -758,11 +819,7 @@ function JsonMember<TFunction extends Function>(optionsOrTarget?: JsonMemberOpti
             throw new TypeError(`@JsonMember: 'type' of property '${propertyName}' is undefined.`);
         }
 
-        // ... same for elementType.
-        if (options.hasOwnProperty("elementType") && typeof options.elementType === "undefined") {
-            throw new TypeError(`@JsonMember: 'elementType' of property '${propertyName}' is undefined.`);
-        }
-
+        // ReflectDecorators support to auto-infer property types.
         //#region "Reflect Metadata support"
         if (typeof Reflect === "object" && typeof Reflect.getMetadata === "function") {
             reflectType = Reflect.getMetadata("design:type", target, propertyKey);
@@ -781,31 +838,23 @@ function JsonMember<TFunction extends Function>(optionsOrTarget?: JsonMemberOpti
         }
         //#endregion "Reflect Metadata support"
 
-        // Ensure valid types have been specified ('type' at all times, 'elementType' for arrays).
-        if (typeof memberMetadata.type !== "function") {
-            throw new Error(`@JsonMember: no valid 'type' specified for property '${propertyName}'.`);
-        } else if (memberMetadata.type as any === Array && typeof memberMetadata.elementType !== "function") {
-            throw new Error(`@JsonMember: no valid 'elementType' specified for property '${propertyName}'.`);
-        }
-
-        if (memberMetadata.type as any === Array && memberMetadata.elementType === Array) {
-            memberMetadata.forceEnableTypeHinting = true;
-        }
-
-        // Add JsonObject metadata to 'target' if not yet exists (implicit @JsonObject, 'target' is the prototype).
-        // However, this will *not* fire up custom serialization, as 'target' must be explicitly marked with '@JsonObject' as well.
+        // Ensure valid types have been specified ('type' at all times, 'elements' for arrays).
+        jsonMemberTypeInit(memberMetadata, propertyName);
+        
+        // Add JsonObject metadata to 'target' if not yet exists ('target' is the prototype).
+        // NOTE: this will not fire up custom serialization, as 'target' must be explicitly marked with '@JsonObject' as well.
         if (!target.hasOwnProperty(METADATA_FIELD_KEY)) {
+            // No *own* metadata, create new.
             objectMetadata = new JsonObjectMetadata();
-
-            // Where applicable, inherit @JsonMembers from parent @JsonObject.
+            
+            // Inherit @JsonMembers from parent @JsonObject, if any.
             if (parentMetadata = target[METADATA_FIELD_KEY]) {
-                // @JsonMembers
                 Object.keys(parentMetadata.dataMembers).forEach(memberPropertyKey => {
                     objectMetadata.dataMembers[memberPropertyKey] = parentMetadata.dataMembers[memberPropertyKey];
                 });
             }
 
-            // 'target' is the prototype of the involved class (metadata information is added to the class prototype).
+            // ('target' is the prototype of the involved class, metadata information is added to the class prototype).
             Object.defineProperty(target, METADATA_FIELD_KEY, {
                 enumerable: false,
                 configurable: false,
@@ -813,33 +862,28 @@ function JsonMember<TFunction extends Function>(optionsOrTarget?: JsonMemberOpti
                 value: objectMetadata
             });
         } else {
-            // JsonObjectMetadata already exists on target.
+            // JsonObjectMetadata already exists on 'target'.
             objectMetadata = target[METADATA_FIELD_KEY];
         }
-
+        
         // Automatically add known types.
-        if (memberMetadata.type) {
-            objectMetadata.setKnownType(memberMetadata.type);
-        }
-
-        if (memberMetadata.elementType) {
-            objectMetadata.setKnownType(memberMetadata.elementType);
-        }
-
-        // Register @JsonMember with @JsonObject (will overwrite previous member when used multiple times on same property).
+        jsonMemberKnownTypes(memberMetadata).forEach(knownType => {
+            objectMetadata.setKnownType(knownType);
+        });
+        
+        // Register @JsonMember with @JsonObject (will override previous member when used multiple times on same property).
         try {
             objectMetadata.addMember(memberMetadata);
         } catch (e) {
-            let className = Helpers.getClassName(objectMetadata.classType);
-            throw new Error(`@JsonMember: member '${memberMetadata.name}' already exists on '${className}'.`);
+            throw new Error(`Member '${memberMetadata.name}' already exists on '${Helpers.getClassName(objectMetadata.classType)}'.`);
         }
     };
 
     if (typeof propertyKey === "string" || typeof propertyKey === "symbol") {
-        // JsonMember is being used as a decorator, directly.
+        // JsonMember is being used as a decorator, call decorator function directly.
         return decorator(optionsOrTarget, propertyKey);
     } else {
-        // JsonMember is being used as a decorator factory.
+        // JsonMember is being used as a decorator factory, return decorator function.
         return decorator;
     }
 }
@@ -848,7 +892,7 @@ function JsonMember<TFunction extends Function>(optionsOrTarget?: JsonMemberOpti
 //#region "Serializer"
 interface WriteSettings {
     objectType: { new (): any },
-    elementType?: { new (): any },
+    elements?: JsonMemberMetadata<any>,
     emitDefault?: boolean,
     typeHintPropertyKey: string,
     enableTypeHints?: boolean,
@@ -897,9 +941,13 @@ abstract class Serializer {
             json = [];
             
             for (var i = 0, n = (object as any).length; i < n; i++) {
-                json.push(this.writeToJsonObject(object[i], Helpers.merge(settings, {
-                    objectType: settings.elementType || Object
-                })));
+                json.push(this.writeToJsonObject(object[i], {
+                    elements: settings.elements ? settings.elements.elements : null,
+                    enableTypeHints: settings.enableTypeHints,
+                    objectType: settings.elements ? settings.elements.type : Object,
+                    requireTypeHints: settings.requireTypeHints,
+                    typeHintPropertyKey: settings.typeHintPropertyKey
+                }));
             }
         } else {
             // Object with properties.
@@ -911,7 +959,7 @@ abstract class Serializer {
                 json = {};
 
                 // Add type-hint.
-                if (settings.requireTypeHints || (object.constructor !== settings.objectType && settings.enableTypeHints)) {
+                if (settings.enableTypeHints && (settings.requireTypeHints || object.constructor !== settings.objectType)) {
                     json[settings.typeHintPropertyKey] = JsonObjectMetadata.getKnownTypeNameFromInstance(object);
                 }
 
@@ -921,21 +969,26 @@ abstract class Serializer {
 
                     Object.keys(objectMetadata.dataMembers).forEach(propertyKey => {
                         var propertyMetadata = objectMetadata.dataMembers[propertyKey];
-                        
-                        json[propertyMetadata.name] = this.writeToJsonObject(object[propertyKey], Helpers.merge(settings, {
-                            objectType: propertyMetadata.type,
+
+                        json[propertyMetadata.name] = this.writeToJsonObject(object[propertyKey], {
+                            elements: propertyMetadata.elements,
                             emitDefault: propertyMetadata.emitDefaultValue,
-                            elementType: propertyMetadata.elementType || Object,
-                            requireTypeHints: propertyMetadata.forceEnableTypeHinting || settings.requireTypeHints
-                        }));
+                            enableTypeHints: settings.enableTypeHints,
+                            name: propertyMetadata.name,
+                            objectType: propertyMetadata.type,
+                            requireTypeHints: settings.requireTypeHints,
+                            typeHintPropertyKey: settings.typeHintPropertyKey
+                        });
                     });
                 } else {
                     // Serialize all own properties.
                     Object.keys(object).forEach(propertyKey => {
-                        json[propertyKey] = this.writeToJsonObject(object[propertyKey], Helpers.merge(settings, {
+                        json[propertyKey] = this.writeToJsonObject(object[propertyKey], {
+                            enableTypeHints: settings.enableTypeHints,
                             objectType: Object,
-                            elementType: Object
-                        }));
+                            requireTypeHints: settings.requireTypeHints,
+                            typeHintPropertyKey: settings.typeHintPropertyKey
+                        });
                     });
                 }
             }
@@ -950,7 +1003,7 @@ abstract class Serializer {
 interface ReadSettings<T> {
     objectType: { new (): T },
     isRequired?: boolean,
-    elementType?: { new (): any },
+    elements?: JsonMemberMetadata<any>,
     typeHintPropertyKey: string,
     enableTypeHints?: boolean,
     knownTypes?: { [name: string]: { new (): any } },
@@ -1058,10 +1111,15 @@ abstract class Deserializer {
 
             // Read array elements recursively.
             json.forEach(element => {
-                object.push(this.readJsonToInstance(element, Helpers.merge(settings, {
-                    objectType: settings.elementType || Object,
-                    elementType: Object
-                })));
+                object.push(this.readJsonToInstance(element, {
+                    elements: settings.elements ? settings.elements.elements : null,
+                    enableTypeHints: settings.enableTypeHints,
+                    knownTypes: settings.knownTypes,
+                    objectType: settings.elements ? settings.elements.type : Object,
+                    requireTypeHints: settings.requireTypeHints,
+                    strictTypeHintMode: settings.strictTypeHintMode,
+                    typeHintPropertyKey: settings.typeHintPropertyKey
+                }));
             });
         } else if (settings.objectType as any === Date) {
             // Built-in support for Date with ISO 8601 format.
@@ -1093,6 +1151,8 @@ abstract class Deserializer {
 
                 // Type-hinting was enabled and a valid type-hint has been found.
                 ObjectType = settings.knownTypes[typeHint];
+
+                // Also replace object metadata with that of what was referenced in the type-hint.
                 objectMetadata = JsonObjectMetadata.getFromType(ObjectType);
             } else {
                 if (settings.enableTypeHints && settings.requireTypeHints) {
@@ -1114,15 +1174,18 @@ abstract class Deserializer {
                     Object.keys(objectMetadata.dataMembers).forEach(propertyKey => {
                         var propertyMetadata = objectMetadata.dataMembers[propertyKey];
 
-                        temp = this.readJsonToInstance(json[propertyMetadata.name], Helpers.merge(settings, {
-                            objectType: propertyMetadata.type,
-                            elementType: propertyMetadata.elementType,
+                        temp = this.readJsonToInstance(json[propertyMetadata.name], {
+                            elements: propertyMetadata.elements,
+                            enableTypeHints: settings.enableTypeHints,
                             isRequired: propertyMetadata.isRequired,
-                            knownTypes: objectMetadata.knownTypes,
-                            requireTypeHints: propertyMetadata.forceEnableTypeHinting || false
-                        }));
+                            knownTypes: Helpers.merge(settings.knownTypes, objectMetadata.knownTypes),
+                            objectType: propertyMetadata.type,
+                            requireTypeHints: settings.requireTypeHints,
+                            strictTypeHintMode: settings.strictTypeHintMode,
+                            typeHintPropertyKey: settings.typeHintPropertyKey
+                        });
 
-                        // Do not create undefined/null properties.
+                        // Do not make undefined/null property assignments.
                         if (Helpers.valueIsDefined(temp)) {
                             object[propertyKey] = temp;
                         }
@@ -1135,9 +1198,13 @@ abstract class Deserializer {
                 Object.keys(json).forEach(propertyKey => {
                     // Skip type-hint when copying properties.
                     if (propertyKey !== settings.typeHintPropertyKey) {
-                        object[propertyKey] = this.readJsonToInstance(json[propertyKey], Helpers.merge(settings, {
-                            objectType: json[propertyKey].constructor || Object
-                        }));
+                        object[propertyKey] = this.readJsonToInstance(json[propertyKey], {
+                            enableTypeHints: settings.enableTypeHints,
+                            knownTypes: settings.knownTypes,
+                            objectType: Object,
+                            requireTypeHints: settings.requireTypeHints,
+                            typeHintPropertyKey: settings.typeHintPropertyKey
+                        });
                     }
                 });
             }

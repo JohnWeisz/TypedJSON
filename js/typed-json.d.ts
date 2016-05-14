@@ -62,8 +62,10 @@ interface JsonMemberOptions<TFunction extends Function> {
     name?: string;
     /** Sets the json member type. Optional if reflect metadata is available. */
     type?: TFunction;
-    /** When the json member is an array, sets the type of array elements. Required for arrays. */
+    /** Deprecated. When the json member is an array, sets the type of array elements. Required for arrays. */
     elementType?: Function;
+    /** Deprecated. When the json member is an array, sets the type of array elements. Required for arrays. */
+    elements?: JsonMemberOptions<any> | Function;
     /** When set, indicates that the member must be present when deserializing a JSON string. */
     isRequired?: boolean;
     /** Sets the serialization and deserialization order of the json member. */

@@ -57,11 +57,11 @@ var __metadata = (this && this.__metadata) || function (k, v) {
             __metadata('design:type', Number)
         ], BigNode.prototype, "y", void 0);
         __decorate([
-            typed_json_1.JsonMember({ elementType: String }), 
+            typed_json_1.JsonMember({ elements: String }), 
             __metadata('design:type', Array)
         ], BigNode.prototype, "inputs", void 0);
         __decorate([
-            typed_json_1.JsonMember({ elementType: String }), 
+            typed_json_1.JsonMember({ elements: String }), 
             __metadata('design:type', Array)
         ], BigNode.prototype, "outputs", void 0);
         BigNode = __decorate([
@@ -75,7 +75,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
             this.points = [];
         }
         __decorate([
-            typed_json_1.JsonMember({ elementType: Object, refersAbstractType: true }), 
+            typed_json_1.JsonMember({ elements: Object, refersAbstractType: true }), 
             __metadata('design:type', Array)
         ], GraphGrid.prototype, "points", void 0);
         __decorate([

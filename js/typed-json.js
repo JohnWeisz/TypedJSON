@@ -569,6 +569,47 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
     }
     exports.JsonObject = JsonObject;
+    function jsonMemberTypeInit(metadata, propertyName, warnArray) {
+        if (warnArray === void 0) { warnArray = false; }
+        if (metadata.elements) {
+            // 'elements' type shorthand.
+            if (typeof metadata.elements === "function") {
+                // Type shorthand was used.
+                metadata.elements = {
+                    type: metadata.elements
+                };
+            }
+            if (!metadata.type) {
+                // If the 'elements' option is set, 'type' is automatically assumed to be 'Array' unless specified.
+                metadata.type = Array;
+            }
+        }
+        if (metadata.type === Array) {
+            if (!metadata.elements) {
+                if (warnArray) {
+                    // Provide backwards compatibility.
+                    Helpers.warn("No valid 'elements' option was specified for '" + propertyName + "'.");
+                }
+                else {
+                    throw new Error("No valid 'elements' option was specified for '" + propertyName + "'.");
+                }
+            }
+            else {
+                jsonMemberTypeInit(metadata.elements, propertyName + '[]', true);
+            }
+        }
+        if (typeof metadata.type !== "function") {
+            throw new Error("No valid 'type' option was specified for '" + propertyName + "'.");
+        }
+    }
+    function jsonMemberKnownTypes(metadata) {
+        var knownTypes = new Array();
+        knownTypes.push(metadata.type);
+        if (metadata.elements) {
+            knownTypes = knownTypes.concat(jsonMemberKnownTypes(metadata.elements));
+        }
+        return knownTypes;
+    }
     function JsonMember(optionsOrTarget, propertyKey) {
         var memberMetadata = new JsonMemberMetadata();
         var options;
@@ -581,6 +622,14 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             // JsonMember is being used as a decorator factory.
             options = optionsOrTarget || {};
         }
+        // 'elementType' is deprecated, but provide backwards compatibility.
+        if (options.hasOwnProperty("elementType")) {
+            Helpers.warn("@JsonMember: the 'elementType' option is deprecated, use 'elements' instead.");
+            options.elements = options.elementType;
+            if (options.elementType === Array) {
+                memberMetadata.forceEnableTypeHinting = true;
+            }
+        }
         memberMetadata = Helpers.assign(memberMetadata, options);
         decorator = function (target, propertyKey) {
             var descriptor = Object.getOwnPropertyDescriptor(target, propertyKey.toString());
@@ -589,13 +638,15 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             var parentMetadata;
             var reflectType;
             var propertyName = Helpers.getPropertyDisplayName(target, propertyKey);
-            // Static members are not supported (when a property decorator is applied to a static member, 'target' is constructor function).
+            // When a property decorator is applied to a static member, 'target' is a constructor function.
+            // See: https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md#property-decorators
+            // Static members are however not supported.
             if (typeof target === "function") {
                 throw new TypeError("@JsonMember cannot be used on a static property ('" + propertyName + "').");
             }
-            // Functions (methods) cannot be serialized.
+            // Methods cannot be serialized.
             if (typeof target[propertyKey] === "function") {
-                throw new TypeError("@JsonMember cannot be used on a method ('" + propertyName + "').");
+                throw new TypeError("@JsonMember cannot be used on a method property ('" + propertyName + "').");
             }
             memberMetadata.key = propertyKey.toString();
             memberMetadata.name = options.name || propertyKey.toString(); // Property key is used as default member name if not specified.
@@ -607,10 +658,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             if (options.hasOwnProperty("type") && typeof options.type === "undefined") {
                 throw new TypeError("@JsonMember: 'type' of property '" + propertyName + "' is undefined.");
             }
-            // ... same for elementType.
-            if (options.hasOwnProperty("elementType") && typeof options.elementType === "undefined") {
-                throw new TypeError("@JsonMember: 'elementType' of property '" + propertyName + "' is undefined.");
-            }
+            // ReflectDecorators support to auto-infer property types.
             //#region "Reflect Metadata support"
             if (typeof Reflect === "object" && typeof Reflect.getMetadata === "function") {
                 reflectType = Reflect.getMetadata("design:type", target, propertyKey);
@@ -627,28 +675,20 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 }
             }
             //#endregion "Reflect Metadata support"
-            // Ensure valid types have been specified ('type' at all times, 'elementType' for arrays).
-            if (typeof memberMetadata.type !== "function") {
-                throw new Error("@JsonMember: no valid 'type' specified for property '" + propertyName + "'.");
-            }
-            else if (memberMetadata.type === Array && typeof memberMetadata.elementType !== "function") {
-                throw new Error("@JsonMember: no valid 'elementType' specified for property '" + propertyName + "'.");
-            }
-            if (memberMetadata.type === Array && memberMetadata.elementType === Array) {
-                memberMetadata.forceEnableTypeHinting = true;
-            }
-            // Add JsonObject metadata to 'target' if not yet exists (implicit @JsonObject, 'target' is the prototype).
-            // However, this will *not* fire up custom serialization, as 'target' must be explicitly marked with '@JsonObject' as well.
+            // Ensure valid types have been specified ('type' at all times, 'elements' for arrays).
+            jsonMemberTypeInit(memberMetadata, propertyName);
+            // Add JsonObject metadata to 'target' if not yet exists ('target' is the prototype).
+            // NOTE: this will not fire up custom serialization, as 'target' must be explicitly marked with '@JsonObject' as well.
             if (!target.hasOwnProperty(METADATA_FIELD_KEY)) {
+                // No *own* metadata, create new.
                 objectMetadata = new JsonObjectMetadata();
-                // Where applicable, inherit @JsonMembers from parent @JsonObject.
+                // Inherit @JsonMembers from parent @JsonObject, if any.
                 if (parentMetadata = target[METADATA_FIELD_KEY]) {
-                    // @JsonMembers
                     Object.keys(parentMetadata.dataMembers).forEach(function (memberPropertyKey) {
                         objectMetadata.dataMembers[memberPropertyKey] = parentMetadata.dataMembers[memberPropertyKey];
                     });
                 }
-                // 'target' is the prototype of the involved class (metadata information is added to the class prototype).
+                // ('target' is the prototype of the involved class, metadata information is added to the class prototype).
                 Object.defineProperty(target, METADATA_FIELD_KEY, {
                     enumerable: false,
                     configurable: false,
@@ -657,31 +697,27 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 });
             }
             else {
-                // JsonObjectMetadata already exists on target.
+                // JsonObjectMetadata already exists on 'target'.
                 objectMetadata = target[METADATA_FIELD_KEY];
             }
             // Automatically add known types.
-            if (memberMetadata.type) {
-                objectMetadata.setKnownType(memberMetadata.type);
-            }
-            if (memberMetadata.elementType) {
-                objectMetadata.setKnownType(memberMetadata.elementType);
-            }
-            // Register @JsonMember with @JsonObject (will overwrite previous member when used multiple times on same property).
+            jsonMemberKnownTypes(memberMetadata).forEach(function (knownType) {
+                objectMetadata.setKnownType(knownType);
+            });
+            // Register @JsonMember with @JsonObject (will override previous member when used multiple times on same property).
             try {
                 objectMetadata.addMember(memberMetadata);
             }
             catch (e) {
-                var className = Helpers.getClassName(objectMetadata.classType);
-                throw new Error("@JsonMember: member '" + memberMetadata.name + "' already exists on '" + className + "'.");
+                throw new Error("Member '" + memberMetadata.name + "' already exists on '" + Helpers.getClassName(objectMetadata.classType) + "'.");
             }
         };
         if (typeof propertyKey === "string" || typeof propertyKey === "symbol") {
-            // JsonMember is being used as a decorator, directly.
+            // JsonMember is being used as a decorator, call decorator function directly.
             return decorator(optionsOrTarget, propertyKey);
         }
         else {
-            // JsonMember is being used as a decorator factory.
+            // JsonMember is being used as a decorator factory, return decorator function.
             return decorator;
         }
     }
@@ -729,9 +765,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             else if (object instanceof Array) {
                 json = [];
                 for (var i = 0, n = object.length; i < n; i++) {
-                    json.push(this.writeToJsonObject(object[i], Helpers.merge(settings, {
-                        objectType: settings.elementType || Object
-                    })));
+                    json.push(this.writeToJsonObject(object[i], {
+                        elements: settings.elements ? settings.elements.elements : null,
+                        enableTypeHints: settings.enableTypeHints,
+                        objectType: settings.elements ? settings.elements.type : Object,
+                        requireTypeHints: settings.requireTypeHints,
+                        typeHintPropertyKey: settings.typeHintPropertyKey
+                    }));
                 }
             }
             else {
@@ -743,7 +783,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 else {
                     json = {};
                     // Add type-hint.
-                    if (settings.requireTypeHints || (object.constructor !== settings.objectType && settings.enableTypeHints)) {
+                    if (settings.enableTypeHints && (settings.requireTypeHints || object.constructor !== settings.objectType)) {
                         json[settings.typeHintPropertyKey] = JsonObjectMetadata.getKnownTypeNameFromInstance(object);
                     }
                     if (objectMetadata) {
@@ -751,21 +791,26 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                         objectMetadata.sortMembers();
                         Object.keys(objectMetadata.dataMembers).forEach(function (propertyKey) {
                             var propertyMetadata = objectMetadata.dataMembers[propertyKey];
-                            json[propertyMetadata.name] = _this.writeToJsonObject(object[propertyKey], Helpers.merge(settings, {
-                                objectType: propertyMetadata.type,
+                            json[propertyMetadata.name] = _this.writeToJsonObject(object[propertyKey], {
+                                elements: propertyMetadata.elements,
                                 emitDefault: propertyMetadata.emitDefaultValue,
-                                elementType: propertyMetadata.elementType || Object,
-                                requireTypeHints: propertyMetadata.forceEnableTypeHinting || settings.requireTypeHints
-                            }));
+                                enableTypeHints: settings.enableTypeHints,
+                                name: propertyMetadata.name,
+                                objectType: propertyMetadata.type,
+                                requireTypeHints: settings.requireTypeHints,
+                                typeHintPropertyKey: settings.typeHintPropertyKey
+                            });
                         });
                     }
                     else {
                         // Serialize all own properties.
                         Object.keys(object).forEach(function (propertyKey) {
-                            json[propertyKey] = _this.writeToJsonObject(object[propertyKey], Helpers.merge(settings, {
+                            json[propertyKey] = _this.writeToJsonObject(object[propertyKey], {
+                                enableTypeHints: settings.enableTypeHints,
                                 objectType: Object,
-                                elementType: Object
-                            }));
+                                requireTypeHints: settings.requireTypeHints,
+                                typeHintPropertyKey: settings.typeHintPropertyKey
+                            });
                         });
                     }
                 }
@@ -862,10 +907,15 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 object = [];
                 // Read array elements recursively.
                 json.forEach(function (element) {
-                    object.push(_this.readJsonToInstance(element, Helpers.merge(settings, {
-                        objectType: settings.elementType || Object,
-                        elementType: Object
-                    })));
+                    object.push(_this.readJsonToInstance(element, {
+                        elements: settings.elements ? settings.elements.elements : null,
+                        enableTypeHints: settings.enableTypeHints,
+                        knownTypes: settings.knownTypes,
+                        objectType: settings.elements ? settings.elements.type : Object,
+                        requireTypeHints: settings.requireTypeHints,
+                        strictTypeHintMode: settings.strictTypeHintMode,
+                        typeHintPropertyKey: settings.typeHintPropertyKey
+                    }));
                 });
             }
             else if (settings.objectType === Date) {
@@ -896,6 +946,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                     }
                     // Type-hinting was enabled and a valid type-hint has been found.
                     ObjectType = settings.knownTypes[typeHint];
+                    // Also replace object metadata with that of what was referenced in the type-hint.
                     objectMetadata = JsonObjectMetadata.getFromType(ObjectType);
                 }
                 else {
@@ -915,14 +966,17 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                         object = new ObjectType();
                         Object.keys(objectMetadata.dataMembers).forEach(function (propertyKey) {
                             var propertyMetadata = objectMetadata.dataMembers[propertyKey];
-                            temp = _this.readJsonToInstance(json[propertyMetadata.name], Helpers.merge(settings, {
-                                objectType: propertyMetadata.type,
-                                elementType: propertyMetadata.elementType,
+                            temp = _this.readJsonToInstance(json[propertyMetadata.name], {
+                                elements: propertyMetadata.elements,
+                                enableTypeHints: settings.enableTypeHints,
                                 isRequired: propertyMetadata.isRequired,
-                                knownTypes: objectMetadata.knownTypes,
-                                requireTypeHints: propertyMetadata.forceEnableTypeHinting || false
-                            }));
-                            // Do not create undefined/null properties.
+                                knownTypes: Helpers.merge(settings.knownTypes, objectMetadata.knownTypes),
+                                objectType: propertyMetadata.type,
+                                requireTypeHints: settings.requireTypeHints,
+                                strictTypeHintMode: settings.strictTypeHintMode,
+                                typeHintPropertyKey: settings.typeHintPropertyKey
+                            });
+                            // Do not make undefined/null property assignments.
                             if (Helpers.valueIsDefined(temp)) {
                                 object[propertyKey] = temp;
                             }
@@ -935,9 +989,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                     Object.keys(json).forEach(function (propertyKey) {
                         // Skip type-hint when copying properties.
                         if (propertyKey !== settings.typeHintPropertyKey) {
-                            object[propertyKey] = _this.readJsonToInstance(json[propertyKey], Helpers.merge(settings, {
-                                objectType: json[propertyKey].constructor || Object
-                            }));
+                            object[propertyKey] = _this.readJsonToInstance(json[propertyKey], {
+                                enableTypeHints: settings.enableTypeHints,
+                                knownTypes: settings.knownTypes,
+                                objectType: Object,
+                                requireTypeHints: settings.requireTypeHints,
+                                typeHintPropertyKey: settings.typeHintPropertyKey
+                            });
                         }
                     });
                 }

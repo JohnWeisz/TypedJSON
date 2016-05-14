@@ -39,7 +39,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
             __metadata('design:type', String)
         ], Person.prototype, "lastName", void 0);
         Person = __decorate([
-            typed_json_1.JsonObject(), 
+            typed_json_1.JsonObject, 
             __metadata('design:paramtypes', [String, String])
         ], Person);
         return Person;
@@ -54,15 +54,15 @@ var __metadata = (this && this.__metadata) || function (k, v) {
             }
         }
         __decorate([
-            typed_json_1.JsonMember(), 
+            typed_json_1.JsonMember, 
             __metadata('design:type', Number)
         ], Employee.prototype, "salary", void 0);
         __decorate([
-            typed_json_1.JsonMember(), 
+            typed_json_1.JsonMember, 
             __metadata('design:type', Date)
         ], Employee.prototype, "joined", void 0);
         Employee = __decorate([
-            typed_json_1.JsonObject(), 
+            typed_json_1.JsonObject, 
             __metadata('design:paramtypes', [String, String, Number, Date])
         ], Employee);
         return Employee;
@@ -103,15 +103,15 @@ var __metadata = (this && this.__metadata) || function (k, v) {
             this.employees = [];
         }
         __decorate([
-            typed_json_1.JsonMember(), 
+            typed_json_1.JsonMember, 
             __metadata('design:type', String)
         ], Company.prototype, "name", void 0);
         __decorate([
-            typed_json_1.JsonMember({ elementType: Employee }), 
+            typed_json_1.JsonMember({ elements: Employee }), 
             __metadata('design:type', Array)
         ], Company.prototype, "employees", void 0);
         __decorate([
-            typed_json_1.JsonMember(), 
+            typed_json_1.JsonMember, 
             __metadata('design:type', Person)
         ], Company.prototype, "owner", void 0);
         Company = __decorate([
