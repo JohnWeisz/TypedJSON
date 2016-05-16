@@ -18,7 +18,7 @@ Install-Package TypedJSON
  2. Snap @JsonObject on a class
  3. Snap @JsonMember on some properties to mark them for serialization
    - Install or include [ReflectDecorators](https://github.com/rbuckton/ReflectDecorators) (recommended), or set `type` (eg.: `@JsonMember({ type: String }) ...`)
- 4. Parse/stringify with TypedJSON:
+ 4. Parse and stringify with TypedJSON:
 
 ```typescript
 @JsonObject
