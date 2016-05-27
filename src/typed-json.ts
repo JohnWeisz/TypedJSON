@@ -83,7 +83,7 @@ if (!JSON) {
                 return '"' + value.toString().replace(escRE, escFunc) + '"';
             };
         })()
-    };
+    } as any;
 }
 //#endregion
 
