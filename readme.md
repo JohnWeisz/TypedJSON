@@ -14,10 +14,9 @@ The latest release is available as a [NuGet package](https://www.nuget.org/packa
 Install-Package TypedJSON
 ```
 
- 1. Snap @JsonObject on a class
- 2. Snap @JsonMember on some properties to mark them for serialization
-   - Install or include [ReflectDecorators](https://github.com/rbuckton/ReflectDecorators) (recommended), or set `type` (eg.: `@JsonMember({ type: String }) ...`)
- 3. Parse and stringify with TypedJSON:
+ 1. Snap the @JsonObject decorator on a class
+ 2. Snap the @JsonMember decorator on properties (other properties will not be serialized)
+ 3. Parse and stringify with TypedJSON
 
 ```typescript
 @JsonObject
@@ -40,6 +39,8 @@ var person = TypedJSON.parse('{ "firstName": "John", "lastName": "Doe" }', Perso
 person instanceof Person; // true
 person.getFullname(); // "John Doe"
 ```
+
+> **Note:** If you choose to omit using [ReflectDecorators](https://github.com/rbuckton/ReflectDecorators), also make sure to pass the `type` setting to each @JsonMember, for example: `@JsonMember({ type: String })`.
 
 [Learn more about decorators in TypeScript](https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md)
 
