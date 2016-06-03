@@ -15,7 +15,7 @@ Install-Package TypedJSON
 ```
 
  1. Snap the @JsonObject decorator on a class
- 2. Snap the @JsonMember decorator on properties (other properties will not be serialized)
+ 2. Snap the @JsonMember decorator on properties which should be serialized and deserialized
  3. Parse and stringify with TypedJSON
 
 ```typescript
