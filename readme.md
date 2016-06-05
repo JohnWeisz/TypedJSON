@@ -11,6 +11,11 @@ Typed JSON parsing and serializing for TypeScript that preserves type informatio
 The latest release is available as a [NuGet package](https://www.nuget.org/packages/TypedJSON/):
 
 ```none
+Install-Package TypedJSON
+```
+
+You can also install it on npm from:
+```none
 npm install typedjson
 typings install npm:typedjson
 ```
