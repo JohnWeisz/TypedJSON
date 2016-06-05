@@ -1,0 +1,22 @@
+{
+  "name": "typedjson",
+  "version": "0.1.5",
+  "description": "A fork of TypedJSON allowing npm installs and typings resolution.",
+  "main": "js/index.js",
+  "typescript": {
+    "definition": "./js/index.d.ts"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davidstellini/TypedJSON.git"
+  },
+  "author": "John White",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/davidstellini/TypedJSON/issues"
+  },
+  "homepage": "https://github.com/davidstellini/TypedJSON#readme"
+}
