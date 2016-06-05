@@ -1,7 +1,7 @@
 {
   "name": "typedjson",
   "version": "0.1.5",
-  "description": "A fork of TypedJSON allowing npm installs and typings resolution.",
+  "description": "Typed JSON parsing and serializing for TypeScript that preserves type information, using decorators. Parse JSON into actual class instances.",
   "main": "js/index.js",
   "typescript": {
     "definition": "./js/index.d.ts"
