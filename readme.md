@@ -11,7 +11,8 @@ Typed JSON parsing and serializing for TypeScript that preserves type informatio
 The latest release is available as a [NuGet package](https://www.nuget.org/packages/TypedJSON/):
 
 ```none
-Install-Package TypedJSON
+npm install typedjson
+typings install npm:typedjson
 ```
 
  1. Snap the @JsonObject decorator on a class
@@ -23,7 +24,7 @@ Install-Package TypedJSON
 class Person {
     @JsonMember
     firstName: string;
-    
+
     @JsonMember
     lastName: string;
 
