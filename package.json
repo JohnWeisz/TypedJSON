@@ -11,12 +11,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/davidstellini/TypedJSON.git"
+    "url": "git+https://github.com/JohnWhiteTB/TypedJSON.git"
   },
   "author": "John White",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/davidstellini/TypedJSON/issues"
+    "url": "https://github.com/JohnWhiteTB/TypedJSON/issues"
   },
-  "homepage": "https://github.com/davidstellini/TypedJSON#readme"
+  "homepage": "https://github.com/JohnWhiteTB/TypedJSON"
 }
