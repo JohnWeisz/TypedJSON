@@ -14,6 +14,12 @@ The latest release is available as a [NuGet package](https://www.nuget.org/packa
 Install-Package TypedJSON
 ```
 
+You can also install it on npm from:
+```none
+npm install typedjson
+typings install npm:typedjson
+```
+
  1. Snap the @JsonObject decorator on a class
  2. Snap the @JsonMember decorator on properties which should be serialized and deserialized
  3. Parse and stringify with TypedJSON
@@ -23,7 +29,7 @@ Install-Package TypedJSON
 class Person {
     @JsonMember
     firstName: string;
-    
+
     @JsonMember
     lastName: string;
 
