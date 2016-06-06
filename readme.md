@@ -56,9 +56,9 @@ firstName: string;
 ## Features
 
  - Parse regular JSON into actual class instances safely
+ - Handles complex nested objects and polymorphism
  - Seamlessly integrate into existing code with decorators, lightweight syntax
  - Customize serialization and deserialization process, like custom names, default values, and ordering
- - Handles complex nested objects and polymorphism
 
 ## Documentation
 
