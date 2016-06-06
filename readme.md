@@ -19,9 +19,9 @@ Alternatively, the [latest release](https://github.com/JohnWhiteTB/TypedJSON/rel
 Install-Package TypedJSON
 ```
 
- 1. Snap the @JsonObject decorator on a class
- 2. Snap the @JsonMember decorator on properties which should be serialized and deserialized
- 3. Parse and stringify with TypedJSON
+ 1. Snap the [@JsonObject decorator](https://github.com/JohnWhiteTB/TypedJSON/wiki/API-reference#jsonobject) on a class
+ 2. Snap the [@JsonMember decorator](https://github.com/JohnWhiteTB/TypedJSON/wiki/API-reference#jsonmember) on properties which should be serialized and deserialized
+ 3. Parse and stringify with the [TypedJSON class](https://github.com/JohnWhiteTB/TypedJSON/wiki/API-reference#typedjson)
 
 ```typescript
 @JsonObject
@@ -45,7 +45,7 @@ person instanceof Person; // true
 person.getFullname(); // "John Doe"
 ```
 
-> **Note:** If you choose to omit using [ReflectDecorators](https://github.com/rbuckton/ReflectDecorators), also make sure to pass the `type` setting to each @JsonMember, for example:
+> **Note:** If you choose to omit using [ReflectDecorators](https://github.com/rbuckton/ReflectDecorators), also make sure to pass the `type` setting to each [@JsonMember](https://github.com/JohnWhiteTB/TypedJSON/wiki/API-reference#jsonmember), for example:
 ```
 @JsonMember({ type: String })
 firstName: string;
