@@ -13,7 +13,7 @@ npm install typedjson
 typings install npm:typedjson
 ```
 
-Alternatively, the latest release is also available as a [NuGet package](https://www.nuget.org/packages/TypedJSON/):
+Alternatively, the [latest release](https://github.com/JohnWhiteTB/TypedJSON/releases) is also available as a [NuGet package](https://www.nuget.org/packages/TypedJSON/):
 
 ```none
 Install-Package TypedJSON
