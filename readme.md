@@ -38,14 +38,14 @@ class Person {
 }
 ```
 
-> **Note:** If you choose to omit using [ReflectDecorators](https://github.com/rbuckton/ReflectDecorators), also make sure to pass the `type` setting to each @JsonMember, for example: `@JsonMember({ type: String })`.
-
 ```typescript
 var person = TypedJSON.parse('{ "firstName": "John", "lastName": "Doe" }', Person);
 
 person instanceof Person; // true
 person.getFullname(); // "John Doe"
 ```
+
+> **Note:** If you choose to omit using [ReflectDecorators](https://github.com/rbuckton/ReflectDecorators), also make sure to pass the `type` setting to each @JsonMember, for example: `@JsonMember({ type: String })`.
 
 [Learn more about decorators in TypeScript](https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md)
 
