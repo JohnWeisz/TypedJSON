@@ -43,7 +43,7 @@ person instanceof Person; // true
 person.getFullname(); // "John Doe"
 ```
 
-> **Note:** If you choose to omit using [ReflectDecorators](https://github.com/rbuckton/ReflectDecorators), the `type` setting for each [@JsonMember](https://github.com/JohnWhiteTB/TypedJSON/wiki/API-reference#jsonmember) must be manually specified, for example:
+> **Note:** If you choose to omit using [ReflectDecorators](https://github.com/rbuckton/ReflectDecorators), the constructor function reference of each [@JsonMember](https://github.com/JohnWhiteTB/TypedJSON/wiki/API-reference#jsonmember) decorated property must be manually specified through the `type` setting, for example:
 ```
 @JsonMember({ type: String })
 firstName: string;
