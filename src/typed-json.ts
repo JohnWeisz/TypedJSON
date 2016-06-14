@@ -1163,14 +1163,17 @@ abstract class Deserializer {
                 objectMetadata = JsonObjectMetadata.getFromType(settings.objectType);
             }
 
-            if (objectMetadata) {
+            if (objectMetadata)
+            {
                 if (typeof objectMetadata.initializer === "function") {
                     // Let the initializer function handle it.
                     object = objectMetadata.initializer(json) || null;
                 } else {
                     // Deserialize @JsonMembers.
-                    object = new ObjectType();
+                    objectMetadata.sortMembers();
 
+                    object = new ObjectType();
+                    
                     Object.keys(objectMetadata.dataMembers).forEach(propertyKey => {
                         var propertyMetadata = objectMetadata.dataMembers[propertyKey];
 
