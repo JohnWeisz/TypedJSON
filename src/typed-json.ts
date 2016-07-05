@@ -1200,7 +1200,7 @@ abstract class Deserializer {
 
                 Object.keys(json).forEach(propertyKey => {
                     // Skip type-hint when copying properties.
-                    if (propertyKey !== settings.typeHintPropertyKey) {
+                    if (json[propertyKey] && propertyKey !== settings.typeHintPropertyKey) {
                         object[propertyKey] = this.readJsonToInstance(json[propertyKey], {
                             enableTypeHints: settings.enableTypeHints,
                             knownTypes: settings.knownTypes,
