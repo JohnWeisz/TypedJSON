@@ -682,7 +682,7 @@ interface JsonMemberOptions<TFunction extends Function> {
     /** Deprecated. When the json member is an array, sets the type of array elements. Required for arrays. */
     elementType?: Function;
 
-    /** Deprecated. When the json member is an array, sets the type of array elements. Required for arrays. */
+    /** When the json member is an array, sets the type of array elements. Required for arrays. */
     elements?: JsonMemberOptions<any> | Function;
 
     /** When set, indicates that the member must be present when deserializing a JSON string. */
