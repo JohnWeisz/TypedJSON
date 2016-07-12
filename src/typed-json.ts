@@ -2,7 +2,7 @@
 TypedJSON v0.2.0 - https://github.com/JohnWhiteTB/TypedJSON
 
 Typed JSON parsing and serializing that preserves type information. Parse JSON into actual class instances. Recommended (but not required)
-to be used with reflect-metadata (global installation): https://github.com/rbuckton/ReflectDecorators. 
+to be used with reflect-metadata (global installation): https://github.com/rbuckton/ReflectDecorators.
 
 
 The MIT License (MIT)
@@ -35,7 +35,7 @@ interface SerializerSettings {
 
     /** When set, enable emitting and recognizing type-hints. Default is true */
     enableTypeHints?: boolean;
-    
+
     /** Maximum number of objects allowed when deserializing from JSON. Default is no limit. */
     maxObjects?: number;
 
@@ -47,6 +47,7 @@ interface SerializerSettings {
 }
 
 //#region "JSON Polyfill"
+let JSON: any;
 if (!JSON) {
     JSON = {
         parse: function (sJSON) { return eval('(' + sJSON + ')'); },
@@ -103,7 +104,7 @@ namespace Helpers {
         }
 
         output = Object(target);
-        
+
         for (var i = 1; i < arguments.length; i++) {
             source = arguments[i];
 
@@ -179,11 +180,11 @@ namespace Helpers {
                 return null;
         }
     }
-    
+
     export function getPropertyDisplayName(target: Constructor<any> | Object, propertyKey: string | symbol) {
         return `${getClassName(target)}.${propertyKey.toString()}`;
     }
-    
+
     export function isArray(object: any) {
         if (typeof Array.isArray === "function") {
             return Array.isArray(object);
@@ -350,7 +351,7 @@ class JsonObjectMetadata<T> {
      * @see https://jsfiddle.net/m6ckc89v/ for demos related to the special inheritance case when 'inherited' is set.
      */
     public static getFromType<S>(target: { new (): S }, inherited?: boolean): JsonObjectMetadata<S>;
-    
+
     /**
      * Gets JsonObject metadata information from a class or its prototype.
      * @param target The target prototype.
@@ -452,22 +453,18 @@ class JsonObjectMetadata<T> {
         var knownTypes: { [key: string]: Constructor<any> };
         var knownTypeName: string;
 
-        if (false && this._knownTypeCache) {
-            return this._knownTypeCache;
-        } else {
-            knownTypes = {};
+        knownTypes = {};
 
-            this._knownTypes.forEach((knownType) => {
-                // KnownType names are not inherited from JsonObject settings, as it would render them useless.
-                knownTypeName = JsonObjectMetadata.getKnownTypeNameFromType(knownType);
+        this._knownTypes.forEach((knownType) => {
+            // KnownType names are not inherited from JsonObject settings, as it would render them useless.
+            knownTypeName = JsonObjectMetadata.getKnownTypeNameFromType(knownType);
 
-                knownTypes[knownTypeName] = knownType;
-            });
+            knownTypes[knownTypeName] = knownType;
+        });
 
-            this._knownTypeCache = knownTypes;
+        this._knownTypeCache = knownTypes;
 
-            return knownTypes;
-        }
+        return knownTypes;
     }
 
     public isExplicitlyMarked: boolean;
@@ -781,7 +778,7 @@ function JsonMember<TFunction extends Function>(optionsOrTarget?: JsonMemberOpti
         var parentMetadata: JsonObjectMetadata<any>;
         var reflectType: any;
         var propertyName = Helpers.getPropertyDisplayName(target, propertyKey); // For error messages.
-        
+
         // When a property decorator is applied to a static member, 'target' is a constructor function.
         // See: https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md#property-decorators
         // And static members are not supported.
@@ -840,13 +837,13 @@ function JsonMember<TFunction extends Function>(optionsOrTarget?: JsonMemberOpti
 
         // Ensure valid types have been specified ('type' at all times, 'elements' for arrays).
         jsonMemberTypeInit(memberMetadata, propertyName);
-        
+
         // Add JsonObject metadata to 'target' if not yet exists ('target' is the prototype).
         // NOTE: this will not fire up custom serialization, as 'target' must be explicitly marked with '@JsonObject' as well.
         if (!target.hasOwnProperty(METADATA_FIELD_KEY)) {
             // No *own* metadata, create new.
             objectMetadata = new JsonObjectMetadata();
-            
+
             // Inherit @JsonMembers from parent @JsonObject, if any.
             if (parentMetadata = target[METADATA_FIELD_KEY]) {
                 Object.keys(parentMetadata.dataMembers).forEach(memberPropertyKey => {
@@ -865,12 +862,12 @@ function JsonMember<TFunction extends Function>(optionsOrTarget?: JsonMemberOpti
             // JsonObjectMetadata already exists on 'target'.
             objectMetadata = target[METADATA_FIELD_KEY];
         }
-        
+
         // Automatically add known types.
         jsonMemberKnownTypes(memberMetadata).forEach(knownType => {
             objectMetadata.setKnownType(knownType);
         });
-        
+
         // Register @JsonMember with @JsonObject (will override previous member when used multiple times on same property).
         try {
             objectMetadata.addMember(memberMetadata);
@@ -926,7 +923,7 @@ abstract class Serializer {
     private static writeToJsonObject<T>(object: T, settings: WriteSettings): any {
         var json: any;
         var objectMetadata: JsonObjectMetadata<T>;
-        
+
         if (object === null || typeof object === "undefined") {
             // Uninitialized or null object returned "as-is" (or default value if set).
             if (settings.emitDefault) {
@@ -939,7 +936,7 @@ abstract class Serializer {
             json = object;
         } else if (object instanceof Array) {
             json = [];
-            
+
             for (var i = 0, n = (object as any).length; i < n; i++) {
                 json.push(this.writeToJsonObject(object[i], {
                     elements: settings.elements ? settings.elements.elements : null,
@@ -952,7 +949,7 @@ abstract class Serializer {
         } else {
             // Object with properties.
             objectMetadata = JsonObjectMetadata.getFromInstance(object)
-            
+
             if (objectMetadata && typeof objectMetadata.serializer === "function") {
                 json = objectMetadata.serializer(object);
             } else {
@@ -1019,19 +1016,23 @@ abstract class Deserializer {
      * @param settings Serializer settings.
      * @throws Error if 'settings' specifies 'maxObjects', and the JSON string exceeds that limit.
      */
-    public static readObject<T>(json: string, type: { new (): T }, settings: SerializerSettings): T {
+    public static readObject<T>(json: string|Object, type: { new (): T }, settings: SerializerSettings): T {
         var value: any;
         var instance: T;
         var metadata = JsonObjectMetadata.getFromType(type);
 
-        value = JSON.parse(json, settings.reviver); // Parse text into basic object, which is then processed recursively.
-        
+        if(typeof json === 'Object') {
+          value = json;
+        } else {
+          value = JSON.parse(json, settings.reviver); // Parse text into basic object, which is then processed recursively.
+        }
+
         if (typeof settings.maxObjects === "number") {
             if (this.countObjects(value) > settings.maxObjects) {
                 throw new Error(`JSON exceeds object count limit (${settings.maxObjects}).`);
             }
         }
-        
+
         instance = this.readJsonToInstance(value, {
             objectType: type,
             typeHintPropertyKey: settings.typeHintPropertyKey,
@@ -1086,7 +1087,7 @@ abstract class Deserializer {
         var typeHint: string;
         var temp: any;
         var knownTypes: { [name: string]: Constructor<any> };
-        
+
         if (typeof json === "undefined" || json === null) {
             if (settings.isRequired) {
                 throw new Error(`Missing required member.`);
@@ -1133,7 +1134,7 @@ abstract class Deserializer {
             // 'json' can only be an object.
             // Check if a type-hint is present.
             typeHint = json[settings.typeHintPropertyKey];
-            
+
             if (typeHint && settings.enableTypeHints) {
                 if (typeof typeHint !== "string") {
                     throw new TypeError(`Type-hint (${settings.typeHintPropertyKey}) must be a string.`);
@@ -1173,7 +1174,7 @@ abstract class Deserializer {
                     objectMetadata.sortMembers();
 
                     object = new ObjectType();
-                    
+
                     Object.keys(objectMetadata.dataMembers).forEach(propertyKey => {
                         var propertyMetadata = objectMetadata.dataMembers[propertyKey];
 
@@ -1223,8 +1224,8 @@ interface TypedJSON {
     /**
      * Converts a JavaScript Object Notation (JSON) string into an object.
      * @param text A valid JSON string.
-     * @param reviver A function that transforms the results. This function is called for each member of the object. 
-     * If a member contains nested objects, the nested objects are transformed before the parent object is. 
+     * @param reviver A function that transforms the results. This function is called for each member of the object.
+     * If a member contains nested objects, the nested objects are transformed before the parent object is.
      */
     parse(text: string, reviver?: (key: any, value: any) => any): any;
 
@@ -1263,7 +1264,7 @@ interface TypedJSON {
      * @param space Adds indentation, white space, and line break characters to the return-value JSON text to make it easier to read.
      */
     stringify(value: any, replacer: any[], space: string | number): string;
-    
+
     /**
      * Converts a JavaScript Object Notation (JSON) string into an instance of the provided class.
      * @param text A valid JSON string.
