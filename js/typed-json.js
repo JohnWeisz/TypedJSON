@@ -33,7 +33,15 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var JSON;
     if (!JSON) {
         JSON = {
-            parse: function (sJSON) { return eval('(' + sJSON + ')'); },
+            parse: function (sJSON) {
+                var returnval = sJSON;
+                if (typeof returnval === 'Object') {
+                    return returnval;
+                }
+                else {
+                    return eval('(' + sJSON + ')');
+                }
+            },
             stringify: (function () {
                 var toString = Object.prototype.toString;
                 var isArray = Array.isArray || function (a) { return toString.call(a) === '[object Array]'; };
@@ -796,6 +804,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             else if (settings.objectType === Date) {
                 if (typeof json === "string") {
                     object = new Date(json);
+                }
+                else if (json instanceof Date) {
+                    object = json;
                 }
                 else {
                     throw new TypeError("Expected value to be of type 'string', got '" + typeof json + "'.");

@@ -50,7 +50,14 @@ interface SerializerSettings {
 let JSON: any;
 if (!JSON) {
     JSON = {
-        parse: function (sJSON) { return eval('(' + sJSON + ')'); },
+        parse: function (sJSON) {
+          let returnval = sJSON;
+          if(typeof returnval === 'Object') {
+            return returnval;
+          } else {
+            return eval('(' + sJSON + ')');
+          }
+        },
         stringify: (function () {
             var toString = Object.prototype.toString;
             var isArray = Array.isArray || function (a) { return toString.call(a) === '[object Array]'; };
@@ -1126,10 +1133,12 @@ abstract class Deserializer {
             // Built-in support for Date with ISO 8601 format.
             // ISO 8601 spec.: https://www.w3.org/TR/NOTE-datetime
             if (typeof json === "string") {
-                object = new Date(json);
-            } else {
-                throw new TypeError(`Expected value to be of type 'string', got '${typeof json}'.`);
-            }
+                  object = new Date(json);
+              } else if(json instanceof Date) {
+                  object = json;
+              } else {
+                  throw new TypeError("Expected value to be of type 'string', got '" + typeof json + "'.");
+              }
         } else {
             // 'json' can only be an object.
             // Check if a type-hint is present.
