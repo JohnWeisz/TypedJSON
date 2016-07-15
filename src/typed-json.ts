@@ -52,7 +52,7 @@ if (!JSON) {
     JSON = {
         parse: function (sJSON) {
           let returnval = sJSON;
-          if(typeof returnval === 'Object') {
+          if(typeof returnval === 'object') {
             return returnval;
           } else {
             return eval('(' + sJSON + ')');

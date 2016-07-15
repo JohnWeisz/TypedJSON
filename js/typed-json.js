@@ -35,7 +35,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         JSON = {
             parse: function (sJSON) {
                 var returnval = sJSON;
-                if (typeof returnval === 'Object') {
+                if (typeof returnval === 'object') {
                     return returnval;
                 }
                 else {
