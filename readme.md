@@ -1,6 +1,6 @@
 # TypedJSON
 
-*v0.1.4 experimental release -- contributions are welcome*
+*experimental release -- contributions are welcome*
 
 Typed JSON parsing and serializing for TypeScript that preserves type information, using [decorators](https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md). Parse JSON into actual class instances. Recommended (but not required) to be used with [ReflectDecorators](https://github.com/rbuckton/ReflectDecorators), a prototype for an ES7 Reflection API for Decorator Metadata.
 
