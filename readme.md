@@ -67,6 +67,8 @@ Using the JsonMember and JsonObject decorators will record metadata about classe
 
 JSON parsing is followed by _deserialization_, which converts the simple Javascript `Object` from JSON.parse into the specified class instance by doing a recursive _assignment_ to each marked property, as well as doing name conversion (if specified) and type-checking in the process. It also ensures that properties marked as required are present in the JSON, as an `Error` is thrown otherwise. Deserialization is _safe_, as the entire process is done by traversing the _expected_ metadata definitions, as opposed to traversing the _actual_ data present in JSON. This means that incorrect JSON will cause errors during deserialization, instead of deserializing into an unexpected object-tree.
 
+ > **Warning:** properties with type `Object` or `any` are an exception to this rule. These types will be deserialized according to the actual data present in the JSON, as these properties have no usable metadata. Also be aware that a property with an interface type is considered as having `Object` as its determined type.
+
 JSON stringifying is followed by the _serialization_ process, which is responsible for name conversion (if specified), as well as including any additional type-hints required when processing objects with polymorphic properties. When polymorphism is involved, type-hints are required to ensure serialized objects are deserialized into the correct subtype. The default property key used for type-hints embedded into the JSON string is `__type`, which is configurable. The serialization process is much more relaxed than deserializing, as objects being serialized are expected to be of the correct type, and security implications are less significant.
 
 ## License
