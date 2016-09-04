@@ -1313,7 +1313,7 @@ var TypedJSON: TypedJSON = {
         if (JsonObjectMetadata.getFromType(type)) {
             return Deserializer.readObject(json, type, Helpers.merge(configSettings, settings || {}));
         } else {
-            return JSON.parse.apply(JSON, arguments);
+            return JSON.parse.apply(JSON, [arguments[0], settings && settings.reviver]);
         }
     }
 };
