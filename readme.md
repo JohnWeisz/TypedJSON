@@ -1,4 +1,4 @@
-_Experimental release. Minor version updates can introduce breaking changes before the first major update to 1.0, with the breaking changes always announced in advance. **The upcoming minor update to v0.2.0 will include the following breaking changes**:_
+_Experimental release. Minor version updates can introduce breaking changes before the first major update to 1.0, with the breaking changes always announced in advance. **The upcoming minor update to v0.2.0 is planned to include the following breaking changes**:_
 
  - *`elementType` setting (deprecated) from JsonObject removed in favor of the `elements` setting*
  - *`order` setting from JsonObject removed, properties from then on are traversed in declaration order*
