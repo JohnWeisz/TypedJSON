@@ -4,7 +4,7 @@ _Experimental release. Minor version updates can introduce breaking changes befo
  - *`order` setting from JsonMember removed, properties from then on are traversed in declaration order*
  - *`TypedJSON.parse` will no longer work without specifying a type argument (use JSON.parse instead for untyped deserializing)*
  - *`typeHintPropertyKey` setting removed from the `settings` argument of TypedJSON.config, TypedJSON.parse, and TypedJSON.stringify in favor of a new `typeResolver` setting, accepting a callback function for custom type-resolving*
-   - *This makes it straightforward to consume JSON from other serializers, such as JSON.net)*
+   - *This makes it straightforward to consume JSON from other serializers, such as JSON.net*
  - *Polyfill for the `JSON` object removed from distributions. If your app relies on this, you'll need a third party polyfill.*
 
 *If you have concerns about these changes, please don't hesitate to [create an issue](https://github.com/JohnWhiteTB/TypedJSON/issues/new).*
