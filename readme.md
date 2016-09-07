@@ -7,6 +7,8 @@ _Experimental release. Minor version updates can introduce breaking changes befo
    - *this makes it straightforward to consume JSON from other serializers, such as JSON.net*
  - *Polyfill for the `JSON` object removed from distributions. If your app relies on this, you'll need a third party polyfill.*
 
+*If you have concerns about these changes, please don't hesitate to [create an issue](https://github.com/JohnWhiteTB/TypedJSON/issues/new).*
+
 # TypedJSON
 
 Typed JSON parsing and serializing for TypeScript that preserves type information, using [decorators](https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md). Parse JSON into actual class instances. Recommended (but not required) to be used with [ReflectDecorators](https://github.com/rbuckton/ReflectDecorators), a prototype for an ES7 Reflection API for Decorator Metadata.
