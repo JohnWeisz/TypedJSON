@@ -1,6 +1,13 @@
-# TypedJSON
+_Experimental release. Minor version updates can introduce breaking changes before the first major update to 1.0, with the breaking changes always announced in advance. **The upcoming minor update to v0.2.0 will include the following breaking changes**:_
 
-*experimental release -- contributions are welcome*
+ - *`elementType` setting (deprecated) from JsonObject removed in favor of the `elements` setting*
+ - *`order` setting from JsonObject removed, properties from then on are traversed in declaration order*
+ - *`TypedJSON.parse` will no longer work without specifying a type argument (use JSON.parse instead for untyped deserializing)*
+ - *`typeHintPropertyKey` setting removed from global configuration in favor of a new `typeResolver` setting, accepting a callback function to enable custom type-resolving*
+   - *this makes it straightforward to consume JSON from other serializers, such as JSON.net*
+ - *Polyfill for the `JSON` object removed from distributions. If your app relies on this, you'll need a third party polyfill.*
+
+# TypedJSON
 
 Typed JSON parsing and serializing for TypeScript that preserves type information, using [decorators](https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md). Parse JSON into actual class instances. Recommended (but not required) to be used with [ReflectDecorators](https://github.com/rbuckton/ReflectDecorators), a prototype for an ES7 Reflection API for Decorator Metadata.
 
