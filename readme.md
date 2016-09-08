@@ -16,7 +16,7 @@ Typed JSON parsing and serializing for TypeScript that preserves type informatio
  - Parse regular JSON into actual class instances safely
  - Handles complex nested objects and polymorphism
  - Seamlessly integrate into existing code with [decorators](https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md), ultra-lightweight syntax
- - Customize serialization and deserialization process, like custom names, default values, and ordering
+ - Customize serialization and deserialization process, like custom names and default values
 
 ## Install & Use
 
