@@ -931,7 +931,7 @@ abstract class Serializer {
         var json: any;
         var objectMetadata: JsonObjectMetadata<T>;
 
-        if (object === null || typeof object === "undefined") {
+        if (!Helpers.valueIsDefined(object)) {
             // Uninitialized or null object returned "as-is" (or default value if set).
             if (settings.emitDefault) {
                 json = Helpers.getDefaultValue(settings.objectType);
@@ -1095,10 +1095,12 @@ abstract class Deserializer {
         var temp: any;
         var knownTypes: { [name: string]: Constructor<any> };
 
-        if (typeof json === "undefined" || json === null) {
+        if (!Helpers.valueIsDefined(json)) {
             if (settings.isRequired) {
                 throw new Error(`Missing required member.`);
             }
+            // Uninitialized or null json returned "as-is".
+            object = json;
         } else if (Helpers.isPrimitive(settings.objectType)) {
             // number, string, boolean: assign directly.
             if (json.constructor !== settings.objectType) {
@@ -1211,10 +1213,14 @@ abstract class Deserializer {
                 Object.keys(json).forEach(propertyKey => {
                     // Skip type-hint when copying properties.
                     if (json[propertyKey] && propertyKey !== settings.typeHintPropertyKey) {
+                        var objectType;
+                        if (Helpers.valueIsDefined(json[propertyKey])) {
+                            objectType = json[propertyKey].constructor;
+                        }
                         object[propertyKey] = this.readJsonToInstance(json[propertyKey], {
                             enableTypeHints: settings.enableTypeHints,
                             knownTypes: settings.knownTypes,
-                            objectType: json[propertyKey].constructor,
+                            objectType: objectType,
                             requireTypeHints: settings.requireTypeHints,
                             typeHintPropertyKey: settings.typeHintPropertyKey
                         });
