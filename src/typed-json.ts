@@ -227,22 +227,7 @@ namespace Helpers {
     }
 
     export function isSubtypeOf(A: Constructor<any>, B: Constructor<any>) {
-        var aPrototype = A.prototype;
-
-        // "A" is a class.
-        if (A === B) {
-            return true;
-        }
-
-        while (aPrototype) {
-            if (aPrototype instanceof B) {
-                return true;
-            }
-
-            aPrototype = aPrototype.prototype;
-        }
-
-        return false;
+        return A instanceof B;
     }
 
     export function log(message?: any, ...optionalParams: Array<any>) {
