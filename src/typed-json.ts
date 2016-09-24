@@ -227,7 +227,7 @@ namespace Helpers {
     }
 
     export function isSubtypeOf(A: Constructor<any>, B: Constructor<any>) {
-        return A instanceof B;
+        return A === B || A.prototype instanceof B;
     }
 
     export function log(message?: any, ...optionalParams: Array<any>) {
