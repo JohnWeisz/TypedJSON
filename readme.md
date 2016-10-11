@@ -21,14 +21,8 @@ Typed JSON parsing and serializing for TypeScript that preserves type informatio
 ## Install & Use
 
 ```none
-npm install typedjson
-typings install npm:typedjson
-```
-
-Alternatively, the [latest release](https://github.com/JohnWhiteTB/TypedJSON/releases) is also available as a [NuGet package](https://www.nuget.org/packages/TypedJSON/):
-
-```none
-Install-Package TypedJSON
+npm install typedjson-npm
+typings install npm:typedjson-npm
 ```
 
  1. Snap the [@JsonObject decorator](https://github.com/JohnWhiteTB/TypedJSON/wiki/API-reference#jsonobject) on a class
