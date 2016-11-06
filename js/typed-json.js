@@ -444,6 +444,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             options = optionsOrTarget || {};
         }
         var initializer = options.initializer;
+        var serializer = options.serializer;
         var decorator = function (target) {
             var objectMetadata;
             var parentMetadata;
@@ -489,6 +490,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             }
             if (typeof initializer === "function") {
                 objectMetadata.initializer = initializer;
+            }
+
+            if (typeof serializer === "function") {
+                objectMetadata.serializer = serializer;
             }
         };
         if (typeof optionsOrTarget === "function") {
