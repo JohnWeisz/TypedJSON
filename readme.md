@@ -5,7 +5,7 @@
 > - JsonMember and JsonObject settings will be altered significantly (especially for `Array`)
 > - A type-resolver callback will replace the configurable type-hint property key
 > 
-> This update is live as soon as all unit and integration testing is done in the host project (TypedJSON is being developed as a part of an enterprise project), anticipated in January, 2017.
+> This update is live as soon as all unit and integration testing is done in the host project (TypedJSON is being developed as a part of an enterprise project), anticipated in January, 2017. The main principle of TypedJSON is not subject to change, the API is permanently locked to a decorator-based approach.
 
 # TypedJSON
 
