@@ -1,8 +1,6 @@
 > **Author's note:** TypedJSON is currently an experimental release and is not guaranteed to satisfy all use-cases reliably. Minor version updates may introduce breaking changes before `v1.0.0` as the concept is fleshed out and the dozens of native issues are either worked around or accepted and documented as limitations.
 > 
-> The upcoming planned minor update to v0.2.0 is a complete rehaul of the TypedJSON API with significant improvements over the initial release, based on significant amounts of feedback and practical use.
-> 
-> Since numerous unnecessary features and decisions will be abandoned, **this update will introduce breaking changes.**
+> The upcoming planned minor update to v0.2.0 is a complete rehaul of the TypedJSON API with significant improvements over the initial release, based on significant amounts of feedback and practical use. Since numerous unnecessary features and decisions will be abandoned, **this update will introduce breaking changes.**
 
 # TypedJSON
 
