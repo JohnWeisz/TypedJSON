@@ -1,11 +1,18 @@
-> **Author's note:** TypedJSON is currently an experimental release and is not guaranteed to satisfy all use-cases reliably. Minor version updates may introduce breaking changes before `v1.0.0` as the concept is fleshed out and the dozens of native issues are either worked around or accepted and documented as limitations.
+> **Author's note, please read if incorporating TypedJSON into a serious application:**
+>
+> TypedJSON is currently an experimental release and is not guaranteed to satisfy all use-cases reliably. Minor version updates may introduce breaking changes before `v1.0.0` as the concept is fleshed out and the dozens of native issues are either worked around or accepted and documented as limitations (with the primary issue being the very primitive and limited reflection support in TypeScript).
 > 
 > The upcoming planned minor update to v0.2.0 is a complete rehaul of the TypedJSON API with significant improvements over the initial release, based on significant amounts of feedback and practical use. Since numerous unnecessary features and decisions will be abandoned, **this update will introduce breaking changes**, of which the most notable will be:
 > - TypedJSON will require instantiation with a root type-constructor specified
 > - JsonMember and JsonObject settings will be altered significantly (especially for `Array`)
-> - A type-resolver callback will replace the configurable type-hint property key
+> - Configurable type-hint key replaced with configurable type-resolver and type-emitter callbacks (although with an identical default behavior)
 > 
 > This update is live as soon as all unit and integration testing is done in the host project (TypedJSON is being developed as a part of an enterprise project), anticipated in January, 2017. The main principle of TypedJSON is not subject to change, the API is permanently locked to a decorator-based approach.
+>
+> Notable non-breaking changes in this update will be:
+> - Native support for ES6 `Set` and ES6 `Map`
+> - Native support for all typed arrays (such as `Float32Array`) and `ArrayBuffer`
+> - Meaningful error messages and configurable error handler callback
 
 # TypedJSON
 
