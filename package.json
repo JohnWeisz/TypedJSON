@@ -2,10 +2,8 @@
   "name": "typedjson",
   "version": "0.1.7",
   "description": "Typed JSON parsing and serializing for TypeScript that preserves type information, using decorators. Parse JSON into actual class instances.",
-  "main": "js/typed-json.js",
-  "typescript": {
-    "definition": "./js/typed-json.d.ts"
-  },
+  "main": "./js/typed-json.js",
+  "typings": "./js/typed-json.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
