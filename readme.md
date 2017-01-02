@@ -2,7 +2,7 @@
 >
 > TypedJSON is currently an experimental release and is not guaranteed to satisfy all use-cases reliably.
 > 
-> The upcoming update is a major update to v1.0.0, and an almost complete rehaul of the TypedJSON API with significant improvements over the initial release, based on significant amounts of feedback and practical use. This version is coming with a massive test-suite case to start going towards more serious application possibilities, as many aspects of TypedJSON were found suitable for enterprise-grade use.
+> The upcoming update is a major update to v1.0.0, and an almost complete rehaul of the TypedJSON API with significant improvements over the initial release, based on significant amounts of feedback and practical use. This version is coming with a massive test-suite to start going towards more serious application possibilities, as many aspects of TypedJSON were found suitable for enterprise-grade use.
 >
 > Since numerous unnecessary features and decisions will be abandoned, **this update will introduce breaking changes**, of which the most notable will be:
 > - Properties of type `Array`, `Map`, `Set` will use JsonArrayMember, JsonMapMember, and JsonSetMember (respectively, and yes, support for these new ES6 collection types is finally coming)
