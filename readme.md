@@ -14,7 +14,7 @@
 > 1. Because I feel the syntax of TypedJSON is so lightweight that, at this stage, it would be absolutely trivial to incorporate these changes into virtually any project
 > 2. Because it is better to do a hard-switch to a (subjectively) better API as early on as possible, without the burden of legacy code
 > 
-> This update is live as soon as all integration testing is done, anticipated in January, 2017. The main principle of TypedJSON is not subject to change, the API is permanently locked to a decorator-based approach.
+> This update is live as soon as all integration testing is done, anticipated in March, 2017. The main principle of TypedJSON is not subject to change, the API is permanently locked to a decorator-based approach.
 >
 > Notable non-breaking changes in this update will be:
 > - Support for ES6 `Set` and ES6 `Map` (although not for `WeakMap` and `WeakSet`)
