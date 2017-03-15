@@ -1013,7 +1013,7 @@ abstract class Deserializer {
         var instance: T;
         var metadata = JsonObjectMetadata.getFromType(type);
 
-        if(typeof json === 'Object') {
+        if(typeof json === 'object') {
           value = json;
         } else {
           value = JSON.parse(json, settings.reviver); // Parse text into basic object, which is then processed recursively.
