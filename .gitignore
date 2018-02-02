@@ -14,6 +14,7 @@ temp
 *.nuspec
 *.sln
 *.suo
+*.vscode
 *.js.map
 *.config
 *.nupkg
@@ -23,3 +24,5 @@ temp
 **\nuget
 **\nupkg
 __*
+!tsconfig.json
+!js/typed-json.js.map
