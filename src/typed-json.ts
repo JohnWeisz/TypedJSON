@@ -30,6 +30,7 @@ declare abstract class Reflect {
 }
 
 interface SerializerSettings {
+    /** disable TypeScript 2.4+ Weak Type Detection (a type where *all* properties are optional) */
     [prop: string]: any;
     /** Property key to recognize as type-hints. Default is "__type". */
     typeHintPropertyKey?: string;
