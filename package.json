@@ -6,7 +6,7 @@
   "typings": "./src/typed-json.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "typings:generate": "tsc --target es5 . --declaration ./src/typed-json.ts"
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/JohnWhiteTB/TypedJSON/issues"
   },
-  "homepage": "https://github.com/JohnWhiteTB/TypedJSON"
+  "homepage": "https://github.com/JohnWhiteTB/TypedJSON",
+  "devDependencies": {
+    "typescript": "^2.4.0"
+  }
 }
