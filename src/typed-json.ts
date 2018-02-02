@@ -1,4 +1,4 @@
-﻿/*!
+/*!
 TypedJSON v0.2.0 - https://github.com/JohnWhiteTB/TypedJSON
 
 Typed JSON parsing and serializing that preserves type information. Parse JSON into actual class instances. Recommended (but not required)
@@ -30,6 +30,7 @@ declare abstract class Reflect {
 }
 
 interface SerializerSettings {
+    [prop: string]: any;
     /** Property key to recognize as type-hints. Default is "__type". */
     typeHintPropertyKey?: string;
 
