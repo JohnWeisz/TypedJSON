@@ -6,7 +6,9 @@
     "sourceMap": true,                     /* Generates corresponding '.map' file. */
     "noImplicitAny": false,                /* Raise error on expressions and declarations with an implied 'any' type. */
     "experimentalDecorators": true,        /* Enables experimental support for ES7 decorators. */
-    "emitDecoratorMetadata": true          /* Enables experimental support for emitting type metadata for decorators. */
+    "emitDecoratorMetadata": true,         /* Enables experimental support for emitting type metadata for decorators. */
+
+    "outDir": "./js/"
   },
   "files": [
     "src/typed-json.ts"

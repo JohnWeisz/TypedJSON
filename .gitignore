@@ -25,3 +25,4 @@ temp
 **\nupkg
 __*
 !tsconfig.json
+!js/typed-json.js.map
