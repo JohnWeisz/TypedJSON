@@ -49,6 +49,10 @@ class MyDataClass
 
     @jsonMapMember(Number, MySecondDataClass)
     public mapProp: Map<number, MySecondDataClass>;
+    
+    // Without reflect-metadata
+    @jsonMember({ constructor: MySecondDataClass })
+    public prop2: MySecondDataClass;
 }
 ```
 
