@@ -11,7 +11,7 @@ class MyDataClass
     public prop1: number; // or string, boolean, etc.
 
     // Primitives serialization without reflect-metadata 
-    @jsonMember(Number)
+    @jsonMember({ constructor: Number })
     public prop2: number;
 
     // Array serialization
