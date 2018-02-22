@@ -1,4 +1,4 @@
-> Source of a snapshot for 1.0 is now available under the [v1-experimental folder](https://github.com/JohnWeisz/TypedJSON/tree/master/v1-experimental).
+> A snapshot for a "RC" of 1.0 is now available under the [v1-experimental folder](https://github.com/JohnWeisz/TypedJSON/tree/master/v1-experimental). This is the raw source only, and although there might be issues, we found TypedJSON to work flawlessly in [AudioNodes](https://audionodes.com/), which is a sufficiently complex application for typed object-tree serialization,
 
 # TypedJSON
 
