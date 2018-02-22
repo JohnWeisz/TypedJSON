@@ -1,4 +1,4 @@
-> A snapshot for 1.0 is now available under the v1-experimental folder, raw source only. For a real-world use case of TypedJSON, check out [AudioNodes](https://audionodes.com/), a modular audio production suite, with capabilities of a full desktop DAW (digital audio workstation).
+> A snapshot for 1.0 is now available under the v1-experimental folder, raw source only. For a real-world use case of TypedJSON, check out [AudioNodes](https://audionodes.com/), a modular audio production suite, with capabilities of a full desktop-based digital audio workstation.
 
 # TypedJSON
 
