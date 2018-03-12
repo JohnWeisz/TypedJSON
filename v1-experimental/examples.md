@@ -73,8 +73,8 @@ class MyDataClass
 +   @jsonMember({ constructor: Number })
 +   public prop1: number;
 
--   @jsonMember({ constructor: MySecondDataClass })
--   public prop2: MySecondDataClass;
++   @jsonMember({ constructor: MySecondDataClass })
++   public prop2: MySecondDataClass;
 }
 ```
 
