@@ -1,6 +1,6 @@
 **Example & how to use**
 
-There are no publicly available, dedicated docs yet for 1.0, but most methods are commented nicely, and here's a quick example on how to serialize various types (I recommend using [reflect-metadata](https://github.com/rbuckton/reflect-metadata) in your project, so you don't have to manually annotate the type of `@jsonMember` properties twice):
+There are no publicly available, dedicated docs yet for 1.0, but most methods are commented nicely, and here's a quick example on how to serialize various types (I recommend using [reflect-metadata](https://github.com/rbuckton/reflect-metadata) in your project, so you don't have to manually annotate the type of `@jsonMember` properties twice, see below):
 
 ```ts
 @jsonObject
@@ -53,6 +53,28 @@ class MyDataClass
     // Without reflect-metadata
     @jsonMember({ constructor: MySecondDataClass })
     public prop2: MySecondDataClass;
+}
+```
+
+**Without reflect-metadata**
+
+If you don't use `reflect-metadata`, you need to manually add the constructor reference to `@jsonMember`, e.g.:
+
+```diff
+@jsonObject
+class MyDataClass
+{
+-   @jsonMember
+-   public prop1: number;
+
+-   @jsonMember
+-   public prop2: MySecondDataClass;
+
++   @jsonMember({ constructor: Number })
++   public prop1: number;
+
+-   @jsonMember({ constructor: MySecondDataClass })
+-   public prop2: MySecondDataClass;
 }
 ```
 
