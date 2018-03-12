@@ -77,15 +77,11 @@ If you don't use `reflect-metadata`, you need to manually add the constructor re
 class MyDataClass
 {
 -   @jsonMember
--   public prop1: number;
++   @jsonMember({ constructor: Number })
+    public prop1: number;
 
 -   @jsonMember
--   public prop2: MySecondDataClass;
-
-+   @jsonMember({ constructor: Number })
-+   public prop1: number;
-
 +   @jsonMember({ constructor: MySecondDataClass })
-+   public prop2: MySecondDataClass;
+    public prop2: MySecondDataClass;
 }
 ```
