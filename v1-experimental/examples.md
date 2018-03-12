@@ -10,10 +10,6 @@ class MyDataClass
     @jsonMember
     public prop1: number; // or string, boolean, etc.
 
-    // Primitives serialization without reflect-metadata 
-    @jsonMember({ constructor: Number })
-    public prop2: number;
-
     // Array serialization
     @jsonArrayMember(Number)
     public arrayProp: number[];
