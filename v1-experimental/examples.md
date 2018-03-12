@@ -42,13 +42,12 @@ class MyDataClass
 {
     @jsonMember
     public prop1: MySecondDataClass;
+    
+    @jsonArrayMember(MySecondDataClass)
+    public arrayProp: MySecondDataClass[];
 
     @jsonMapMember(Number, MySecondDataClass)
     public mapProp: Map<number, MySecondDataClass>;
-    
-    // Without reflect-metadata
-    @jsonMember({ constructor: MySecondDataClass })
-    public prop2: MySecondDataClass;
 }
 ```
 
