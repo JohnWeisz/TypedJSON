@@ -86,4 +86,4 @@ class MyDataClass
 }
 ```
 
-This is not needed for `@jsonArrayMember`, `@jsonMapMember`, and `@jsonSetMember`, as those types already know the property type itself, as well as element/key types.
+This is not needed for `@jsonArrayMember`, `@jsonMapMember`, and `@jsonSetMember`, as those types already know the property type itself, as well as element/key types (although using `reflect-metadata` adds runtime-type checking to these decorators, to help you spot errors).
