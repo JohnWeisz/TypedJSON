@@ -85,3 +85,5 @@ class MyDataClass
     public prop2: MySecondDataClass;
 }
 ```
+
+This is not needed for `@jsonArrayMember`, `@jsonMapMember`, and `@jsonSetMember`, as those types already know the property type itself, as well as element/key types.
