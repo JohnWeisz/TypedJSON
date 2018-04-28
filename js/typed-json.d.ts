@@ -45,6 +45,10 @@ interface JsonObjectOptions<T> {
     serializer?: (object: T) => any;
     /** A custom deserializer function transforming a JSON object to an instace. */
     initializer?: (json: any) => T;
+    /** A function that transforms the JSON after serializing. */
+    replacer?: (key: string, value: any) => any;
+    /** A function that transforms the JSON before deserializing. */
+    reviver?: (key: any, value: any) => any;
 }
 /**
  * Specifies that the type is serializable to and deserializable from a JSON string.
@@ -76,6 +80,10 @@ interface JsonMemberOptions<TFunction extends Function> {
     emitDefaultValue?: boolean;
     /** When set, type-hint is mandatory when deserializing. Set for properties with interface or abstract types/element-types. */
     refersAbstractType?: boolean;
+    /** Will be invoked, with the deserialized value in order to let the member, revive it. */
+    reviver?: (deserializedValue: any) => any;
+    /** Will be invoked, with the serialized value in order to let the member, replace it. */
+    replacer?: (serializedValue: any) => any;
 }
 /**
  * Specifies that the property is part of the object when serializing.

@@ -269,12 +269,12 @@ var Helpers;
 })(Helpers || (Helpers = {}));
 //#endregion
 //#region "Metadata"
-var JsonMemberMetadata = /** @class */ (function () {
+var JsonMemberMetadata = (function () {
     function JsonMemberMetadata() {
     }
     return JsonMemberMetadata;
 }());
-var JsonObjectMetadata = /** @class */ (function () {
+var JsonObjectMetadata = (function () {
     function JsonObjectMetadata() {
         this._dataMembers = {};
         this._knownTypes = [];
@@ -708,7 +708,7 @@ function JsonMember(optionsOrTarget, propertyKey) {
     }
 }
 exports.JsonMember = JsonMember;
-var Serializer = /** @class */ (function () {
+var Serializer = (function () {
     function Serializer() {
     }
     Serializer.writeObject = function (object, settings) {
@@ -777,7 +777,7 @@ var Serializer = /** @class */ (function () {
                     objectMetadata.sortMembers();
                     Object.keys(objectMetadata.dataMembers).forEach(function (propertyKey) {
                         var propertyMetadata = objectMetadata.dataMembers[propertyKey];
-                        json[propertyMetadata.name] = _this.writeToJsonObject(object[propertyKey], {
+                        var temp = _this.writeToJsonObject(object[propertyKey], {
                             elements: propertyMetadata.elements,
                             emitDefault: propertyMetadata.emitDefaultValue,
                             enableTypeHints: settings.enableTypeHints,
@@ -786,6 +786,10 @@ var Serializer = /** @class */ (function () {
                             requireTypeHints: settings.requireTypeHints,
                             typeHintPropertyKey: settings.typeHintPropertyKey
                         });
+                        if (propertyMetadata.replacer) {
+                            temp = propertyMetadata.replacer(temp);
+                        }
+                        json[propertyMetadata.name] = temp;
                     });
                 }
                 else {
@@ -805,7 +809,7 @@ var Serializer = /** @class */ (function () {
     };
     return Serializer;
 }());
-var Deserializer = /** @class */ (function () {
+var Deserializer = (function () {
     function Deserializer() {
     }
     /**
@@ -973,6 +977,9 @@ var Deserializer = /** @class */ (function () {
                             strictTypeHintMode: settings.strictTypeHintMode,
                             typeHintPropertyKey: settings.typeHintPropertyKey
                         });
+                        if (propertyMetadata.reviver) {
+                            temp = propertyMetadata.reviver(temp);
+                        }
                         // Do not make undefined/null property assignments.
                         if (Helpers.valueIsDefined(temp)) {
                             object[propertyKey] = temp;
