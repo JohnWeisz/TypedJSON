@@ -315,6 +315,11 @@ class JsonMemberMetadata<T> {
     public order: number;
 
     public forceEnableTypeHinting: boolean;
+
+    /** Will be invoked, with the deserialized value in order to let the member, revive it. */
+    reviver? : (deserializedValue : any)=>any
+    /** Will be invoked, with the serialized value in order to let the member, replace it. */
+    replacer? : (serializedValue : any)=>any
 }
 
 class JsonObjectMetadata<T> {
@@ -567,6 +572,12 @@ interface JsonObjectOptions<T> {
 
     /** A custom deserializer function transforming a JSON object to an instace. */
     initializer?: (json: any) => T;
+
+    /** A function that transforms the JSON after serializing. */
+    replacer?: (key: string, value: any) => any;
+
+    /** A function that transforms the JSON before deserializing. */
+    reviver?: (key: any, value: any) => any;
 }
 
 /**
@@ -687,6 +698,11 @@ interface JsonMemberOptions<TFunction extends Function> {
 
     /** When set, type-hint is mandatory when deserializing. Set for properties with interface or abstract types/element-types. */
     refersAbstractType?: boolean;
+
+    /** Will be invoked, with the deserialized value in order to let the member, revive it. */
+    reviver? : (deserializedValue : any)=>any
+    /** Will be invoked, with the serialized value in order to let the member, replace it. */
+    replacer? : (serializedValue : any)=>any
 }
 
 function jsonMemberTypeInit<T>(metadata: JsonMemberMetadata<T>, propertyName: string, warnArray = false) {
@@ -961,7 +977,7 @@ abstract class Serializer {
                     Object.keys(objectMetadata.dataMembers).forEach(propertyKey => {
                         var propertyMetadata = objectMetadata.dataMembers[propertyKey];
 
-                        json[propertyMetadata.name] = this.writeToJsonObject(object[propertyKey], {
+                        let temp = this.writeToJsonObject(object[propertyKey], {
                             elements: propertyMetadata.elements,
                             emitDefault: propertyMetadata.emitDefaultValue,
                             enableTypeHints: settings.enableTypeHints,
@@ -970,6 +986,12 @@ abstract class Serializer {
                             requireTypeHints: settings.requireTypeHints,
                             typeHintPropertyKey: settings.typeHintPropertyKey
                         });
+
+                        if(propertyMetadata.replacer) {
+                            temp = propertyMetadata.replacer(temp)
+                        }
+
+                        json[propertyMetadata.name] = temp
                     });
                 } else {
                     // Serialize all own properties.
@@ -1187,6 +1209,11 @@ abstract class Deserializer {
                             typeHintPropertyKey: settings.typeHintPropertyKey
                         });
 
+                        if (propertyMetadata.reviver) {
+
+                            temp = propertyMetadata.reviver(temp)
+                        }
+                        
                         // Do not make undefined/null property assignments.
                         if (Helpers.valueIsDefined(temp)) {
                             object[propertyKey] = temp;
