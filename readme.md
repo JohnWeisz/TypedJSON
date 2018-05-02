@@ -1,58 +1,88 @@
-> A snapshot for 1.0 is now available under the v1-experimental folder (source-code only). For an actual, real-world use case of TypedJSON (1.0), check out **[AudioNodes](https://audionodes.com/)**, a modular audio production suite with the capabilities of a full-time desktop-based digital audio workstation. 1.0 has a slightly different API, the documentation is updated soon to reflect these changes.
+**Example & how to use**
 
-# TypedJSON
+There are no publicly available, dedicated docs yet for 1.0, but most methods are commented nicely, and here's a quick example on how to serialize various types (I recommend using [reflect-metadata](https://github.com/rbuckton/reflect-metadata) in your project, so you don't have to manually annotate the type of `@jsonMember` properties twice, see at the bottom of this page):
 
-Strong-typed JSON parsing and serializing for TypeScript with [decorators](https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md). Parse JSON into actual class instances. Recommended (but not required) to be used with [ReflectDecorators](https://github.com/rbuckton/ReflectDecorators), a prototype for an ES7 Reflection API for Decorator Metadata.
+```ts
+@jsonObject
+class MyDataClass
+{
+    // Primitives serialization
+    @jsonMember
+    public prop1: number; // or string, boolean, etc.
 
- - Parse regular JSON to typed class instances, safely
- - Seamlessly integrate into existing code with [decorators](https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md), ultra-lightweight syntax
+    // Array serialization
+    @jsonArrayMember(Number)
+    public arrayProp: number[];
 
-## Install & Use
+    // Map serialization
+    @jsonMapMember(Number, String)
+    public mapProp: Map<number, string>;
 
-```none
-npm install typedjson-npm
-typings install npm:typedjson-npm
-```
-
- 1. Snap the [@JsonObject decorator](https://github.com/JohnWhiteTB/TypedJSON/wiki/API-reference#jsonobject) on a class
- 2. Snap the [@JsonMember decorator](https://github.com/JohnWhiteTB/TypedJSON/wiki/API-reference#jsonmember) on properties which should be serialized and deserialized
- 3. Parse and stringify with the [TypedJSON class](https://github.com/JohnWhiteTB/TypedJSON/wiki/API-reference#typedjson)
-
-```typescript
-@JsonObject
-class Person {
-    @JsonMember
-    firstName: string;
-
-    @JsonMember
-    lastName: string;
-
-    public getFullname() {
-        return this.firstName + " " + this.lastName;
-    }
+    // Set serialization
+    @jsonSetMember(Number)
+    public setProp: Set<number>;
 }
 ```
 
-```typescript
-var person = TypedJSON.parse('{ "firstName": "John", "lastName": "Doe" }', Person);
+Of course, all 4 serialization techniques (single, array, map, set) support nested objects (nested object class must be also decorated with `@jsonObject` for this to work, obviously). Example:
 
-person instanceof Person; // true
-person.getFullname(); // "John Doe"
+```ts
+@jsonObject
+class MySecondDataClass
+{
+    @jsonMember
+    public prop1: number;
+
+    @jsonMember
+    public prop2: number;
+}
+
+@jsonObject
+class MyDataClass
+{
+    @jsonMember
+    public prop1: MySecondDataClass;
+    
+    @jsonArrayMember(MySecondDataClass)
+    public arrayProp: MySecondDataClass[];
+
+    @jsonMapMember(Number, MySecondDataClass)
+    public mapProp: Map<number, MySecondDataClass>;
+}
 ```
 
-If you choose to omit using [ReflectDecorators](https://github.com/rbuckton/ReflectDecorators), the class (constructor function) of each [@JsonMember](https://github.com/JohnWhiteTB/TypedJSON/wiki/API-reference#jsonmember) decorated property must be specified manually through the [`type` setting](https://github.com/JohnWhiteTB/TypedJSON/wiki/API-reference#jsonmember), for example:
+Additionally, there's built-in support for TypedArray objects (serialized as `number[]`), `Date`, `ArrayBuffer` (serialized as string at this time, so this might not be a good idea, prefer using a TypedArray instead), this is available by simply using `@jsonMember`. Serialization of Maps, Sets, and Arrays of root objects is also supported.
 
-```typescript
-@JsonMember({ type: String })
-firstName: string;
+After annotating your objects as shown above, you simply consume them by creating a new `TypedJSON` object, supplying the _constructor_ of the root data type to it:
+
+```ts
+let object = new MyDataClass(); // ...
+let serializer = new TypedJSON(MyDataClass);
+
+let json = serializer.stringify(object);
+let object2 = serializer.parse(json);
 ```
 
-[Learn more about decorators in TypeScript](https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md)
+**How are these objects serialized?**
 
-## Documentation
+Sets and arrays are simply serialized as arrays, Maps are serialized as arrays of _key-value-pair objects_, TypedArrays are serialized as numeric arrays.
 
- - [API reference](https://github.com/JohnWhiteTB/TypedJSON/wiki/API-reference)
+**How to use without reflect-metadata?**
 
-## License
+If you don't use `reflect-metadata`, you need to manually add the constructor reference to `@jsonMember`, e.g.:
 
-TypedJSON is licensed under the MIT License.
+```diff
+@jsonObject
+class MyDataClass
+{
+-   @jsonMember
++   @jsonMember({ constructor: Number })
+    public prop1: number;
+
+-   @jsonMember
++   @jsonMember({ constructor: MySecondDataClass })
+    public prop2: MySecondDataClass;
+}
+```
+
+This is not needed for `@jsonArrayMember`, `@jsonMapMember`, and `@jsonSetMember`, as those types already know the property type itself, as well as element/key types (although using `reflect-metadata` adds runtime-type checking to these decorators, to help you spot errors).
