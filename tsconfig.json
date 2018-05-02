@@ -12,9 +12,6 @@
   },
   "files": [
     "src/typedjson.ts"
-  ],
-  "exclude": [
-    "node_modules",
-//    "src/tests/**/*"
   ]
 }
+

@@ -1,38 +1,38 @@
 ﻿import {isEqual} from "./object-compare";
-import {JsonObject, JsonMember, TypedJSON} from "../typed-json";
+import {jsonObject, jsonMember, jsonArrayMember, TypedJSON} from "../src/typedjson";
 
 interface Point {
     x: number;
     y: number;
 }
 
-@JsonObject
+@jsonObject
 class SmallNode implements Point {
-    @JsonMember
+    @jsonMember({constructor: Number})
     x: number;
 
-    @JsonMember
+    @jsonMember({constructor: Number})
     y: number;
 
-    @JsonMember
+    @jsonMember({constructor: String})
     inputType: string;
 
-    @JsonMember
+    @jsonMember({constructor: String})
     outputType: string;
 }
 
-@JsonObject
+@jsonObject
 class BigNode implements Point {
-    @JsonMember
+    @jsonMember({constructor: Number})
     x: number;
 
-    @JsonMember
+    @jsonMember({constructor: Number})
     y: number;
 
-    @JsonMember({ elements: String })
+    @jsonArrayMember(String)
     inputs: string[];
 
-    @JsonMember({ elements: String })
+    @jsonArrayMember(String)
     outputs: string[];
 
     constructor() {
@@ -41,14 +41,14 @@ class BigNode implements Point {
     }
 }
 
-@JsonObject({
+@jsonObject({
     knownTypes: [BigNode, SmallNode]
 })
 class GraphGrid {
-    @JsonMember({ elements: Object, refersAbstractType: true })
+    @jsonArrayMember(Object)
     points: Point[];
 
-    @JsonMember({ refersAbstractType: true })
+    @jsonMember({constructor: Object})
     root: Point;
 
     constructor() {
@@ -107,11 +107,7 @@ export function test(log: boolean) {
         }
     }
 
-    TypedJSON.config({
-        enableTypeHints: true
-    });
-
-    var json = TypedJSON.stringify(graph);
+    var json = TypedJSON.stringify(graph, GraphGrid);
     var clone = TypedJSON.parse(json, GraphGrid);
 
     if (log) {
@@ -124,3 +120,9 @@ export function test(log: boolean) {
 
     return isEqual(graph, clone);
 }
+
+describe('polymorphic interfaces', function() {
+    it('should work', function () {
+        expect(test(false)).toBeTruthy();
+    });
+});

@@ -1,26 +1,26 @@
 ﻿import {isEqual} from "./object-compare";
-import {TypedJSON, JsonObject, JsonMember} from "../typed-json";
+import {TypedJSON, jsonObject, jsonMember, jsonArrayMember} from "../src/typedjson";
 
 abstract class Node {
-    @JsonMember
+    @jsonMember({constructor: String})
     name: string;
 }
 
-@JsonObject
+@jsonObject
 class SmallNode extends Node {
-    @JsonMember
+    @jsonMember({constructor: String})
     inputType: string;
 
-    @JsonMember
+    @jsonMember({constructor: String})
     outputType: string;
 }
 
-@JsonObject
+@jsonObject
 class BigNode extends Node {
-    @JsonMember({ elements: String })
+    @jsonArrayMember(String)
     inputs: string[];
 
-    @JsonMember({ elements: String })
+    @jsonArrayMember(String)
     outputs: string[];
 
     constructor() {
@@ -30,14 +30,14 @@ class BigNode extends Node {
     }
 }
 
-@JsonObject({
+@jsonObject({
     knownTypes: [BigNode, SmallNode]
 })
 class Graph {
-    @JsonMember({ elements: Node, refersAbstractType: true })
+    @jsonArrayMember(Node)
     nodes: Node[];
 
-    @JsonMember({ refersAbstractType: true })
+    @jsonMember({ constructor: Node })
     root: Node;
 
     constructor() {
@@ -95,11 +95,7 @@ export function test(log: boolean) {
         }
     }
 
-    TypedJSON.config({
-        enableTypeHints: true
-    });
-
-    var json = TypedJSON.stringify(graph);
+    var json = TypedJSON.stringify(graph, Graph);
     var clone = TypedJSON.parse(json, Graph);
 
     if (log) {
@@ -112,3 +108,9 @@ export function test(log: boolean) {
 
     return isEqual(graph, clone);
 }
+
+describe('polymorphic abstract classes', function() {
+    it('should work', function () {
+        expect(test(false)).toBeTruthy();
+    });
+});

@@ -1,12 +1,13 @@
-﻿import {isEqual} from "./object-compare";
+﻿/* Not supported?
+import {isEqual} from "./object-compare";
 import {JsonObject, JsonMember, TypedJSON} from "../typed-json";
 
 @JsonObject
 class Person {
-    @JsonMember
+    @JsonMember({ name: "first-name" })
     public firstName: string;
 
-    @JsonMember
+    @JsonMember({ name: "last-name" })
     public lastName: string;
 
     constructor();
@@ -40,15 +41,15 @@ class Employee extends Person {
     }
 }
 
-@JsonObject
+@JsonObject({ name: "part-time-employee" })
 class PartTimeEmployee extends Employee {
-    @JsonMember
+    @JsonMember({ name: "work-hours" })
     public workHours: number;
 }
 
-@JsonObject
+@JsonObject()
 class Investor extends Person {
-    @JsonMember
+    @JsonMember({ name: "invest-amount" })
     public investAmount: number;
 
     constructor();
@@ -132,7 +133,7 @@ export function test(log: boolean) {
     var reparsed = TypedJSON.parse(json, Company);
 
     if (log) {
-        console.log("Test: polymorphism...");
+        console.log("Test: polymorphism with custom names...");
         console.log(company);
         console.log(JSON.parse(json));
         console.log(reparsed);
@@ -141,3 +142,4 @@ export function test(log: boolean) {
 
     return isEqual(company, reparsed);
 }
+*/

@@ -1,26 +1,26 @@
 ﻿import {isEqual} from "./object-compare";
-import {JsonObject, JsonMember, TypedJSON} from "../typed-json";
+import {jsonObject, jsonMember, jsonArrayMember, TypedJSON} from "../src/typedjson";
 
 abstract class Node {
-    @JsonMember
+    @jsonMember({constructor: String})
     name: string;
 }
 
-@JsonObject
+@jsonObject
 class SmallNode extends Node {
-    @JsonMember
+    @jsonMember({constructor: String})
     inputType: string;
 
-    @JsonMember
+    @jsonMember({constructor: String})
     outputType: string;
 }
 
-@JsonObject
+@jsonObject
 class BigNode extends Node {
-    @JsonMember({ elements: String })
+    @jsonArrayMember(String)
     inputs: string[];
 
-    @JsonMember({ elements: String })
+    @jsonArrayMember(String)
     outputs: string[];
 
     constructor() {
@@ -30,12 +30,12 @@ class BigNode extends Node {
     }
 }
 
-@JsonObject({ knownTypes: [BigNode, SmallNode] })
+@jsonObject({ knownTypes: [BigNode, SmallNode] })
 class Graph {
-    @JsonMember({ elements: { elements: Node } })
+    @jsonArrayMember(Node, {dimensions: 2})
     items: Array<Array<Node>>;
 
-    @JsonMember({ elements: { elements: SmallNode } })
+    @jsonArrayMember(SmallNode, {dimensions: 2})
     smallItems: Array<Array<SmallNode>>;
 
     constructor() {
@@ -107,12 +107,8 @@ export function test(log: boolean) {
             graph.items[i].push(node);
         }
     }
-
-    TypedJSON.config({
-        enableTypeHints: true
-    });
     
-    var json = TypedJSON.stringify(graph);
+    var json = TypedJSON.stringify(graph, Graph);
 
     if (log) {
         console.log("Test: polymorphism with nested arrays...");
@@ -129,3 +125,9 @@ export function test(log: boolean) {
 
     return isEqual(graph, clone);
 }
+
+describe('polymorphism in nested arrays', function() {
+    it('should work', function () {
+        expect(test(false)).toBeTruthy();
+    });
+});
