@@ -1,7 +1,7 @@
 {
   "name": "typedjson",
   "version": "1.0.0-SNAPSHOT",
-  "description": "Typed JSON parsing and serializing for TypeScript that preserves type information, using decorators. Parse JSON into actual class instances.",
+  "description": "Typed JSON parsing and serializing for TypeScript that preserves type information, using decorators. Parse JSON into actual class instances. This is a fork of https://github.com/JohnWhiteTB/TypedJSON.git",
   "main": "./js/typedjson.js",
   "typings": "./js/typedjson.d.ts",
   "scripts": {
@@ -10,14 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/JohnWhiteTB/TypedJSON.git"
+    "url": "git+https://github.com/Neos3452/TypedJSON"
   },
   "author": "John White",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/JohnWhiteTB/TypedJSON/issues"
+    "url": "https://github.com/Neos3452/TypedJSON/issues"
   },
-  "homepage": "https://github.com/JohnWhiteTB/TypedJSON",
+  "homepage": "https://github.com/Neos3452/TypedJSON",
   "devDependencies": {
     "@types/jasmine": "^2.8.6",
     "jasmine": "^3.1.0",
