@@ -44,6 +44,22 @@ export function isPrimitiveValue(obj: any)
     }
 }
 
+export function isObject(value: any): value is Object
+{
+    return typeof value === "object";
+}
+
+export function parseToJSObject(json: any): Object {
+    if (isObject(json)) {
+        return json;
+    }
+    json = JSON.parse(json);
+    if (!isObject(json)) {
+        throw new TypeError("TypedJSON can only parse JSON strings or plain JS objects");
+    }
+    return json;
+}
+
 /**
  * Determines if 'A' is a sub-type of 'B' (or if 'A' equals 'B').
  * @param A The supposed derived type.
@@ -108,7 +124,7 @@ export function isInstanceOf<T>(value: any, constructor: Function): boolean
     {
         return (constructor === Boolean);
     }
-    else if (typeof value === "object")
+    else if (isObject(value))
     {
         return (value instanceof constructor);
     }

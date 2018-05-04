@@ -1,3 +1,4 @@
+import { parseToJSObject } from './typedjson/helpers';
 import { Constructor } from "./typedjson/types";
 import * as Helpers from "./typedjson/helpers";
 import { JsonObjectMetadata } from "./typedjson/metadata";
@@ -42,24 +43,28 @@ export interface ITypedJSONSettings
 export class TypedJSON<T>
 {
     //#region Static
-    public static parse<T>(json: string, rootType: Constructor<T>, settings?: ITypedJSONSettings)
+    public static parse<T>(json: any, rootType: Constructor<T>, settings?: ITypedJSONSettings)
     {
-        return new TypedJSON(rootType, settings).parse(json);
+        const object = parseToJSObject(json);
+        return new TypedJSON(rootType, settings).parse(object);
     }
 
-    public static parseAsArray<T>(json: string, elementType: Constructor<T>, settings?: ITypedJSONSettings): T[]
+    public static parseAsArray<T>(json: any, elementType: Constructor<T>, settings?: ITypedJSONSettings): T[]
     {
-        return new TypedJSON(elementType, settings).parseAsArray(json);
+        const object = parseToJSObject(json);
+        return new TypedJSON(elementType, settings).parseAsArray(object);
     }
 
-    public static parseAsSet<T>(json: string, elementType: Constructor<T>, settings?: ITypedJSONSettings): Set<T>
+    public static parseAsSet<T>(json: any, elementType: Constructor<T>, settings?: ITypedJSONSettings): Set<T>
     {
-        return new TypedJSON(elementType, settings).parseAsSet(json);
+        const object = parseToJSObject(json);
+        return new TypedJSON(elementType, settings).parseAsSet(object);
     }
 
-    public static parseAsMap<K, V>(json: string, keyType: Constructor<K>, valueType: Constructor<V>, settings?: ITypedJSONSettings): Map<K, V>
+    public static parseAsMap<K, V>(json: any, keyType: Constructor<K>, valueType: Constructor<V>, settings?: ITypedJSONSettings): Map<K, V>
     {
-        return new TypedJSON(valueType, settings).parseAsMap(json, keyType);
+        const object = parseToJSObject(json);
+        return new TypedJSON(valueType, settings).parseAsMap(object, keyType);
     }
 
     public static stringify<T>(object: T, rootType: Constructor<T>, settings?: ITypedJSONSettings)
@@ -197,10 +202,10 @@ export class TypedJSON<T>
 
     /**
      * Converts a JSON string to the root class type.
-     * @param json The JSON string to parse and convert.
+     * @param object The JSON to parse and convert.
      * @throws Error if any errors are thrown in the specified errorHandler callback (re-thrown).
      */
-    public parse(json: string): T
+    public parse(object: Object): T
     {
         let rootMetadata = JsonObjectMetadata.getFromConstructor(this.rootConstructor);
         let result: T;
@@ -221,7 +226,7 @@ export class TypedJSON<T>
 
         try
         {
-            result = this.deserializer.convertSingleValue(JSON.parse(json), {
+            result = this.deserializer.convertSingleValue(object, {
                 selfConstructor: this.rootConstructor,
                 knownTypes: knownTypes
             }) as T;
@@ -234,10 +239,8 @@ export class TypedJSON<T>
         return result;
     }
 
-    public parseAsArray(json: string, dimensions: number = 1): T[]
+    public parseAsArray(object: Object, dimensions: number = 1): T[]
     {
-        let object = JSON.parse(json);
-
         if (object instanceof Array)
         {
             return this.deserializer.convertAsArray(object, {
@@ -254,10 +257,8 @@ export class TypedJSON<T>
         return [];
     }
 
-    public parseAsSet(json: string): Set<T>
+    public parseAsSet(object: Object): Set<T>
     {
-        let object = JSON.parse(json);
-
         // A Set<T> is serialized as T[].
         if (object instanceof Array)
         {
@@ -275,10 +276,8 @@ export class TypedJSON<T>
         return new Set<T>();
     }
 
-    public parseAsMap<K>(json: string, keyConstructor: Constructor<K>): Map<K, T>
+    public parseAsMap<K>(object: Object, keyConstructor: Constructor<K>): Map<K, T>
     {
-        let object = JSON.parse(json);
-
         // A Set<T> is serialized as T[].
         if (object instanceof Array)
         {
