@@ -1,4 +1,4 @@
-// [typedjson]  Version: 1.0.0-SNAPSHOT - 2018-05-04  
+// [typedjson]  Version: 1.0.0-rc1 - 2018-05-04  
  (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
