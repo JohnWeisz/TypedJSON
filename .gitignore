@@ -24,5 +24,7 @@ temp
 **\nuget
 **\nupkg
 __*
+!package.json
+!package-lock.json
 !tsconfig.json
 !js/typed-json.js.map

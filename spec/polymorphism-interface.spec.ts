@@ -1,5 +1,5 @@
 ﻿import {isEqual} from "./object-compare";
-import {jsonObject, jsonMember, jsonArrayMember, TypedJSON} from "../src/typedjson";
+import {jsonObject, jsonMember, jsonArrayMember, TypedJSON} from "../js/typedjson";
 
 interface Point {
     x: number;
@@ -8,25 +8,25 @@ interface Point {
 
 @jsonObject
 class SmallNode implements Point {
-    @jsonMember({constructor: Number})
+    @jsonMember
     x: number;
 
-    @jsonMember({constructor: Number})
+    @jsonMember
     y: number;
 
-    @jsonMember({constructor: String})
+    @jsonMember
     inputType: string;
 
-    @jsonMember({constructor: String})
+    @jsonMember
     outputType: string;
 }
 
 @jsonObject
 class BigNode implements Point {
-    @jsonMember({constructor: Number})
+    @jsonMember
     x: number;
 
-    @jsonMember({constructor: Number})
+    @jsonMember
     y: number;
 
     @jsonArrayMember(String)
@@ -48,7 +48,7 @@ class GraphGrid {
     @jsonArrayMember(Object)
     points: Point[];
 
-    @jsonMember({constructor: Object})
+    @jsonMember
     root: Point;
 
     constructor() {

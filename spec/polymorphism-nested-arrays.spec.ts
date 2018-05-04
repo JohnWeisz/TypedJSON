@@ -1,17 +1,17 @@
 ﻿import {isEqual} from "./object-compare";
-import {jsonObject, jsonMember, jsonArrayMember, TypedJSON} from "../src/typedjson";
+import {jsonObject, jsonMember, jsonArrayMember, TypedJSON} from "../js/typedjson";
 
 abstract class Node {
-    @jsonMember({constructor: String})
+    @jsonMember
     name: string;
 }
 
 @jsonObject
 class SmallNode extends Node {
-    @jsonMember({constructor: String})
+    @jsonMember
     inputType: string;
 
-    @jsonMember({constructor: String})
+    @jsonMember
     outputType: string;
 }
 

@@ -1,12 +1,12 @@
 ﻿import {isEqual} from "./object-compare";
-import {jsonObject, jsonMember, jsonArrayMember, TypedJSON} from "../src/typedjson";
+import {jsonObject, jsonMember, jsonArrayMember, TypedJSON} from "../js/typedjson";
 
 @jsonObject
 class Person {
-    @jsonMember({constructor: String})
+    @jsonMember
     public firstName: string;
 
-    @jsonMember({constructor: String})
+    @jsonMember
     public lastName: string;
 
     constructor();
@@ -21,10 +21,10 @@ class Person {
 
 @jsonObject
 class Employee extends Person {
-    @jsonMember({constructor: Number})
+    @jsonMember
     public salary: number;
 
-    @jsonMember({constructor: Date})
+    @jsonMember
     public joined: Date;
 
     constructor();
@@ -42,13 +42,13 @@ class Employee extends Person {
 
 @jsonObject
 class PartTimeEmployee extends Employee {
-    @jsonMember({constructor: Number})
+    @jsonMember
     public workHours: number;
 }
 
 @jsonObject
 class Investor extends Person {
-    @jsonMember({constructor: Number})
+    @jsonMember
     public investAmount: number;
 
     constructor();
@@ -63,13 +63,13 @@ class Investor extends Person {
 
 @jsonObject({ name: "company", knownTypes: [PartTimeEmployee, Investor] })
 class Company {
-    @jsonMember({constructor: String})
+    @jsonMember
     public name: string;
 
     @jsonArrayMember(Employee)
     public employees: Array<Employee>;
 
-    @jsonMember({constructor: Person})
+    @jsonMember
     public owner: Person;
 
     constructor() {

@@ -5,8 +5,8 @@
   "main": "./js/typedjson.js",
   "typings": "./js/typedjson.d.ts",
   "scripts": {
-    "test": "ts-node node_modules/jasmine/bin/jasmine",
-    "build": "tsc"
+    "test": "ts-node -O '{\"module\": \"commonjs\"}' node_modules/jasmine/bin/jasmine",
+    "build": "webpack"
   },
   "repository": {
     "type": "git",
@@ -21,7 +21,11 @@
   "devDependencies": {
     "@types/jasmine": "^2.8.6",
     "jasmine": "^3.1.0",
+    "reflect-metadata": "^0.1.12",
+    "ts-loader": "^4.2.0",
     "ts-node": "^6.0.2",
-    "typescript": "^2.4.0"
+    "typescript": "^2.8.3",
+    "webpack": "^4.6.0",
+    "webpack-cli": "^2.1.2"
   }
 }

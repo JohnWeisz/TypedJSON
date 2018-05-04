@@ -1,17 +1,17 @@
 ﻿import {isEqual} from "./object-compare";
-import {TypedJSON, jsonObject, jsonMember, jsonArrayMember} from "../src/typedjson";
+import {TypedJSON, jsonObject, jsonMember, jsonArrayMember} from "../js/typedjson";
 
 abstract class Node {
-    @jsonMember({constructor: String})
+    @jsonMember
     name: string;
 }
 
 @jsonObject
 class SmallNode extends Node {
-    @jsonMember({constructor: String})
+    @jsonMember
     inputType: string;
 
-    @jsonMember({constructor: String})
+    @jsonMember
     outputType: string;
 }
 
@@ -37,7 +37,7 @@ class Graph {
     @jsonArrayMember(Node)
     nodes: Node[];
 
-    @jsonMember({ constructor: Node })
+    @jsonMember
     root: Node;
 
     constructor() {

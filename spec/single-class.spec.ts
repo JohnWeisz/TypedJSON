@@ -1,13 +1,13 @@
-﻿import {jsonObject, jsonMember, TypedJSON} from "../src/typedjson";
+﻿import {jsonObject, jsonMember, TypedJSON} from "../js/typedjson";
 
 describe('single class', function () {
 
     @jsonObject
     class Person {
-        @jsonMember({constructor: String})
+        @jsonMember
         firstName: string;
 
-        @jsonMember({constructor: String})
+        @jsonMember
         lastName: string;
 
         public getFullName() {
