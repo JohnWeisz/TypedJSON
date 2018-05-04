@@ -1,5 +1,6 @@
 const path = require('path');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const WebpackAutoInject = require('webpack-auto-inject-version');
 
 module.exports = {
   entry: {
@@ -34,5 +35,19 @@ module.exports = {
       })
     ],
   },
+  plugins: [
+    new WebpackAutoInject({
+      SHORT: 'typedjson',
+      components: {
+        AutoIncreaseVersion: false,
+      },
+      componentsOptions: {
+        InjectAsComment: {
+          tag: 'Version: {version} - {date}',
+          dateFormat: 'isoDate',
+        },
+      },
+    }),
+  ],
   mode: "production",
 };
