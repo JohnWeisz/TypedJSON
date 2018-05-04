@@ -1,4 +1,4 @@
-// [typedjson]  Version: 1.0.0-rc1 - 2018-05-04  
+// [typedjson]  Version: 1.1.0-rc1 - 2018-05-04  
  (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -116,6 +116,19 @@ function isPrimitiveValue(obj) {
             return (obj instanceof String || obj instanceof Number || obj instanceof Boolean);
     }
 }
+function isObject(value) {
+    return typeof value === "object";
+}
+function parseToJSObject(json) {
+    if (isObject(json)) {
+        return json;
+    }
+    json = JSON.parse(json);
+    if (!isObject(json)) {
+        throw new TypeError("TypedJSON can only parse JSON strings or plain JS objects");
+    }
+    return json;
+}
 /**
  * Determines if 'A' is a sub-type of 'B' (or if 'A' equals 'B').
  * @param A The supposed derived type.
@@ -162,7 +175,7 @@ function isInstanceOf(value, constructor) {
     else if (typeof value === "boolean") {
         return (constructor === Boolean);
     }
-    else if (typeof value === "object") {
+    else if (isObject(value)) {
         return (value instanceof constructor);
     }
     return false;
@@ -301,7 +314,7 @@ function injectMetadataInformation(target, propKey, metadata) {
         objectMetadata.knownTypes.add(metadata.keyType);
     if (metadata.elementType)
         metadata.elementType.forEach(elemCtor => objectMetadata.knownTypes.add(elemCtor));
-    objectMetadata.dataMembers.set(propKey.toString(), metadata);
+    objectMetadata.dataMembers.set(metadata.name, metadata);
 }
 
 // CONCATENATED MODULE: ./src/typedjson/deserializer.ts
@@ -375,7 +388,7 @@ class deserializer_Deserializer {
                     knownTypes: knownTypeConstructors
                 }, memberNameForDebug);
                 if (isValueDefined(revivedValue)) {
-                    sourceObjectWithDeserializedProperties[propKey] = revivedValue;
+                    sourceObjectWithDeserializedProperties[memberMetadata.key] = revivedValue;
                 }
                 else if (memberMetadata.isRequired) {
                     this._errorHandler(new TypeError(`Missing required member '${memberNameForDebug}'.`));
@@ -768,11 +781,11 @@ class serializer_Serializer {
             // each of them. The converted objects are put on the 'targetObject', which is what will be put into 'JSON.stringify' finally.
             targetObject = {};
             sourceTypeMetadata.dataMembers.forEach((memberMetadata, propKey) => {
-                targetObject[propKey] = this.convertSingleValue(sourceObject[propKey], {
+                targetObject[memberMetadata.name] = this.convertSingleValue(sourceObject[memberMetadata.key], {
                     selfType: memberMetadata.ctor,
                     elementTypes: memberMetadata.elementType,
                     keyType: memberMetadata.keyType
-                }, `${nameof(sourceTypeMetadata.classType)}.${propKey}`);
+                }, `${nameof(sourceTypeMetadata.classType)}.${memberMetadata.key}`);
             });
         }
         else {
@@ -1031,7 +1044,7 @@ function jsonMember(optionsOrTarget, propKey) {
             let options = optionsOrTarget || {};
             let propCtor;
             let decoratorName = `@jsonMember on ${nameof(target.constructor)}.${_propKey}`; // For error messages.
-            if (typeof options.hasOwnProperty("constructor")) {
+            if (options.hasOwnProperty("constructor")) {
                 if (!isValueDefined(options.constructor)) {
                     logError(`${decoratorName}: cannot resolve specified property constructor at runtime.`);
                     return;
@@ -1064,7 +1077,7 @@ function jsonMember(optionsOrTarget, propKey) {
             memberMetadata.emitDefaultValue = options.emitDefaultValue || false;
             memberMetadata.isRequired = options.isRequired || false;
             memberMetadata.key = _propKey.toString();
-            memberMetadata.name = _propKey.toString();
+            memberMetadata.name = options.name || _propKey.toString();
             injectMetadataInformation(target, _propKey, memberMetadata);
         };
     }
@@ -1125,7 +1138,7 @@ function jsonArrayMember(elementConstructor, options = {}) {
         metadata.emitDefaultValue = options.emitDefaultValue || false;
         metadata.isRequired = options.isRequired || false;
         metadata.key = propKey.toString();
-        metadata.name = propKey.toString();
+        metadata.name = options.name || propKey.toString();
         injectMetadataInformation(target, propKey, metadata);
     };
 }
@@ -1158,7 +1171,7 @@ function jsonSetMember(elementConstructor, options = {}) {
         metadata.emitDefaultValue = options.emitDefaultValue || false;
         metadata.isRequired = options.isRequired || false;
         metadata.key = propKey.toString();
-        metadata.name = propKey.toString();
+        metadata.name = options.name || propKey.toString();
         injectMetadataInformation(target, propKey, metadata);
     };
 }
@@ -1197,7 +1210,7 @@ function jsonMapMember(keyConstructor, valueConstructor, options = {}) {
         metadata.emitDefaultValue = options.emitDefaultValue || false;
         metadata.isRequired = options.isRequired || false;
         metadata.key = propKey.toString();
-        metadata.name = propKey.toString();
+        metadata.name = options.name || propKey.toString();
         injectMetadataInformation(target, propKey, metadata);
     };
 }
@@ -1209,6 +1222,7 @@ function jsonMapMember(keyConstructor, valueConstructor, options = {}) {
 /* concated harmony reexport */__webpack_require__.d(__webpack_exports__, "jsonArrayMember", function() { return jsonArrayMember; });
 /* concated harmony reexport */__webpack_require__.d(__webpack_exports__, "jsonSetMember", function() { return jsonSetMember; });
 /* concated harmony reexport */__webpack_require__.d(__webpack_exports__, "jsonMapMember", function() { return jsonMapMember; });
+
 
 
 
@@ -1241,16 +1255,20 @@ class typedjson_TypedJSON {
     }
     //#region Static
     static parse(json, rootType, settings) {
-        return new typedjson_TypedJSON(rootType, settings).parse(json);
+        const object = parseToJSObject(json);
+        return new typedjson_TypedJSON(rootType, settings).parse(object);
     }
     static parseAsArray(json, elementType, settings) {
-        return new typedjson_TypedJSON(elementType, settings).parseAsArray(json);
+        const object = parseToJSObject(json);
+        return new typedjson_TypedJSON(elementType, settings).parseAsArray(object);
     }
     static parseAsSet(json, elementType, settings) {
-        return new typedjson_TypedJSON(elementType, settings).parseAsSet(json);
+        const object = parseToJSObject(json);
+        return new typedjson_TypedJSON(elementType, settings).parseAsSet(object);
     }
     static parseAsMap(json, keyType, valueType, settings) {
-        return new typedjson_TypedJSON(valueType, settings).parseAsMap(json, keyType);
+        const object = parseToJSObject(json);
+        return new typedjson_TypedJSON(valueType, settings).parseAsMap(object, keyType);
     }
     static stringify(object, rootType, settings) {
         return new typedjson_TypedJSON(rootType, settings).stringify(object);
@@ -1315,10 +1333,10 @@ class typedjson_TypedJSON {
     }
     /**
      * Converts a JSON string to the root class type.
-     * @param json The JSON string to parse and convert.
+     * @param object The JSON to parse and convert.
      * @throws Error if any errors are thrown in the specified errorHandler callback (re-thrown).
      */
-    parse(json) {
+    parse(object) {
         let rootMetadata = metadata_JsonObjectMetadata.getFromConstructor(this.rootConstructor);
         let result;
         let knownTypes = new Map();
@@ -1331,7 +1349,7 @@ class typedjson_TypedJSON {
             });
         }
         try {
-            result = this.deserializer.convertSingleValue(JSON.parse(json), {
+            result = this.deserializer.convertSingleValue(object, {
                 selfConstructor: this.rootConstructor,
                 knownTypes: knownTypes
             });
@@ -1341,8 +1359,7 @@ class typedjson_TypedJSON {
         }
         return result;
     }
-    parseAsArray(json, dimensions = 1) {
-        let object = JSON.parse(json);
+    parseAsArray(object, dimensions = 1) {
         if (object instanceof Array) {
             return this.deserializer.convertAsArray(object, {
                 selfConstructor: Array,
@@ -1355,8 +1372,7 @@ class typedjson_TypedJSON {
         }
         return [];
     }
-    parseAsSet(json) {
-        let object = JSON.parse(json);
+    parseAsSet(object) {
         // A Set<T> is serialized as T[].
         if (object instanceof Array) {
             return this.deserializer.convertAsSet(object, {
@@ -1370,8 +1386,7 @@ class typedjson_TypedJSON {
         }
         return new Set();
     }
-    parseAsMap(json, keyConstructor) {
-        let object = JSON.parse(json);
+    parseAsMap(object, keyConstructor) {
         // A Set<T> is serialized as T[].
         if (object instanceof Array) {
             return this.deserializer.convertAsMap(object, {

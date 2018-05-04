@@ -4,6 +4,8 @@ export declare function getDefaultValue<T>(type: {
 }): T;
 export declare function isPrimitiveType(type: any): type is (typeof Number | typeof String | typeof Boolean);
 export declare function isPrimitiveValue(obj: any): boolean;
+export declare function isObject(value: any): value is Object;
+export declare function parseToJSObject(json: any): Object;
 /**
  * Determines if 'A' is a sub-type of 'B' (or if 'A' equals 'B').
  * @param A The supposed derived type.

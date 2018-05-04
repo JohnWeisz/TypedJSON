@@ -27,10 +27,10 @@ export interface ITypedJSONSettings {
     knownTypes?: Array<Constructor<any>>;
 }
 export declare class TypedJSON<T> {
-    static parse<T>(json: string, rootType: Constructor<T>, settings?: ITypedJSONSettings): T;
-    static parseAsArray<T>(json: string, elementType: Constructor<T>, settings?: ITypedJSONSettings): T[];
-    static parseAsSet<T>(json: string, elementType: Constructor<T>, settings?: ITypedJSONSettings): Set<T>;
-    static parseAsMap<K, V>(json: string, keyType: Constructor<K>, valueType: Constructor<V>, settings?: ITypedJSONSettings): Map<K, V>;
+    static parse<T>(json: any, rootType: Constructor<T>, settings?: ITypedJSONSettings): T;
+    static parseAsArray<T>(json: any, elementType: Constructor<T>, settings?: ITypedJSONSettings): T[];
+    static parseAsSet<T>(json: any, elementType: Constructor<T>, settings?: ITypedJSONSettings): Set<T>;
+    static parseAsMap<K, V>(json: any, keyType: Constructor<K>, valueType: Constructor<V>, settings?: ITypedJSONSettings): Map<K, V>;
     static stringify<T>(object: T, rootType: Constructor<T>, settings?: ITypedJSONSettings): string;
     static stringifyAsArray<T>(object: T[], elementType: Constructor<T>, dimensions?: 1, settings?: ITypedJSONSettings): string;
     static stringifyAsArray<T>(object: T[][], elementType: Constructor<T>, dimensions: 2, settings?: ITypedJSONSettings): string;
@@ -62,13 +62,13 @@ export declare class TypedJSON<T> {
     config(settings: ITypedJSONSettings): void;
     /**
      * Converts a JSON string to the root class type.
-     * @param json The JSON string to parse and convert.
+     * @param object The JSON to parse and convert.
      * @throws Error if any errors are thrown in the specified errorHandler callback (re-thrown).
      */
-    parse(json: string): T;
-    parseAsArray(json: string, dimensions?: number): T[];
-    parseAsSet(json: string): Set<T>;
-    parseAsMap<K>(json: string, keyConstructor: Constructor<K>): Map<K, T>;
+    parse(object: Object): T;
+    parseAsArray(object: Object, dimensions?: number): T[];
+    parseAsSet(object: Object): Set<T>;
+    parseAsMap<K>(object: Object, keyConstructor: Constructor<K>): Map<K, T>;
     /**
      * Converts an instance of the specified class type to a JSON string.
      * @param object The instance to convert to a JSON string.

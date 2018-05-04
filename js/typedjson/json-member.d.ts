@@ -8,6 +8,8 @@ export interface IJsonMemberOptions {
     isRequired?: boolean;
     /** When set, a default value is emitted if the property is uninitialized/undefined. */
     emitDefaultValue?: boolean;
+    /** When set, the key on the JSON that should be used instead of the class property name */
+    name?: string;
 }
 /**
  * Specifies that a property is part of the object when serializing, with additional options.

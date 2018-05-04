@@ -5,6 +5,8 @@ export interface IJsonArrayMemberOptions {
     emitDefaultValue?: boolean;
     /** Sets array dimensions (e.g. 1 for 'number[]' or 2 for 'number[][]'). Defaults to 1. */
     dimensions?: number;
+    /** When set, the key on the JSON that should be used instead of the class property name */
+    name?: string;
 }
 /**
  * Specifies that a property, of type array, is part of an object when serializing.

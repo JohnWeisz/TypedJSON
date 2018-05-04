@@ -3,6 +3,8 @@ export interface IJsonMapMemberOptions {
     isRequired?: boolean;
     /** When set, a default value is emitted for each uninitialized json member. */
     emitDefaultValue?: boolean;
+    /** When set, the key on the JSON that should be used instead of the class property name */
+    name?: string;
 }
 /**
  * Specifies that the property is part of the object when serializing.
