@@ -1,5 +1,5 @@
 {
-  "name": "typedjson",
+  "name": "typedjson-fork",
   "version": "1.0.0-rc1",
   "description": "Typed JSON parsing and serializing for TypeScript that preserves type information, using decorators. Parse JSON into actual class instances. This is a fork of https://github.com/JohnWhiteTB/TypedJSON.git",
   "main": "./js/typedjson.js",
