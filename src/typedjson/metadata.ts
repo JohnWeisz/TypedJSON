@@ -189,5 +189,5 @@ export function injectMetadataInformation(target: IndexedObject, propKey: string
     if (metadata.elementType)
         metadata.elementType.forEach(elemCtor => objectMetadata.knownTypes.add(elemCtor));
 
-    objectMetadata.dataMembers.set(propKey.toString(), metadata);
+    objectMetadata.dataMembers.set(metadata.name, metadata);
 }

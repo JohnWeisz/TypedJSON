@@ -20,6 +20,9 @@ export interface IJsonMemberOptions
 
     /** When set, a default value is emitted if the property is uninitialized/undefined. */
     emitDefaultValue?: boolean;
+
+    /** When set, the key on the JSON that should be used instead of the class property name */
+    name?: string;
 }
 
 /**
@@ -81,7 +84,7 @@ export function jsonMember<TFunction extends Function>(optionsOrTarget?: IJsonMe
             let propCtor: Function;
             let decoratorName = `@jsonMember on ${nameof(target.constructor)}.${_propKey}`; // For error messages.
 
-            if (typeof options.hasOwnProperty("constructor"))
+            if (options.hasOwnProperty("constructor"))
             {
                 if (!Helpers.isValueDefined(options.constructor))
                 {
@@ -128,7 +131,7 @@ export function jsonMember<TFunction extends Function>(optionsOrTarget?: IJsonMe
             memberMetadata.emitDefaultValue = options.emitDefaultValue || false;
             memberMetadata.isRequired = options.isRequired || false;
             memberMetadata.key = _propKey.toString();
-            memberMetadata.name = _propKey.toString();
+            memberMetadata.name = options.name || _propKey.toString();
 
             injectMetadataInformation(target, _propKey, memberMetadata);
         };

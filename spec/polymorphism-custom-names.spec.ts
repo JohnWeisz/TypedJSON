@@ -1,13 +1,12 @@
-﻿/* Not supported?
-import {isEqual} from "./object-compare";
-import {JsonObject, JsonMember, TypedJSON} from "../typed-json";
+﻿import { isEqual } from "./object-compare";
+import { jsonObject, jsonMember, jsonArrayMember, TypedJSON } from "../js/typedjson";
 
-@JsonObject
+@jsonObject
 class Person {
-    @JsonMember({ name: "first-name" })
+    @jsonMember({ name: "first-name" })
     public firstName: string;
 
-    @JsonMember({ name: "last-name" })
+    @jsonMember({ name: "last-name" })
     public lastName: string;
 
     constructor();
@@ -20,12 +19,12 @@ class Person {
     }
 }
 
-@JsonObject
+@jsonObject
 class Employee extends Person {
-    @JsonMember
+    @jsonMember
     public salary: number;
 
-    @JsonMember
+    @jsonMember
     public joined: Date;
 
     constructor();
@@ -41,15 +40,15 @@ class Employee extends Person {
     }
 }
 
-@JsonObject({ name: "part-time-employee" })
+@jsonObject({ name: "part-time-employee" })
 class PartTimeEmployee extends Employee {
-    @JsonMember({ name: "work-hours" })
+    @jsonMember({ name: "work-hours" })
     public workHours: number;
 }
 
-@JsonObject()
+@jsonObject()
 class Investor extends Person {
-    @JsonMember({ name: "invest-amount" })
+    @jsonMember({ name: "invest-amount" })
     public investAmount: number;
 
     constructor();
@@ -62,15 +61,15 @@ class Investor extends Person {
     }
 }
 
-@JsonObject({ name: "company", knownTypes: [PartTimeEmployee, Investor] })
+@jsonObject({ name: "company", knownTypes: [PartTimeEmployee, Investor] })
 class Company {
-    @JsonMember
+    @jsonMember
     public name: string;
 
-    @JsonMember({ elements: Employee })
+    @jsonArrayMember(Employee, { name: 'company-employees' })
     public employees: Array<Employee>;
 
-    @JsonMember
+    @jsonMember
     public owner: Person;
 
     constructor() {
@@ -125,11 +124,7 @@ export function test(log: boolean) {
         }
     }
 
-    TypedJSON.config({
-        enableTypeHints: true
-    });
-
-    var json = TypedJSON.stringify(company);
+    var json = TypedJSON.stringify(company, Company);
     var reparsed = TypedJSON.parse(json, Company);
 
     if (log) {
@@ -142,4 +137,9 @@ export function test(log: boolean) {
 
     return isEqual(company, reparsed);
 }
-*/
+
+describe('polymorphic custom names', function() {
+    it('should work', function () {
+        expect(test(false)).toBeTruthy();
+    });
+});

@@ -15,6 +15,9 @@ export interface IJsonSetMemberOptions
 
     /** When set, a default value is emitted for each uninitialized json member. */
     emitDefaultValue?: boolean;
+
+    /** When set, the key on the JSON that should be used instead of the class property name */
+    name?: string;
 }
 
 /**
@@ -49,7 +52,7 @@ export function jsonSetMember(elementConstructor: Function, options: IJsonSetMem
         metadata.emitDefaultValue = options.emitDefaultValue || false;
         metadata.isRequired = options.isRequired || false;
         metadata.key = propKey.toString();
-        metadata.name = propKey.toString();
+        metadata.name = options.name || propKey.toString();
 
         injectMetadataInformation(target, propKey, metadata);
     };

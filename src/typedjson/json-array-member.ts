@@ -18,6 +18,9 @@ export interface IJsonArrayMemberOptions
 
     /** Sets array dimensions (e.g. 1 for 'number[]' or 2 for 'number[][]'). Defaults to 1. */
     dimensions?: number;
+
+    /** When set, the key on the JSON that should be used instead of the class property name */
+    name?: string;
 }
 
 /**
@@ -73,7 +76,7 @@ export function jsonArrayMember(elementConstructor: Function, options: IJsonArra
         metadata.emitDefaultValue = options.emitDefaultValue || false;
         metadata.isRequired = options.isRequired || false;
         metadata.key = propKey.toString();
-        metadata.name = propKey.toString();
+        metadata.name = options.name || propKey.toString();
 
         injectMetadataInformation(target, propKey, metadata);
     };

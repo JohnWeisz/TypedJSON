@@ -110,7 +110,7 @@ export class Deserializer<T>
 
                 if (Helpers.isValueDefined(revivedValue))
                 {
-                    sourceObjectWithDeserializedProperties[propKey] = revivedValue;
+                    sourceObjectWithDeserializedProperties[memberMetadata.key] = revivedValue;
                 }
                 else if (memberMetadata.isRequired)
                 {
