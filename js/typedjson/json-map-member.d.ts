@@ -5,6 +5,10 @@ export interface IJsonMapMemberOptions {
     emitDefaultValue?: boolean;
     /** When set, the key on the JSON that should be used instead of the class property name */
     name?: string;
+    /** When set, this deserializer will be used to deserialize the member. The callee must assure the correct type. */
+    deserializer?: (json: any) => any;
+    /** When set, this serializer will be used to serialize the member. */
+    serializer?: (value: any) => any;
 }
 /**
  * Specifies that the property is part of the object when serializing.

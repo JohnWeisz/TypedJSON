@@ -14,6 +14,10 @@ export declare class JsonMemberMetadata {
     elementType: Function[];
     /** If the json member is a map, sets member options of array keys. */
     keyType: Function;
+    /** Custom deserializer to use. */
+    deserializer?: (json: any) => any;
+    /** Custom serializer to use. */
+    serializer?: (value: any) => any;
 }
 export declare class JsonObjectMetadata {
     /**

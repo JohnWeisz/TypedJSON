@@ -1,4 +1,4 @@
-// [typedjson]  Version: 1.1.0-rc1 - 2018-05-04  
+// [typedjson]  Version: 1.1.0-rc1 - 2018-05-07  
  (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -281,7 +281,7 @@ function injectMetadataInformation(target, propKey, metadata) {
         logError(`${decoratorName}: cannot use a method property.`);
         return;
     }
-    if (!metadata || !metadata.ctor) {
+    if (!metadata || (!metadata.ctor && !metadata.deserializer)) {
         logError(`${decoratorName}: JsonMemberMetadata has unknown ctor.`);
         return;
     }
@@ -309,7 +309,8 @@ function injectMetadataInformation(target, propKey, metadata) {
         // JsonObjectMetadata already exists on 'target'.
         objectMetadata = target[METADATA_FIELD_KEY];
     }
-    objectMetadata.knownTypes.add(metadata.ctor);
+    if (!metadata.deserializer)
+        objectMetadata.knownTypes.add(metadata.ctor);
     if (metadata.keyType)
         objectMetadata.knownTypes.add(metadata.keyType);
     if (metadata.elementType)
@@ -381,12 +382,18 @@ class deserializer_Deserializer {
                 let memberValue = sourceObject[propKey];
                 let memberNameForDebug = `${nameof(sourceObjectMetadata.classType)}.${propKey}`;
                 let expectedMemberType = memberMetadata.ctor;
-                let revivedValue = this.convertSingleValue(memberValue, {
-                    selfConstructor: expectedMemberType,
-                    elementConstructor: memberMetadata.elementType,
-                    keyConstructor: memberMetadata.keyType,
-                    knownTypes: knownTypeConstructors
-                }, memberNameForDebug);
+                let revivedValue;
+                if (memberMetadata.deserializer) {
+                    revivedValue = memberMetadata.deserializer(memberValue);
+                }
+                else {
+                    revivedValue = this.convertSingleValue(memberValue, {
+                        selfConstructor: expectedMemberType,
+                        elementConstructor: memberMetadata.elementType,
+                        keyConstructor: memberMetadata.keyType,
+                        knownTypes: knownTypeConstructors
+                    }, memberNameForDebug);
+                }
                 if (isValueDefined(revivedValue)) {
                     sourceObjectWithDeserializedProperties[memberMetadata.key] = revivedValue;
                 }
@@ -781,11 +788,16 @@ class serializer_Serializer {
             // each of them. The converted objects are put on the 'targetObject', which is what will be put into 'JSON.stringify' finally.
             targetObject = {};
             sourceTypeMetadata.dataMembers.forEach((memberMetadata, propKey) => {
-                targetObject[memberMetadata.name] = this.convertSingleValue(sourceObject[memberMetadata.key], {
-                    selfType: memberMetadata.ctor,
-                    elementTypes: memberMetadata.elementType,
-                    keyType: memberMetadata.keyType
-                }, `${nameof(sourceTypeMetadata.classType)}.${memberMetadata.key}`);
+                if (memberMetadata.serializer) {
+                    targetObject[memberMetadata.name] = memberMetadata.serializer(sourceObject[memberMetadata.key]);
+                }
+                else {
+                    targetObject[memberMetadata.name] = this.convertSingleValue(sourceObject[memberMetadata.key], {
+                        selfType: memberMetadata.ctor,
+                        elementTypes: memberMetadata.elementType,
+                        keyType: memberMetadata.keyType
+                    }, `${nameof(sourceTypeMetadata.classType)}.${memberMetadata.key}`);
+                }
             });
         }
         else {
@@ -1064,7 +1076,7 @@ function jsonMember(optionsOrTarget, propKey) {
                         return;
                     }
                 }
-                else {
+                else if (!options.deserializer) {
                     logError(`${decoratorName}: ReflectDecorators is required if no 'constructor' option is specified.`);
                     return;
                 }
@@ -1078,6 +1090,8 @@ function jsonMember(optionsOrTarget, propKey) {
             memberMetadata.isRequired = options.isRequired || false;
             memberMetadata.key = _propKey.toString();
             memberMetadata.name = options.name || _propKey.toString();
+            memberMetadata.deserializer = options.deserializer;
+            memberMetadata.serializer = options.serializer;
             injectMetadataInformation(target, _propKey, memberMetadata);
         };
     }
@@ -1139,6 +1153,8 @@ function jsonArrayMember(elementConstructor, options = {}) {
         metadata.isRequired = options.isRequired || false;
         metadata.key = propKey.toString();
         metadata.name = options.name || propKey.toString();
+        metadata.deserializer = options.deserializer;
+        metadata.serializer = options.serializer;
         injectMetadataInformation(target, propKey, metadata);
     };
 }
@@ -1172,6 +1188,8 @@ function jsonSetMember(elementConstructor, options = {}) {
         metadata.isRequired = options.isRequired || false;
         metadata.key = propKey.toString();
         metadata.name = options.name || propKey.toString();
+        metadata.deserializer = options.deserializer;
+        metadata.serializer = options.serializer;
         injectMetadataInformation(target, propKey, metadata);
     };
 }
@@ -1211,6 +1229,8 @@ function jsonMapMember(keyConstructor, valueConstructor, options = {}) {
         metadata.isRequired = options.isRequired || false;
         metadata.key = propKey.toString();
         metadata.name = options.name || propKey.toString();
+        metadata.deserializer = options.deserializer;
+        metadata.serializer = options.serializer;
         injectMetadataInformation(target, propKey, metadata);
     };
 }
