@@ -18,6 +18,12 @@ export interface IJsonSetMemberOptions
 
     /** When set, the key on the JSON that should be used instead of the class property name */
     name?: string;
+
+    /** When set, this deserializer will be used to deserialize the member. The callee must assure the correct type. */
+    deserializer?: (json: any) => any;
+
+    /** When set, this serializer will be used to serialize the member. */
+    serializer?: (value: any) => any;
 }
 
 /**
@@ -53,6 +59,8 @@ export function jsonSetMember(elementConstructor: Function, options: IJsonSetMem
         metadata.isRequired = options.isRequired || false;
         metadata.key = propKey.toString();
         metadata.name = options.name || propKey.toString();
+        metadata.deserializer = options.deserializer;
+        metadata.serializer = options.serializer;
 
         injectMetadataInformation(target, propKey, metadata);
     };

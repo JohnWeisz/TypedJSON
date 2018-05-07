@@ -139,11 +139,15 @@ export class Serializer
 
             sourceTypeMetadata.dataMembers.forEach((memberMetadata, propKey) =>
             {
-                targetObject[memberMetadata.name] = this.convertSingleValue(sourceObject[memberMetadata.key], {
-                    selfType: memberMetadata.ctor,
-                    elementTypes: memberMetadata.elementType,
-                    keyType: memberMetadata.keyType
-                }, `${nameof(sourceTypeMetadata.classType)}.${memberMetadata.key}`);
+                if (memberMetadata.serializer) {
+                    targetObject[memberMetadata.name] = memberMetadata.serializer(sourceObject[memberMetadata.key]);
+                } else {
+                    targetObject[memberMetadata.name] = this.convertSingleValue(sourceObject[memberMetadata.key], {
+                        selfType: memberMetadata.ctor,
+                        elementTypes: memberMetadata.elementType,
+                        keyType: memberMetadata.keyType
+                    }, `${nameof(sourceTypeMetadata.classType)}.${memberMetadata.key}`);
+                }
             });
         }
         else

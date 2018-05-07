@@ -1,5 +1,5 @@
 ﻿import { nameof } from "./helpers";
-import { JsonMemberMetadata, JsonObjectMetadata, injectMetadataInformation } from "./metadata";
+import { JsonMemberMetadata, injectMetadataInformation } from "./metadata";
 import * as Helpers from "./helpers";
 
 declare abstract class Reflect
@@ -21,8 +21,14 @@ export interface IJsonMemberOptions
     /** When set, a default value is emitted if the property is uninitialized/undefined. */
     emitDefaultValue?: boolean;
 
-    /** When set, the key on the JSON that should be used instead of the class property name */
+    /** When set, the key on the JSON that should be used instead of the class property name. */
     name?: string;
+
+    /** When set, this deserializer will be used to deserialize the member. The callee must assure the correct type. */
+    deserializer?: (json: any) => any;
+
+    /** When set, this serializer will be used to serialize the member. */
+    serializer?: (value: any) => any;
 }
 
 /**
@@ -113,7 +119,7 @@ export function jsonMember<TFunction extends Function>(optionsOrTarget?: IJsonMe
                         return;
                     }
                 }
-                else
+                else if (!options.deserializer)
                 {
                     Helpers.logError(`${decoratorName}: ReflectDecorators is required if no 'constructor' option is specified.`);
                     return;
@@ -132,6 +138,8 @@ export function jsonMember<TFunction extends Function>(optionsOrTarget?: IJsonMe
             memberMetadata.isRequired = options.isRequired || false;
             memberMetadata.key = _propKey.toString();
             memberMetadata.name = options.name || _propKey.toString();
+            memberMetadata.deserializer = options.deserializer;
+            memberMetadata.serializer = options.serializer;
 
             injectMetadataInformation(target, _propKey, memberMetadata);
         };

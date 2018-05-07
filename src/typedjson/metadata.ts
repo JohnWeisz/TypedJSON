@@ -24,6 +24,12 @@ export class JsonMemberMetadata
 
     /** If the json member is a map, sets member options of array keys. */
     public keyType: Function;
+
+    /** Custom deserializer to use. */
+    public deserializer?: (json: any) => any;
+
+    /** Custom serializer to use. */
+    public serializer?: (value: any) => any;
 }
 
 export class JsonObjectMetadata
@@ -145,7 +151,7 @@ export function injectMetadataInformation(target: IndexedObject, propKey: string
         return;
     }
 
-    if (!metadata || !metadata.ctor)
+    if (!metadata || (!metadata.ctor && !metadata.deserializer))
     {
         Helpers.logError(`${decoratorName}: JsonMemberMetadata has unknown ctor.`);
         return;
@@ -181,7 +187,8 @@ export function injectMetadataInformation(target: IndexedObject, propKey: string
         objectMetadata = target[Helpers.METADATA_FIELD_KEY];
     }
 
-    objectMetadata.knownTypes.add(metadata.ctor);
+    if (!metadata.deserializer)
+        objectMetadata.knownTypes.add(metadata.ctor);
 
     if (metadata.keyType)
         objectMetadata.knownTypes.add(metadata.keyType);

@@ -1,7 +1,7 @@
 import { nameof } from "./helpers";
 import * as Helpers from "./helpers";
 import { IndexedObject } from "./types";
-import { JsonMemberMetadata, JsonObjectMetadata } from "./metadata";
+import { JsonObjectMetadata } from "./metadata";
 
 export interface IScopeTypeInfo
 {
@@ -101,12 +101,17 @@ export class Deserializer<T>
                 let memberNameForDebug = `${nameof(sourceObjectMetadata.classType)}.${propKey}`;
                 let expectedMemberType = memberMetadata.ctor;
 
-                let revivedValue = this.convertSingleValue(memberValue, {
-                    selfConstructor: expectedMemberType,
-                    elementConstructor: memberMetadata.elementType,
-                    keyConstructor: memberMetadata.keyType,
-                    knownTypes: knownTypeConstructors
-                }, memberNameForDebug);
+                let revivedValue;
+                if (memberMetadata.deserializer) {
+                    revivedValue = memberMetadata.deserializer(memberValue);
+                } else {
+                    revivedValue = this.convertSingleValue(memberValue, {
+                        selfConstructor: expectedMemberType,
+                        elementConstructor: memberMetadata.elementType,
+                        keyConstructor: memberMetadata.keyType,
+                        knownTypes: knownTypeConstructors
+                    }, memberNameForDebug);
+                }
 
                 if (Helpers.isValueDefined(revivedValue))
                 {
