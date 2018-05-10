@@ -1,4 +1,4 @@
-// [typedjson]  Version: 1.1.0-rc1 - 2018-05-07  
+// [typedjson]  Version: 1.1.0-rc3 - 2018-05-10  
  (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -88,7 +88,7 @@ return /******/ (function(modules) { // webpackBootstrap
 __webpack_require__.r(__webpack_exports__);
 
 // CONCATENATED MODULE: ./src/typedjson/helpers.ts
-const METADATA_FIELD_KEY = "__typedJsonJsonObjectMetadataInformation__";
+var METADATA_FIELD_KEY = "__typedJsonJsonObjectMetadataInformation__";
 function getDefaultValue(type) {
     switch (type) {
         case Number:
@@ -137,7 +137,11 @@ function parseToJSObject(json) {
 function isSubtypeOf(A, B) {
     return A === B || A.prototype instanceof B;
 }
-function logError(message, ...optionalParams) {
+function logError(message) {
+    var optionalParams = [];
+    for (var _i = 1; _i < arguments.length; _i++) {
+        optionalParams[_i - 1] = arguments[_i];
+    }
     if (typeof console === "object" && typeof console.error === "function") {
         console.error.apply(console, [message].concat(optionalParams));
     }
@@ -145,12 +149,20 @@ function logError(message, ...optionalParams) {
         console.log.apply(console, ["ERROR: " + message].concat(optionalParams));
     }
 }
-function logMessage(message, ...optionalParams) {
+function logMessage(message) {
+    var optionalParams = [];
+    for (var _i = 1; _i < arguments.length; _i++) {
+        optionalParams[_i - 1] = arguments[_i];
+    }
     if (typeof console === "object" && typeof console.log === "function") {
         console.log.apply(console, [message].concat(optionalParams));
     }
 }
-function logWarning(message, ...optionalParams) {
+function logWarning(message) {
+    var optionalParams = [];
+    for (var _i = 1; _i < arguments.length; _i++) {
+        optionalParams[_i - 1] = arguments[_i];
+    }
     if (typeof console === "object" && typeof console.warn === "function") {
         console.warn.apply(console, [message].concat(optionalParams));
     }
@@ -180,8 +192,12 @@ function isInstanceOf(value, constructor) {
     }
     return false;
 }
-const isReflectMetadataSupported = (typeof Reflect === "object" && typeof Reflect.getMetadata === "function");
-function multilineString(...values) {
+var isReflectMetadataSupported = (typeof Reflect === "object" && typeof Reflect.getMetadata === "function");
+function multilineString() {
+    var values = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        values[_i] = arguments[_i];
+    }
     return values.join(" ");
 }
 /**
@@ -200,10 +216,14 @@ function nameof(fn) {
 // CONCATENATED MODULE: ./src/typedjson/metadata.ts
 
 
-class JsonMemberMetadata {
-}
-class metadata_JsonObjectMetadata {
-    constructor() {
+var JsonMemberMetadata = /** @class */ (function () {
+    function JsonMemberMetadata() {
+    }
+    return JsonMemberMetadata;
+}());
+
+var metadata_JsonObjectMetadata = /** @class */ (function () {
+    function JsonObjectMetadata() {
         //#endregion
         this.dataMembers = new Map();
         this.knownTypes = new Set();
@@ -213,16 +233,16 @@ class metadata_JsonObjectMetadata {
      * Gets the name of a class as it appears in a serialized JSON string.
      * @param ctor The constructor of a class (with or without jsonObject).
      */
-    static getJsonObjectName(ctor) {
+    JsonObjectMetadata.getJsonObjectName = function (ctor) {
         var metadata = this.getFromConstructor(ctor);
         return metadata ? nameof(metadata.classType) : nameof(ctor);
-    }
+    };
     /**
      * Gets jsonObject metadata information from a class or its prototype.
      * @param target The target class or prototype.
      * @param allowInherited Whether to use inherited metadata information from base classes (if own metadata does not exist).
      */
-    static getFromConstructor(target) {
+    JsonObjectMetadata.getFromConstructor = function (target) {
         var targetPrototype;
         var metadata;
         targetPrototype = (typeof target === "function") ? target.prototype : target;
@@ -240,49 +260,51 @@ class metadata_JsonObjectMetadata {
         else {
             return undefined;
         }
-    }
+    };
     /**
      * Gets jsonObject metadata information from a class instance.
      * @param target The target instance.
      */
-    static getFromInstance(target) {
+    JsonObjectMetadata.getFromInstance = function (target) {
         return this.getFromConstructor(Object.getPrototypeOf(target));
-    }
+    };
     /**
      * Gets the known type name of a jsonObject class for type hint.
      * @param target The target class.
      */
-    static getKnownTypeNameFromType(target) {
+    JsonObjectMetadata.getKnownTypeNameFromType = function (target) {
         var metadata = this.getFromConstructor(target);
         return metadata ? nameof(metadata.classType) : nameof(target);
-    }
+    };
     /**
      * Gets the known type name of a jsonObject instance for type hint.
      * @param target The target instance.
      */
-    static getKnownTypeNameFromInstance(target) {
+    JsonObjectMetadata.getKnownTypeNameFromInstance = function (target) {
         var metadata = this.getFromInstance(target);
         return metadata ? nameof(metadata.classType) : nameof(target.constructor);
-    }
-}
+    };
+    return JsonObjectMetadata;
+}());
+
 function injectMetadataInformation(target, propKey, metadata) {
-    var decoratorName = `@jsonMember on ${nameof(target.constructor)}.${propKey}`; // For error messages.
+    var decoratorName = "@jsonMember on " + nameof(target.constructor) + "." + propKey; // For error messages.
     var objectMetadata;
     var parentMetadata;
     // When a property decorator is applied to a static member, 'target' is a constructor function.
     // See: https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md#property-decorators
     // ... and static members are not supported here, so abort.
     if (typeof target === "function") {
-        logError(`${decoratorName}: cannot use a static property.`);
+        logError(decoratorName + ": cannot use a static property.");
         return;
     }
     // Methods cannot be serialized.
     if (typeof target[propKey] === "function") {
-        logError(`${decoratorName}: cannot use a method property.`);
+        logError(decoratorName + ": cannot use a method property.");
         return;
     }
     if (!metadata || (!metadata.ctor && !metadata.deserializer)) {
-        logError(`${decoratorName}: JsonMemberMetadata has unknown ctor.`);
+        logError(decoratorName + ": JsonMemberMetadata has unknown ctor.");
         return;
     }
     // Add jsonObject metadata to 'target' if not yet exists ('target' is the prototype).
@@ -295,7 +317,7 @@ function injectMetadataInformation(target, propKey, metadata) {
         // Inherit @JsonMembers from parent @jsonObject (if any).
         if (parentMetadata) // && !target.hasOwnProperty(Helpers.METADATA_FIELD_KEY)
          {
-            parentMetadata.dataMembers.forEach((_metadata, _propKey) => objectMetadata.dataMembers.set(_propKey, _metadata));
+            parentMetadata.dataMembers.forEach(function (_metadata, _propKey) { return objectMetadata.dataMembers.set(_propKey, _metadata); });
         }
         // ('target' is the prototype of the involved class, metadata information is added to this class prototype).
         Object.defineProperty(target, METADATA_FIELD_KEY, {
@@ -314,7 +336,7 @@ function injectMetadataInformation(target, propKey, metadata) {
     if (metadata.keyType)
         objectMetadata.knownTypes.add(metadata.keyType);
     if (metadata.elementType)
-        metadata.elementType.forEach(elemCtor => objectMetadata.knownTypes.add(elemCtor));
+        metadata.elementType.forEach(function (elemCtor) { return objectMetadata.knownTypes.add(elemCtor); });
     objectMetadata.dataMembers.set(metadata.name, metadata);
 }
 
@@ -326,41 +348,43 @@ function injectMetadataInformation(target, propKey, metadata) {
  * Utility class, converts a simple/untyped javascript object-tree to a typed object-tree.
  * It is used after parsing a JSON-string.
  */
-class deserializer_Deserializer {
-    constructor() {
-        this._typeResolver = (sourceObject, knownTypes) => {
+var deserializer_Deserializer = /** @class */ (function () {
+    function Deserializer() {
+        this._typeResolver = function (sourceObject, knownTypes) {
             if (sourceObject.__type)
                 return knownTypes.get(sourceObject.__type);
         };
-        this._errorHandler = (error) => logError(error);
+        this._errorHandler = function (error) { return logError(error); };
     }
-    setNameResolver(nameResolverCallback) {
+    Deserializer.prototype.setNameResolver = function (nameResolverCallback) {
         this._nameResolver = nameResolverCallback;
-    }
-    setTypeResolver(typeResolverCallback) {
+    };
+    Deserializer.prototype.setTypeResolver = function (typeResolverCallback) {
         if (typeof typeResolverCallback !== "function")
             throw new TypeError("'typeResolverCallback' is not a function.");
         this._typeResolver = typeResolverCallback;
-    }
-    setErrorHandler(errorHandlerCallback) {
+    };
+    Deserializer.prototype.setErrorHandler = function (errorHandlerCallback) {
         if (typeof errorHandlerCallback !== "function")
             throw new TypeError("'errorHandlerCallback' is not a function.");
         this._errorHandler = errorHandlerCallback;
-    }
-    convertAsObject(sourceObject, sourceObjectTypeInfo, objectName = "object") {
+    };
+    Deserializer.prototype.convertAsObject = function (sourceObject, sourceObjectTypeInfo, objectName) {
+        var _this = this;
+        if (objectName === void 0) { objectName = "object"; }
         if (typeof sourceObject !== "object" || sourceObject === null) {
-            this._errorHandler(new TypeError(`Cannot deserialize ${objectName}: 'sourceObject' must be a defined object.`));
+            this._errorHandler(new TypeError("Cannot deserialize " + objectName + ": 'sourceObject' must be a defined object."));
             return undefined;
         }
-        let expectedSelfType = sourceObjectTypeInfo.selfConstructor;
-        let sourceObjectMetadata = metadata_JsonObjectMetadata.getFromConstructor(expectedSelfType);
-        let knownTypeConstructors = sourceObjectTypeInfo.knownTypes;
+        var expectedSelfType = sourceObjectTypeInfo.selfConstructor;
+        var sourceObjectMetadata = metadata_JsonObjectMetadata.getFromConstructor(expectedSelfType);
+        var knownTypeConstructors = sourceObjectTypeInfo.knownTypes;
         if (sourceObjectMetadata) {
             // Merge known types received from "above" with known types defined on the current type.
             knownTypeConstructors = this._mergeKnownTypes(knownTypeConstructors, this._createKnownTypesMap(sourceObjectMetadata.knownTypes));
         }
         // Check if a type-hint is available from the source object.
-        let typeFromTypeHint = this._typeResolver(sourceObject, knownTypeConstructors);
+        var typeFromTypeHint = this._typeResolver(sourceObject, knownTypeConstructors);
         if (typeFromTypeHint) {
             // Check if type hint is a valid subtype of the expected source type.
             if (isSubtypeOf(typeFromTypeHint, expectedSelfType)) {
@@ -376,18 +400,18 @@ class deserializer_Deserializer {
         if (sourceObjectMetadata && sourceObjectMetadata.isExplicitlyMarked) {
             // Strong-typed deserialization available, get to it.
             // First deserialize properties into a temporary object.
-            let sourceObjectWithDeserializedProperties = {};
+            var sourceObjectWithDeserializedProperties_1 = {};
             // Deserialize by expected properties.
-            sourceObjectMetadata.dataMembers.forEach((memberMetadata, propKey) => {
-                let memberValue = sourceObject[propKey];
-                let memberNameForDebug = `${nameof(sourceObjectMetadata.classType)}.${propKey}`;
-                let expectedMemberType = memberMetadata.ctor;
-                let revivedValue;
+            sourceObjectMetadata.dataMembers.forEach(function (memberMetadata, propKey) {
+                var memberValue = sourceObject[propKey];
+                var memberNameForDebug = nameof(sourceObjectMetadata.classType) + "." + propKey;
+                var expectedMemberType = memberMetadata.ctor;
+                var revivedValue;
                 if (memberMetadata.deserializer) {
                     revivedValue = memberMetadata.deserializer(memberValue);
                 }
                 else {
-                    revivedValue = this.convertSingleValue(memberValue, {
+                    revivedValue = _this.convertSingleValue(memberValue, {
                         selfConstructor: expectedMemberType,
                         elementConstructor: memberMetadata.elementType,
                         keyConstructor: memberMetadata.keyType,
@@ -395,23 +419,23 @@ class deserializer_Deserializer {
                     }, memberNameForDebug);
                 }
                 if (isValueDefined(revivedValue)) {
-                    sourceObjectWithDeserializedProperties[memberMetadata.key] = revivedValue;
+                    sourceObjectWithDeserializedProperties_1[memberMetadata.key] = revivedValue;
                 }
                 else if (memberMetadata.isRequired) {
-                    this._errorHandler(new TypeError(`Missing required member '${memberNameForDebug}'.`));
+                    _this._errorHandler(new TypeError("Missing required member '" + memberNameForDebug + "'."));
                 }
             });
             // Next, instantiate target object.
-            let targetObject;
+            var targetObject = void 0;
             if (typeof sourceObjectMetadata.initializerCallback === "function") {
                 try {
-                    targetObject = sourceObjectMetadata.initializerCallback(sourceObjectWithDeserializedProperties, sourceObject);
+                    targetObject = sourceObjectMetadata.initializerCallback(sourceObjectWithDeserializedProperties_1, sourceObject);
                     // Check the validity of user-defined initializer callback.
                     if (!targetObject) {
-                        throw new TypeError(multilineString(`Cannot deserialize ${objectName}:`, `'initializer' function returned undefined/null, but '${nameof(sourceObjectMetadata.classType)}' was expected.`));
+                        throw new TypeError(multilineString("Cannot deserialize " + objectName + ":", "'initializer' function returned undefined/null, but '" + nameof(sourceObjectMetadata.classType) + "' was expected."));
                     }
                     else if (!(targetObject instanceof sourceObjectMetadata.classType)) {
-                        throw new TypeError(multilineString(`Cannot deserialize ${objectName}:`, `'initializer' returned '${nameof(targetObject.constructor)}', but '${nameof(sourceObjectMetadata.classType)}' was expected,`, `and '${nameof(targetObject.constructor)}' is not a subtype of '${nameof(sourceObjectMetadata.classType)}'`));
+                        throw new TypeError(multilineString("Cannot deserialize " + objectName + ":", "'initializer' returned '" + nameof(targetObject.constructor) + "', but '" + nameof(sourceObjectMetadata.classType) + "' was expected,", "and '" + nameof(targetObject.constructor) + "' is not a subtype of '" + nameof(sourceObjectMetadata.classType) + "'"));
                     }
                 }
                 catch (e) {
@@ -423,35 +447,36 @@ class deserializer_Deserializer {
                 targetObject = this._instantiateType(expectedSelfType);
             }
             // Finally, assign deserialized properties to target object.
-            Object.assign(targetObject, sourceObjectWithDeserializedProperties);
+            Object.assign(targetObject, sourceObjectWithDeserializedProperties_1);
             // Call onDeserialized method (if any).
             if (sourceObjectMetadata.onDeserializedMethodName) {
                 if (typeof targetObject.constructor[sourceObjectMetadata.onDeserializedMethodName] === "function") {
                     targetObject.constructor[sourceObjectMetadata.onDeserializedMethodName]();
                 }
                 else {
-                    this._errorHandler(new TypeError(`onDeserialized callback '${nameof(sourceObjectMetadata.classType)}.${sourceObjectMetadata.onDeserializedMethodName}' is not a method.`));
+                    this._errorHandler(new TypeError("onDeserialized callback '" + nameof(sourceObjectMetadata.classType) + "." + sourceObjectMetadata.onDeserializedMethodName + "' is not a method."));
                 }
             }
             return targetObject;
         }
         else {
             // Untyped deserialization into Object instance.
-            let targetObject = {};
-            Object.keys(sourceObject).forEach(sourceKey => {
-                targetObject[sourceKey] = this.convertSingleValue(sourceObject[sourceKey], {
+            var targetObject_1 = {};
+            Object.keys(sourceObject).forEach(function (sourceKey) {
+                targetObject_1[sourceKey] = _this.convertSingleValue(sourceObject[sourceKey], {
                     selfConstructor: sourceObject[sourceKey].constructor,
                     knownTypes: sourceObjectTypeInfo.knownTypes,
                     elementConstructor: sourceObjectTypeInfo.elementConstructor,
                     keyConstructor: sourceObjectTypeInfo.keyConstructor
                 }, sourceKey);
             });
-            return targetObject;
+            return targetObject_1;
         }
-    }
-    convertSingleValue(sourceObject, typeInfo, memberName = "object") {
-        let expectedSelfType = typeInfo.selfConstructor;
-        let srcTypeNameForDebug = sourceObject ? nameof(sourceObject.constructor) : "undefined";
+    };
+    Deserializer.prototype.convertSingleValue = function (sourceObject, typeInfo, memberName) {
+        if (memberName === void 0) { memberName = "object"; }
+        var expectedSelfType = typeInfo.selfConstructor;
+        var srcTypeNameForDebug = sourceObject ? nameof(sourceObject.constructor) : "undefined";
         if (!isValueDefined(sourceObject)) {
             return sourceObject;
         }
@@ -473,43 +498,43 @@ class deserializer_Deserializer {
         }
         else if (expectedSelfType === Float32Array) {
             // Deserialize Float32Array from number[].
-            if (sourceObject instanceof Array && sourceObject.every(elem => !isNaN(elem)))
+            if (sourceObject instanceof Array && sourceObject.every(function (elem) { return !isNaN(elem); }))
                 return new Float32Array(sourceObject);
             else
                 this._throwTypeMismatchError("Float32Array", "a numeric source array", srcTypeNameForDebug, memberName);
         }
         else if (expectedSelfType === Float64Array) {
             // Deserialize Float64Array from number[].
-            if (sourceObject instanceof Array && sourceObject.every(elem => !isNaN(elem)))
+            if (sourceObject instanceof Array && sourceObject.every(function (elem) { return !isNaN(elem); }))
                 return new Float64Array(sourceObject);
             else
                 this._throwTypeMismatchError("Float64Array", "a numeric source array", srcTypeNameForDebug, memberName);
         }
         else if (expectedSelfType === Uint8Array) {
             // Deserialize Uint8Array from number[].
-            if (sourceObject instanceof Array && sourceObject.every(elem => !isNaN(elem)))
-                return new Uint8Array(sourceObject.map(value => ~~value));
+            if (sourceObject instanceof Array && sourceObject.every(function (elem) { return !isNaN(elem); }))
+                return new Uint8Array(sourceObject.map(function (value) { return ~~value; }));
             else
                 this._throwTypeMismatchError("Uint8Array", "a numeric source array", srcTypeNameForDebug, memberName);
         }
         else if (expectedSelfType === Uint8ClampedArray) {
             // Deserialize Uint8Array from number[].
-            if (sourceObject instanceof Array && sourceObject.every(elem => !isNaN(elem)))
-                return new Uint8ClampedArray(sourceObject.map(value => ~~value));
+            if (sourceObject instanceof Array && sourceObject.every(function (elem) { return !isNaN(elem); }))
+                return new Uint8ClampedArray(sourceObject.map(function (value) { return ~~value; }));
             else
                 this._throwTypeMismatchError("Uint8ClampedArray", "a numeric source array", srcTypeNameForDebug, memberName);
         }
         else if (expectedSelfType === Uint16Array) {
             // Deserialize Uint16Array from number[].
-            if (sourceObject instanceof Array && sourceObject.every(elem => !isNaN(elem)))
-                return new Uint16Array(sourceObject.map(value => ~~value));
+            if (sourceObject instanceof Array && sourceObject.every(function (elem) { return !isNaN(elem); }))
+                return new Uint16Array(sourceObject.map(function (value) { return ~~value; }));
             else
                 this._throwTypeMismatchError("Uint16Array", "a numeric source array", srcTypeNameForDebug, memberName);
         }
         else if (expectedSelfType === Uint32Array) {
             // Deserialize Uint32Array from number[].
-            if (sourceObject instanceof Array && sourceObject.every(elem => !isNaN(elem)))
-                return new Uint32Array(sourceObject.map(value => ~~value));
+            if (sourceObject instanceof Array && sourceObject.every(function (elem) { return !isNaN(elem); }))
+                return new Uint32Array(sourceObject.map(function (value) { return ~~value; }));
             else
                 this._throwTypeMismatchError("Uint32Array", "a numeric source array", srcTypeNameForDebug, memberName);
         }
@@ -546,114 +571,127 @@ class deserializer_Deserializer {
         else if (sourceObject && typeof sourceObject === "object") {
             return this.convertAsObject(sourceObject, typeInfo, memberName);
         }
-    }
-    convertAsArray(sourceObject, typeInfo, memberName = "object") {
+    };
+    Deserializer.prototype.convertAsArray = function (sourceObject, typeInfo, memberName) {
+        var _this = this;
+        if (memberName === void 0) { memberName = "object"; }
         if (!(sourceObject instanceof Array)) {
             this._errorHandler(new TypeError(this._makeTypeErrorMessage(Array, sourceObject.constructor, memberName)));
             return [];
         }
         if (!typeInfo.elementConstructor || !typeInfo.elementConstructor.length) {
-            this._errorHandler(new TypeError(`Could not deserialize ${memberName} as Array: missing constructor reference of Array elements.`));
+            this._errorHandler(new TypeError("Could not deserialize " + memberName + " as Array: missing constructor reference of Array elements."));
             return [];
         }
-        let elementTypeInfo = {
+        var elementTypeInfo = {
             selfConstructor: typeInfo.elementConstructor[0],
             elementConstructor: (typeInfo.elementConstructor.length > 1) ? typeInfo.elementConstructor.slice(1) : [],
             knownTypes: typeInfo.knownTypes
         };
-        return sourceObject.map(element => {
+        return sourceObject.map(function (element) {
             // If an array element fails to deserialize, substitute with undefined. This is so that the original ordering is not interrupted by faulty
             // entries, as an Array is ordered.
             try {
-                return this.convertSingleValue(element, elementTypeInfo);
+                return _this.convertSingleValue(element, elementTypeInfo);
             }
             catch (e) {
-                this._errorHandler(e);
+                _this._errorHandler(e);
                 // Keep filling the array here with undefined to keep original ordering.
                 // Note: this is just aesthetics, not returning anything produces the same result.
                 return undefined;
             }
         });
-    }
-    convertAsSet(sourceObject, typeInfo, memberName = "object") {
+    };
+    Deserializer.prototype.convertAsSet = function (sourceObject, typeInfo, memberName) {
+        var _this = this;
+        if (memberName === void 0) { memberName = "object"; }
         if (!(sourceObject instanceof Array)) {
             this._errorHandler(new TypeError(this._makeTypeErrorMessage(Array, sourceObject.constructor, memberName)));
             return new Set();
         }
         if (!typeInfo.elementConstructor || !typeInfo.elementConstructor.length) {
-            this._errorHandler(new TypeError(`Could not deserialize ${memberName} as Set: missing constructor reference of Set elements.`));
+            this._errorHandler(new TypeError("Could not deserialize " + memberName + " as Set: missing constructor reference of Set elements."));
             return new Set();
         }
-        let elementTypeInfo = {
+        var elementTypeInfo = {
             selfConstructor: typeInfo.elementConstructor[0],
             elementConstructor: (typeInfo.elementConstructor.length > 1) ? typeInfo.elementConstructor.slice(1) : [],
             knownTypes: typeInfo.knownTypes
         };
-        let resultSet = new Set();
-        sourceObject.forEach((element, i) => {
+        var resultSet = new Set();
+        sourceObject.forEach(function (element, i) {
             try {
-                resultSet.add(this.convertSingleValue(element, elementTypeInfo, memberName + `[${i}]`));
+                resultSet.add(_this.convertSingleValue(element, elementTypeInfo, memberName + ("[" + i + "]")));
             }
             catch (e) {
                 // Faulty entries are skipped, because a Set is not ordered, and skipping an entry does not affect others.
-                this._errorHandler(e);
+                _this._errorHandler(e);
             }
         });
         return resultSet;
-    }
-    convertAsMap(sourceObject, typeInfo, memberName = "object") {
+    };
+    Deserializer.prototype.convertAsMap = function (sourceObject, typeInfo, memberName) {
+        var _this = this;
+        if (memberName === void 0) { memberName = "object"; }
         if (!(sourceObject instanceof Array))
             this._errorHandler(new TypeError(this._makeTypeErrorMessage(Array, sourceObject.constructor, memberName)));
         if (!typeInfo.keyConstructor) {
-            this._errorHandler(new TypeError(`Could not deserialize ${memberName} as Map: missing key constructor.`));
+            this._errorHandler(new TypeError("Could not deserialize " + memberName + " as Map: missing key constructor."));
             return new Map();
         }
         if (!typeInfo.elementConstructor || !typeInfo.elementConstructor.length) {
-            this._errorHandler(new TypeError(`Could not deserialize ${memberName} as Map: missing value constructor.`));
+            this._errorHandler(new TypeError("Could not deserialize " + memberName + " as Map: missing value constructor."));
             return new Map();
         }
-        let keyTypeInfo = {
+        var keyTypeInfo = {
             selfConstructor: typeInfo.keyConstructor,
             knownTypes: typeInfo.knownTypes
         };
-        let valueTypeInfo = {
+        var valueTypeInfo = {
             selfConstructor: typeInfo.elementConstructor[0],
             elementConstructor: (typeInfo.elementConstructor.length > 1) ? typeInfo.elementConstructor.slice(1) : [],
             knownTypes: typeInfo.knownTypes
         };
-        let resultMap = new Map();
-        sourceObject.forEach((element) => {
+        var resultMap = new Map();
+        sourceObject.forEach(function (element) {
             try {
-                let key = this.convertSingleValue(element.key, keyTypeInfo);
+                var key = _this.convertSingleValue(element.key, keyTypeInfo);
                 // Undefined/null keys not supported, skip if so.
                 if (isValueDefined(key)) {
-                    resultMap.set(key, this.convertSingleValue(element.value, valueTypeInfo, memberName + `[${key}]`));
+                    resultMap.set(key, _this.convertSingleValue(element.value, valueTypeInfo, memberName + ("[" + key + "]")));
                 }
             }
             catch (e) {
                 // Faulty entries are skipped, because a Map is not ordered, and skipping an entry does not affect others.
-                this._errorHandler(e);
+                _this._errorHandler(e);
             }
         });
         return resultMap;
-    }
-    _throwTypeMismatchError(targetType, expectedSourceType, actualSourceType, memberName = "object") {
-        throw new TypeError(`Could not deserialize ${memberName} as ${targetType}: expected ${expectedSourceType}, got ${actualSourceType}.`);
-    }
-    _makeTypeErrorMessage(expectedType, actualType, memberName = "object") {
-        let expectedTypeName = (typeof expectedType === "function") ? nameof(expectedType) : expectedType;
-        let actualTypeName = (typeof actualType === "function") ? nameof(actualType) : actualType;
-        return `Could not deserialize ${memberName}: expected '${expectedTypeName}', got '${actualTypeName}'.`;
-    }
-    _instantiateType(ctor) {
+    };
+    Deserializer.prototype._throwTypeMismatchError = function (targetType, expectedSourceType, actualSourceType, memberName) {
+        if (memberName === void 0) { memberName = "object"; }
+        throw new TypeError("Could not deserialize " + memberName + " as " + targetType + ": expected " + expectedSourceType + ", got " + actualSourceType + ".");
+    };
+    Deserializer.prototype._makeTypeErrorMessage = function (expectedType, actualType, memberName) {
+        if (memberName === void 0) { memberName = "object"; }
+        var expectedTypeName = (typeof expectedType === "function") ? nameof(expectedType) : expectedType;
+        var actualTypeName = (typeof actualType === "function") ? nameof(actualType) : actualType;
+        return "Could not deserialize " + memberName + ": expected '" + expectedTypeName + "', got '" + actualTypeName + "'.";
+    };
+    Deserializer.prototype._instantiateType = function (ctor) {
         return new ctor();
-    }
-    _mergeKnownTypes(...knownTypeMaps) {
-        let result = new Map();
-        knownTypeMaps.forEach(knownTypes => {
-            knownTypes.forEach((ctor, name) => {
-                if (this._nameResolver) {
-                    result.set(this._nameResolver(ctor), ctor);
+    };
+    Deserializer.prototype._mergeKnownTypes = function () {
+        var _this = this;
+        var knownTypeMaps = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            knownTypeMaps[_i] = arguments[_i];
+        }
+        var result = new Map();
+        knownTypeMaps.forEach(function (knownTypes) {
+            knownTypes.forEach(function (ctor, name) {
+                if (_this._nameResolver) {
+                    result.set(_this._nameResolver(ctor), ctor);
                 }
                 else {
                     result.set(name, ctor);
@@ -661,39 +699,50 @@ class deserializer_Deserializer {
             });
         });
         return result;
-    }
-    _createKnownTypesMap(knowTypes) {
-        let map = new Map();
-        knowTypes.forEach(ctor => {
-            if (this._nameResolver) {
-                map.set(this._nameResolver(ctor), ctor);
+    };
+    Deserializer.prototype._createKnownTypesMap = function (knowTypes) {
+        var _this = this;
+        var map = new Map();
+        knowTypes.forEach(function (ctor) {
+            if (_this._nameResolver) {
+                map.set(_this._nameResolver(ctor), ctor);
             }
             else {
                 map.set(ctor.name, ctor);
             }
         });
         return map;
-    }
-    _isDirectlyDeserializableNativeType(ctor) {
+    };
+    Deserializer.prototype._isDirectlyDeserializableNativeType = function (ctor) {
         return ~([Number, String, Boolean].indexOf(ctor));
-    }
-    convertNativeObject(sourceObject) {
+    };
+    Deserializer.prototype.convertNativeObject = function (sourceObject) {
         return sourceObject;
-    }
-    _stringToArrayBuffer(str) {
-        let buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
-        let bufView = new Uint16Array(buf);
-        for (let i = 0, strLen = str.length; i < strLen; i++) {
+    };
+    Deserializer.prototype._stringToArrayBuffer = function (str) {
+        var buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
+        var bufView = new Uint16Array(buf);
+        for (var i = 0, strLen = str.length; i < strLen; i++) {
             bufView[i] = str.charCodeAt(i);
         }
         return buf;
-    }
-    _stringToDataView(str) {
+    };
+    Deserializer.prototype._stringToDataView = function (str) {
         return new DataView(this._stringToArrayBuffer(str));
-    }
-}
+    };
+    return Deserializer;
+}());
+
 
 // CONCATENATED MODULE: ./src/typedjson/serializer.ts
+var __assign = (undefined && undefined.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
 
 
 
@@ -705,9 +754,9 @@ class deserializer_Deserializer {
  *
  * (1) typed object-tree -> (2) simple JS object-tree -> (3) JSON-string
  */
-class serializer_Serializer {
-    constructor() {
-        this._typeHintEmitter = (targetObject, sourceObject, expectedSourceType) => {
+var serializer_Serializer = /** @class */ (function () {
+    function Serializer() {
+        this._typeHintEmitter = function (targetObject, sourceObject, expectedSourceType) {
             // By default, we put a "__type" property on the output object if the actual object is not the same as the expected one, so that deserialization
             // will know what to deserialize into (given the required known-types are defined, and the object is a valid subtype of the expected type).
             if (sourceObject.constructor !== expectedSourceType) {
@@ -716,31 +765,32 @@ class serializer_Serializer {
                 targetObject["__type"] = nameof(sourceObject.constructor);
             }
         };
-        this._errorHandler = (error) => logError(error);
+        this._errorHandler = function (error) { return logError(error); };
     }
-    setTypeHintEmitter(typeEmitterCallback) {
+    Serializer.prototype.setTypeHintEmitter = function (typeEmitterCallback) {
         if (typeof typeEmitterCallback !== "function") {
             throw new TypeError("'typeEmitterCallback' is not a function.");
         }
         this._typeHintEmitter = typeEmitterCallback;
-    }
-    setErrorHandler(errorHandlerCallback) {
+    };
+    Serializer.prototype.setErrorHandler = function (errorHandlerCallback) {
         if (typeof errorHandlerCallback !== "function") {
             throw new TypeError("'errorHandlerCallback' is not a function.");
         }
         this._errorHandler = errorHandlerCallback;
-    }
+    };
     /**
      * Convert a value of any supported serializable type.
      * The value type will be detected, and the correct serialization method will be called.
      */
-    convertSingleValue(sourceObject, typeInfo, memberName = "object") {
+    Serializer.prototype.convertSingleValue = function (sourceObject, typeInfo, memberName) {
+        if (memberName === void 0) { memberName = "object"; }
         if (!isValueDefined(sourceObject))
             return;
         if (!isInstanceOf(sourceObject, typeInfo.selfType)) {
-            let expectedName = nameof(typeInfo.selfType);
-            let actualName = nameof(sourceObject.constructor);
-            this._errorHandler(new TypeError(`Could not serialize '${memberName}': expected '${expectedName}', got '${actualName}'.`));
+            var expectedName = nameof(typeInfo.selfType);
+            var actualName = nameof(sourceObject.constructor);
+            this._errorHandler(new TypeError("Could not serialize '" + memberName + "': expected '" + expectedName + "', got '" + actualName + "'."));
             return;
         }
         if (this._isDirectlySerializableNativeType(typeInfo.selfType)) {
@@ -767,13 +817,14 @@ class serializer_Serializer {
         else if (typeof sourceObject === "object") {
             return this.convertAsObject(sourceObject, typeInfo, memberName);
         }
-    }
+    };
     /**
      * Performs the conversion of a typed object (usually a class instance) to a simple javascript object for serialization.
      */
-    convertAsObject(sourceObject, typeInfo, memberName) {
-        let sourceTypeMetadata;
-        let targetObject;
+    Serializer.prototype.convertAsObject = function (sourceObject, typeInfo, memberName) {
+        var _this = this;
+        var sourceTypeMetadata;
+        var targetObject;
         if (sourceObject.constructor !== typeInfo.selfType && sourceObject instanceof typeInfo.selfType) {
             // The source object is not of the expected type, but it is a valid subtype.
             // This is OK, and we'll proceed to gather object metadata from the subtype instead.
@@ -787,37 +838,39 @@ class serializer_Serializer {
             // We'll serialize by members that have been marked with @jsonMember (including array/set/map members), and perform recursive conversion on
             // each of them. The converted objects are put on the 'targetObject', which is what will be put into 'JSON.stringify' finally.
             targetObject = {};
-            sourceTypeMetadata.dataMembers.forEach((memberMetadata, propKey) => {
+            sourceTypeMetadata.dataMembers.forEach(function (memberMetadata, propKey) {
                 if (memberMetadata.serializer) {
                     targetObject[memberMetadata.name] = memberMetadata.serializer(sourceObject[memberMetadata.key]);
                 }
                 else {
-                    targetObject[memberMetadata.name] = this.convertSingleValue(sourceObject[memberMetadata.key], {
+                    targetObject[memberMetadata.name] = _this.convertSingleValue(sourceObject[memberMetadata.key], {
                         selfType: memberMetadata.ctor,
                         elementTypes: memberMetadata.elementType,
                         keyType: memberMetadata.keyType
-                    }, `${nameof(sourceTypeMetadata.classType)}.${memberMetadata.key}`);
+                    }, nameof(sourceTypeMetadata.classType) + "." + memberMetadata.key);
                 }
             });
         }
         else {
             // Untyped serialization, "as-is", we'll just pass the object on.
             // We'll clone the source object, because type hints are added to the object itself, and we don't want to modify to the original object.
-            targetObject = Object.assign({}, sourceObject);
+            targetObject = __assign({}, sourceObject);
         }
         // Add type-hint.
         this._typeHintEmitter(targetObject, sourceObject, typeInfo.selfType);
         return targetObject;
-    }
+    };
     /**
      * Performs the conversion of an array of typed objects (or primitive values) to an array of simple javascript objects (or primitive values) for
      * serialization.
      * @param expectedElementType The expected type of elements. If the array is supposed to be multi-dimensional, subsequent elements define lower dimensions.
      * @param memberName Name of the object being serialized, used for debugging purposes.
      */
-    convertAsArray(sourceObject, expectedElementType, memberName = "object") {
+    Serializer.prototype.convertAsArray = function (sourceObject, expectedElementType, memberName) {
+        var _this = this;
+        if (memberName === void 0) { memberName = "object"; }
         if (expectedElementType.length === 0 || !expectedElementType[0]) {
-            this._errorHandler(new TypeError(`Could not serialize ${memberName} as Array: missing element type definition.`));
+            this._errorHandler(new TypeError("Could not serialize " + memberName + " as Array: missing element type definition."));
             return;
         }
         // Check the type of each element, individually.
@@ -825,11 +878,11 @@ class serializer_Serializer {
         // This is so that invalid element types don't unexpectedly alter the ordering of other, valid elements, and that no unexpected undefined values are in
         // the emitted array.
         try {
-            sourceObject.forEach((element, i) => {
+            sourceObject.forEach(function (element, i) {
                 if (!isInstanceOf(element, expectedElementType[0])) {
-                    let expectedTypeName = nameof(expectedElementType[0]);
-                    let actualTypeName = nameof(element.constructor);
-                    throw new TypeError(`Could not serialize ${memberName}[${i}]: expected '${expectedTypeName}', got '${actualTypeName}'.`);
+                    var expectedTypeName = nameof(expectedElementType[0]);
+                    var actualTypeName = nameof(element.constructor);
+                    throw new TypeError("Could not serialize " + memberName + "[" + i + "]: expected '" + expectedTypeName + "', got '" + actualTypeName + "'.");
                 }
             });
         }
@@ -837,7 +890,7 @@ class serializer_Serializer {
             this._errorHandler(e);
             return;
         }
-        let typeInfoForElements = {
+        var typeInfoForElements = {
             selfType: expectedElementType[0],
             elementTypes: expectedElementType.length > 1 ? expectedElementType.slice(1) : [] // For multidimensional arrays.
         };
@@ -845,8 +898,8 @@ class serializer_Serializer {
             // Just for debugging purposes.
             memberName += "[]";
         }
-        return sourceObject.map(element => this.convertSingleValue(element, typeInfoForElements, memberName));
-    }
+        return sourceObject.map(function (element) { return _this.convertSingleValue(element, typeInfoForElements, memberName); });
+    };
     /**
      * Performs the conversion of a set of typed objects (or primitive values) into an array of simple javascript objects.
      *
@@ -855,22 +908,24 @@ class serializer_Serializer {
      * @param memberName Name of the object being serialized, used for debugging purposes.
      * @returns
      */
-    convertAsSet(sourceObject, expectedElementType, memberName = "object") {
+    Serializer.prototype.convertAsSet = function (sourceObject, expectedElementType, memberName) {
+        var _this = this;
+        if (memberName === void 0) { memberName = "object"; }
         if (!expectedElementType) {
-            this._errorHandler(new TypeError(`Could not serialize ${memberName} as Set: missing element type definition.`));
+            this._errorHandler(new TypeError("Could not serialize " + memberName + " as Set: missing element type definition."));
             return;
         }
-        let elementTypeInfo = {
+        var elementTypeInfo = {
             selfType: expectedElementType
         };
         // For debugging and error tracking.
         if (memberName)
             memberName += "[]";
-        let resultArray = [];
+        var resultArray = [];
         // Convert each element of the set, and put it into an output array.
         // The output array is the one serialized, as JSON.stringify does not support Set serialization. (TODO: clarification needed)
-        sourceObject.forEach(element => {
-            let resultElement = this.convertSingleValue(element, elementTypeInfo, memberName);
+        sourceObject.forEach(function (element) {
+            var resultElement = _this.convertSingleValue(element, elementTypeInfo, memberName);
             // Add to output if the source element was undefined, OR the converted element is defined. This will add intentionally undefined values to output,
             // but not values that became undefined DURING serializing (usually because of a type-error).
             if (!isValueDefined(element) || isValueDefined(resultElement)) {
@@ -878,7 +933,7 @@ class serializer_Serializer {
             }
         });
         return resultArray;
-    }
+    };
     /**
      * Performs the conversion of a map of typed objects (or primitive values) into an array of simple javascript objects with `key` and `value` properties.
      *
@@ -887,26 +942,28 @@ class serializer_Serializer {
      * @param expectedElementType The constructor of the expected Map values (e.g. `Number` for `Map<any, number>`, or `MyClass` for `Map<any, MyClass>`).
      * @param memberName Name of the object being serialized, used for debugging purposes.
      */
-    convertAsMap(sourceObject, expectedKeyType, expectedElementType, memberName = "object") {
+    Serializer.prototype.convertAsMap = function (sourceObject, expectedKeyType, expectedElementType, memberName) {
+        var _this = this;
+        if (memberName === void 0) { memberName = "object"; }
         if (!expectedElementType)
-            throw new TypeError(`Could not serialize ${memberName} as Map: missing value type definition.`);
+            throw new TypeError("Could not serialize " + memberName + " as Map: missing value type definition.");
         if (!expectedKeyType)
-            throw new TypeError(`Could not serialize ${memberName} as Map: missing key type definition.`);
-        let elementTypeInfo = {
+            throw new TypeError("Could not serialize " + memberName + " as Map: missing key type definition.");
+        var elementTypeInfo = {
             selfType: expectedElementType,
             elementTypes: [expectedElementType]
         };
-        let keyTypeInfo = {
+        var keyTypeInfo = {
             selfType: expectedKeyType
         };
         if (memberName)
             memberName += "[]";
-        let resultArray = [];
+        var resultArray = [];
         // Convert each *entry* in the map to a simple javascript object with key and value properties.
-        sourceObject.forEach((value, key) => {
-            let resultKeyValuePairObj = {
-                key: this.convertSingleValue(key, keyTypeInfo, memberName),
-                value: this.convertSingleValue(value, elementTypeInfo, memberName)
+        sourceObject.forEach(function (value, key) {
+            var resultKeyValuePairObj = {
+                key: _this.convertSingleValue(key, keyTypeInfo, memberName),
+                value: _this.convertSingleValue(value, elementTypeInfo, memberName)
             };
             // We are not going to emit entries with undefined keys OR undefined values.
             if (isValueDefined(resultKeyValuePairObj.key) && isValueDefined(resultKeyValuePairObj.value)) {
@@ -914,7 +971,7 @@ class serializer_Serializer {
             }
         });
         return resultArray;
-    }
+    };
     /**
      * Performs the conversion of a typed javascript array to a simple untyped javascript array.
      * This is needed because typed arrays are otherwise serialized as objects, so we'll end up with something like "{ 0: 0, 1: 1, ... }".
@@ -922,40 +979,42 @@ class serializer_Serializer {
      * @param sourceObject
      * @returns
      */
-    convertAsTypedArray(sourceObject) {
+    Serializer.prototype.convertAsTypedArray = function (sourceObject) {
         return Array.from(sourceObject);
-    }
+    };
     /**
      * Performs the conversion of a raw ArrayBuffer to a string.
      */
-    convertAsArrayBuffer(buffer) {
+    Serializer.prototype.convertAsArrayBuffer = function (buffer) {
         // ArrayBuffer -> 16-bit character codes -> character array -> joined string.
-        return Array.from(new Uint16Array(buffer)).map(charCode => String.fromCharCode(charCode)).join("");
-    }
+        return Array.from(new Uint16Array(buffer)).map(function (charCode) { return String.fromCharCode(charCode); }).join("");
+    };
     /**
      * Performs the conversion of DataView, converting its internal ArrayBuffer to a string and returning that string.
      */
-    convertAsDataView(dataView) {
+    Serializer.prototype.convertAsDataView = function (dataView) {
         return this.convertAsArrayBuffer(dataView.buffer);
-    }
+    };
     /**
      * Determines whether the specified type is a type that can be passed on "as-is" into `JSON.stringify`.
      * Values of these types don't need special conversion.
      * @param ctor The constructor of the type (wrapper constructor for primitive types, e.g. `Number` for `number`).
      */
-    _isDirectlySerializableNativeType(ctor) {
+    Serializer.prototype._isDirectlySerializableNativeType = function (ctor) {
         return ~[Date, Number, String, Boolean].indexOf(ctor);
-    }
-    _isTypeTypedArray(ctor) {
+    };
+    Serializer.prototype._isTypeTypedArray = function (ctor) {
         return ~[Float32Array, Float64Array, Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array].indexOf(ctor);
-    }
-}
+    };
+    return Serializer;
+}());
+
 
 // CONCATENATED MODULE: ./src/typedjson/json-object.ts
 
 
 function jsonObject(optionsOrTarget) {
-    let options;
+    var options;
     if (typeof optionsOrTarget === "function") {
         // jsonObject is being used as a decorator, directly.
         options = {};
@@ -964,9 +1023,9 @@ function jsonObject(optionsOrTarget) {
         // jsonObject is being used as a decorator factory.
         options = optionsOrTarget || {};
     }
-    let decorator = function (target) {
-        let objectMetadata;
-        let parentMetadata;
+    var decorator = function (target) {
+        var objectMetadata;
+        var parentMetadata;
         // Create or obtain JsonObjectMetadata object.
         if (!target.prototype.hasOwnProperty(METADATA_FIELD_KEY)) {
             // Target has no JsonObjectMetadata associated with it yet, create it now.
@@ -974,8 +1033,8 @@ function jsonObject(optionsOrTarget) {
             parentMetadata = target.prototype[METADATA_FIELD_KEY];
             // Inherit json members and known types from parent @jsonObject (if any).
             if (parentMetadata) {
-                parentMetadata.dataMembers.forEach((memberMetadata, propKey) => objectMetadata.dataMembers.set(propKey, memberMetadata));
-                parentMetadata.knownTypes.forEach((knownType) => objectMetadata.knownTypes.add(knownType));
+                parentMetadata.dataMembers.forEach(function (memberMetadata, propKey) { return objectMetadata.dataMembers.set(propKey, memberMetadata); });
+                parentMetadata.knownTypes.forEach(function (knownType) { return objectMetadata.knownTypes.add(knownType); });
             }
             if (options.name) {
                 objectMetadata.name = options.name;
@@ -1007,7 +1066,7 @@ function jsonObject(optionsOrTarget) {
             objectMetadata.knownTypeMethodName = options.knownTypes;
         }
         else if (options.knownTypes instanceof Array) {
-            options.knownTypes.filter(knownType => !!knownType).forEach(knownType => objectMetadata.knownTypes.add(knownType));
+            options.knownTypes.filter(function (knownType) { return !!knownType; }).forEach(function (knownType) { return objectMetadata.knownTypes.add(knownType); });
         }
     };
     if (typeof optionsOrTarget === "function") {
@@ -1026,15 +1085,15 @@ function jsonObject(optionsOrTarget) {
 
 function jsonMember(optionsOrTarget, propKey) {
     if (optionsOrTarget instanceof Object && (typeof propKey === "string" || typeof propKey === "symbol")) {
-        let target = optionsOrTarget;
-        let decoratorName = `@jsonMember on ${nameof(target.constructor)}.${propKey}`; // For error messages.
+        var target = optionsOrTarget;
+        var decoratorName = "@jsonMember on " + nameof(target.constructor) + "." + propKey; // For error messages.
         // jsonMember used directly, no additional information directly available besides target and propKey.
         // Obtain property constructor through ReflectDecorators.
         if (isReflectMetadataSupported) {
-            let reflectPropCtor = Reflect.getMetadata("design:type", target, propKey);
-            let memberMetadata = new JsonMemberMetadata();
+            var reflectPropCtor = Reflect.getMetadata("design:type", target, propKey);
+            var memberMetadata = new JsonMemberMetadata();
             if (!reflectPropCtor) {
-                logError(`${decoratorName}: could not resolve detected property constructor at runtime.`);
+                logError(decoratorName + ": could not resolve detected property constructor at runtime.");
                 return;
             }
             if (isSpecialPropertyType(reflectPropCtor, decoratorName)) {
@@ -1046,24 +1105,24 @@ function jsonMember(optionsOrTarget, propKey) {
             injectMetadataInformation(target, propKey, memberMetadata);
         }
         else {
-            logError(`${decoratorName}: ReflectDecorators is required if no 'constructor' option is specified.`);
+            logError(decoratorName + ": ReflectDecorators is required if no 'constructor' option is specified.");
             return;
         }
     }
     else {
         // jsonMember used as a decorator factory.
-        return (target, _propKey) => {
-            let options = optionsOrTarget || {};
-            let propCtor;
-            let decoratorName = `@jsonMember on ${nameof(target.constructor)}.${_propKey}`; // For error messages.
+        return function (target, _propKey) {
+            var options = optionsOrTarget || {};
+            var propCtor;
+            var decoratorName = "@jsonMember on " + nameof(target.constructor) + "." + _propKey; // For error messages.
             if (options.hasOwnProperty("constructor")) {
                 if (!isValueDefined(options.constructor)) {
-                    logError(`${decoratorName}: cannot resolve specified property constructor at runtime.`);
+                    logError(decoratorName + ": cannot resolve specified property constructor at runtime.");
                     return;
                 }
                 // Property constructor has been specified. Use ReflectDecorators (if available) to check whether that constructor is correct. Warn if not.
                 if (isReflectMetadataSupported && !isSubtypeOf(options.constructor, Reflect.getMetadata("design:type", target, _propKey))) {
-                    logWarning(`${decoratorName}: detected property type does not match 'constructor' option.`);
+                    logWarning(decoratorName + ": detected property type does not match 'constructor' option.");
                 }
                 propCtor = options.constructor;
             }
@@ -1072,19 +1131,19 @@ function jsonMember(optionsOrTarget, propKey) {
                 if (isReflectMetadataSupported) {
                     propCtor = Reflect.getMetadata("design:type", target, _propKey);
                     if (!propCtor) {
-                        logError(`${decoratorName}: cannot resolve detected property constructor at runtime.`);
+                        logError(decoratorName + ": cannot resolve detected property constructor at runtime.");
                         return;
                     }
                 }
                 else if (!options.deserializer) {
-                    logError(`${decoratorName}: ReflectDecorators is required if no 'constructor' option is specified.`);
+                    logError(decoratorName + ": ReflectDecorators is required if no 'constructor' option is specified.");
                     return;
                 }
             }
             if (isSpecialPropertyType(propCtor, decoratorName)) {
                 return;
             }
-            let memberMetadata = new JsonMemberMetadata();
+            var memberMetadata = new JsonMemberMetadata();
             memberMetadata.ctor = propCtor;
             memberMetadata.emitDefaultValue = options.emitDefaultValue || false;
             memberMetadata.isRequired = options.isRequired || false;
@@ -1098,15 +1157,15 @@ function jsonMember(optionsOrTarget, propKey) {
 }
 function isSpecialPropertyType(propCtor, decoratorName) {
     if (propCtor === Array) {
-        logError(`${decoratorName}: property is an Array. Use the jsonArrayMember decorator to serialize this property.`);
+        logError(decoratorName + ": property is an Array. Use the jsonArrayMember decorator to serialize this property.");
         return true;
     }
     if (propCtor === Set) {
-        logError(`${decoratorName}: property is a Set. Use the jsonSetMember decorator to serialize this property.`);
+        logError(decoratorName + ": property is a Set. Use the jsonSetMember decorator to serialize this property.");
         return true;
     }
     if (propCtor === Map) {
-        logError(`${decoratorName}: property is a Map. Use the jsonMapMember decorator to serialize this property.`);
+        logError(decoratorName + ": property is a Map. Use the jsonMapMember decorator to serialize this property.");
         return true;
     }
     return false;
@@ -1121,27 +1180,28 @@ function isSpecialPropertyType(propCtor, decoratorName) {
  * @param elementConstructor Constructor of array elements (e.g. 'Number' for 'number[]', or 'Date' for 'Date[]').
  * @param options Additional options.
  */
-function jsonArrayMember(elementConstructor, options = {}) {
-    return (target, propKey) => {
-        let decoratorName = `@jsonArrayMember on ${nameof(target.constructor)}.${propKey}`; // For error messages.
+function jsonArrayMember(elementConstructor, options) {
+    if (options === void 0) { options = {}; }
+    return function (target, propKey) {
+        var decoratorName = "@jsonArrayMember on " + nameof(target.constructor) + "." + propKey; // For error messages.
         if (typeof elementConstructor !== "function") {
-            logError(`${decoratorName}: could not resolve constructor of array elements at runtime.`);
+            logError(decoratorName + ": could not resolve constructor of array elements at runtime.");
             return;
         }
         if (!isNaN(options.dimensions) && options.dimensions < 1) {
-            logError(`${decoratorName}: 'dimensions' option must be at least 1.`);
+            logError(decoratorName + ": 'dimensions' option must be at least 1.");
             return;
         }
         // If ReflectDecorators is available, use it to check whether 'jsonArrayMember' has been used on an array.
         if (isReflectMetadataSupported && Reflect.getMetadata("design:type", target, propKey) !== Array) {
-            logError(`${decoratorName}: property is not an Array.`);
+            logError(decoratorName + ": property is not an Array.");
             return;
         }
-        let metadata = new JsonMemberMetadata();
+        var metadata = new JsonMemberMetadata();
         metadata.ctor = Array;
         if (options.dimensions && options.dimensions >= 1) {
             metadata.elementType = [];
-            for (let i = 1; i < options.dimensions; i++) {
+            for (var i = 1; i < options.dimensions; i++) {
                 metadata.elementType.push(Array);
             }
             metadata.elementType.push(elementConstructor);
@@ -1169,16 +1229,17 @@ function jsonArrayMember(elementConstructor, options = {}) {
  * @param elementConstructor Constructor of set elements (e.g. 'Number' for Set<number> or 'Date' for Set<Date>).
  * @param options Additional options.
  */
-function jsonSetMember(elementConstructor, options = {}) {
-    return (target, propKey) => {
-        var decoratorName = `@jsonSetMember on ${nameof(target.constructor)}.${propKey}`; // For error messages.
+function jsonSetMember(elementConstructor, options) {
+    if (options === void 0) { options = {}; }
+    return function (target, propKey) {
+        var decoratorName = "@jsonSetMember on " + nameof(target.constructor) + "." + propKey; // For error messages.
         if (typeof elementConstructor !== "function") {
-            logError(`${decoratorName}: could not resolve constructor of set elements at runtime.`);
+            logError(decoratorName + ": could not resolve constructor of set elements at runtime.");
             return;
         }
         // If ReflectDecorators is available, use it to check whether 'jsonSetMember' has been used on a set. Warn if not.
         if (isReflectMetadataSupported && Reflect.getMetadata("design:type", target, propKey) !== Set) {
-            logError(`${decoratorName}: property is not a Set.`);
+            logError(decoratorName + ": property is not a Set.");
             return;
         }
         var metadata = new JsonMemberMetadata();
@@ -1205,23 +1266,24 @@ function jsonSetMember(elementConstructor, options = {}) {
  * @param valueConstructor Constructor of map values (e.g. 'Date' for 'Map<number, Date>').
  * @param options Additional options.
  */
-function jsonMapMember(keyConstructor, valueConstructor, options = {}) {
-    return (target, propKey) => {
-        let decoratorName = `@jsonMapMember on ${nameof(target.constructor)}.${propKey}`; // For error messages.
+function jsonMapMember(keyConstructor, valueConstructor, options) {
+    if (options === void 0) { options = {}; }
+    return function (target, propKey) {
+        var decoratorName = "@jsonMapMember on " + nameof(target.constructor) + "." + propKey; // For error messages.
         if (typeof keyConstructor !== "function") {
-            logError(`${decoratorName}: could not resolve constructor of map keys at runtime.`);
+            logError(decoratorName + ": could not resolve constructor of map keys at runtime.");
             return;
         }
         if (typeof valueConstructor !== "function") {
-            logError(`${decoratorName}: could not resolve constructor of map values at runtime.`);
+            logError(decoratorName + ": could not resolve constructor of map values at runtime.");
             return;
         }
         // If ReflectDecorators is available, use it to check whether 'jsonMapMember' has been used on a map. Warn if not.
         if (isReflectMetadataSupported && Reflect.getMetadata("design:type", target, propKey) !== Map) {
-            logError(`${decoratorName}: property is not a Map.`);
+            logError(decoratorName + ": property is not a Map.");
             return;
         }
-        let metadata = new JsonMemberMetadata();
+        var metadata = new JsonMemberMetadata();
         metadata.ctor = Map;
         metadata.elementType = [valueConstructor];
         metadata.keyType = keyConstructor;
@@ -1242,84 +1304,93 @@ function jsonMapMember(keyConstructor, valueConstructor, options = {}) {
 /* concated harmony reexport */__webpack_require__.d(__webpack_exports__, "jsonArrayMember", function() { return jsonArrayMember; });
 /* concated harmony reexport */__webpack_require__.d(__webpack_exports__, "jsonSetMember", function() { return jsonSetMember; });
 /* concated harmony reexport */__webpack_require__.d(__webpack_exports__, "jsonMapMember", function() { return jsonMapMember; });
+var typedjson_assign = (undefined && undefined.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
 
 
 
 
 
-class typedjson_TypedJSON {
+var typedjson_TypedJSON = /** @class */ (function () {
     /**
      * Creates a new TypedJSON instance to serialize (stringify) and deserialize (parse) object instances of the specified root class type.
      * @param rootType The constructor of the root class type.
      * @param settings Additional configuration settings.
      */
-    constructor(rootConstructor, settings) {
+    function TypedJSON(rootConstructor, settings) {
         //#endregion
         this.serializer = new serializer_Serializer();
         this.deserializer = new deserializer_Deserializer();
         this.globalKnownTypes = [];
         this.indent = 0;
-        let rootMetadata = metadata_JsonObjectMetadata.getFromConstructor(rootConstructor);
+        var rootMetadata = metadata_JsonObjectMetadata.getFromConstructor(rootConstructor);
         if (!rootMetadata || !rootMetadata.isExplicitlyMarked) {
             throw new TypeError("The TypedJSON root data type must have the @jsonObject decorator used.");
         }
-        this.nameResolver = (ctor) => nameof(ctor);
+        this.nameResolver = function (ctor) { return nameof(ctor); };
         this.rootConstructor = rootConstructor;
-        this.errorHandler = (error) => logError(error);
+        this.errorHandler = function (error) { return logError(error); };
         if (settings) {
             this.config(settings);
         }
-        else if (typedjson_TypedJSON._globalConfig) {
+        else if (TypedJSON._globalConfig) {
             this.config({});
         }
     }
     //#region Static
-    static parse(json, rootType, settings) {
-        const object = parseToJSObject(json);
-        return new typedjson_TypedJSON(rootType, settings).parse(object);
-    }
-    static parseAsArray(json, elementType, settings) {
-        const object = parseToJSObject(json);
-        return new typedjson_TypedJSON(elementType, settings).parseAsArray(object);
-    }
-    static parseAsSet(json, elementType, settings) {
-        const object = parseToJSObject(json);
-        return new typedjson_TypedJSON(elementType, settings).parseAsSet(object);
-    }
-    static parseAsMap(json, keyType, valueType, settings) {
-        const object = parseToJSObject(json);
-        return new typedjson_TypedJSON(valueType, settings).parseAsMap(object, keyType);
-    }
-    static stringify(object, rootType, settings) {
-        return new typedjson_TypedJSON(rootType, settings).stringify(object);
-    }
-    static stringifyAsArray(object, elementType, dimensions = 1, settings) {
-        return new typedjson_TypedJSON(elementType, settings).stringifyAsArray(object, dimensions);
-    }
-    static stringifyAsSet(object, elementType, settings) {
-        return new typedjson_TypedJSON(elementType, settings).stringifyAsSet(object);
-    }
-    static stringifyAsMap(object, keyCtor, valueCtor, settings) {
-        return new typedjson_TypedJSON(valueCtor, settings).stringifyAsMap(object, keyCtor);
-    }
-    static setGlobalConfig(config) {
+    TypedJSON.parse = function (json, rootType, settings) {
+        var object = parseToJSObject(json);
+        return new TypedJSON(rootType, settings).parse(object);
+    };
+    TypedJSON.parseAsArray = function (json, elementType, settings) {
+        var object = parseToJSObject(json);
+        return new TypedJSON(elementType, settings).parseAsArray(object);
+    };
+    TypedJSON.parseAsSet = function (json, elementType, settings) {
+        var object = parseToJSObject(json);
+        return new TypedJSON(elementType, settings).parseAsSet(object);
+    };
+    TypedJSON.parseAsMap = function (json, keyType, valueType, settings) {
+        var object = parseToJSObject(json);
+        return new TypedJSON(valueType, settings).parseAsMap(object, keyType);
+    };
+    TypedJSON.stringify = function (object, rootType, settings) {
+        return new TypedJSON(rootType, settings).stringify(object);
+    };
+    TypedJSON.stringifyAsArray = function (object, elementType, dimensions, settings) {
+        if (dimensions === void 0) { dimensions = 1; }
+        return new TypedJSON(elementType, settings).stringifyAsArray(object, dimensions);
+    };
+    TypedJSON.stringifyAsSet = function (object, elementType, settings) {
+        return new TypedJSON(elementType, settings).stringifyAsSet(object);
+    };
+    TypedJSON.stringifyAsMap = function (object, keyCtor, valueCtor, settings) {
+        return new TypedJSON(valueCtor, settings).stringifyAsMap(object, keyCtor);
+    };
+    TypedJSON.setGlobalConfig = function (config) {
         if (this._globalConfig) {
             Object.assign(this._globalConfig, config);
         }
         else {
             this._globalConfig = config;
         }
-    }
+    };
     /**
      * Configures TypedJSON through a settings object.
      * @param settings The configuration settings object.
      */
-    config(settings) {
-        if (typedjson_TypedJSON._globalConfig) {
-            settings = Object.assign({}, typedjson_TypedJSON._globalConfig, settings);
-            if (settings.knownTypes && typedjson_TypedJSON._globalConfig.knownTypes) {
+    TypedJSON.prototype.config = function (settings) {
+        if (TypedJSON._globalConfig) {
+            settings = typedjson_assign({}, TypedJSON._globalConfig, settings);
+            if (settings.knownTypes && TypedJSON._globalConfig.knownTypes) {
                 // Merge known-types (also de-duplicate them, so Array -> Set -> Array).
-                settings.knownTypes = Array.from(new Set(settings.knownTypes.concat(typedjson_TypedJSON._globalConfig.knownTypes)));
+                settings.knownTypes = Array.from(new Set(settings.knownTypes.concat(TypedJSON._globalConfig.knownTypes)));
             }
         }
         if (settings.errorHandler) {
@@ -1342,30 +1413,31 @@ class typedjson_TypedJSON {
         }
         if (settings.knownTypes) {
             // Type-check knownTypes elements to recognize errors in advance.
-            settings.knownTypes.forEach((knownType, i) => {
+            settings.knownTypes.forEach(function (knownType, i) {
                 // tslint:disable-next-line:no-null-keyword
                 if (typeof knownType === "undefined" || knownType === null) {
-                    logWarning(`TypedJSON.config: 'knownTypes' contains an undefined/null value (element ${i}).`);
+                    logWarning("TypedJSON.config: 'knownTypes' contains an undefined/null value (element " + i + ").");
                 }
             });
             this.globalKnownTypes = settings.knownTypes;
         }
-    }
+    };
     /**
      * Converts a JSON string to the root class type.
      * @param object The JSON to parse and convert.
      * @throws Error if any errors are thrown in the specified errorHandler callback (re-thrown).
      */
-    parse(object) {
-        let rootMetadata = metadata_JsonObjectMetadata.getFromConstructor(this.rootConstructor);
-        let result;
-        let knownTypes = new Map();
-        this.globalKnownTypes.filter(ktc => ktc).forEach(knownTypeCtor => {
-            knownTypes.set(this.nameResolver(knownTypeCtor), knownTypeCtor);
+    TypedJSON.prototype.parse = function (object) {
+        var _this = this;
+        var rootMetadata = metadata_JsonObjectMetadata.getFromConstructor(this.rootConstructor);
+        var result;
+        var knownTypes = new Map();
+        this.globalKnownTypes.filter(function (ktc) { return ktc; }).forEach(function (knownTypeCtor) {
+            knownTypes.set(_this.nameResolver(knownTypeCtor), knownTypeCtor);
         });
         if (rootMetadata) {
-            rootMetadata.knownTypes.forEach(knownTypeCtor => {
-                knownTypes.set(this.nameResolver(knownTypeCtor), knownTypeCtor);
+            rootMetadata.knownTypes.forEach(function (knownTypeCtor) {
+                knownTypes.set(_this.nameResolver(knownTypeCtor), knownTypeCtor);
             });
         }
         try {
@@ -1378,8 +1450,9 @@ class typedjson_TypedJSON {
             this.errorHandler(e);
         }
         return result;
-    }
-    parseAsArray(object, dimensions = 1) {
+    };
+    TypedJSON.prototype.parseAsArray = function (object, dimensions) {
+        if (dimensions === void 0) { dimensions = 1; }
         if (object instanceof Array) {
             return this.deserializer.convertAsArray(object, {
                 selfConstructor: Array,
@@ -1388,11 +1461,11 @@ class typedjson_TypedJSON {
             });
         }
         else {
-            this.errorHandler(new TypeError(`Expected 'json' to define an Array, but got ${typeof object}.`));
+            this.errorHandler(new TypeError("Expected 'json' to define an Array, but got " + typeof object + "."));
         }
         return [];
-    }
-    parseAsSet(object) {
+    };
+    TypedJSON.prototype.parseAsSet = function (object) {
         // A Set<T> is serialized as T[].
         if (object instanceof Array) {
             return this.deserializer.convertAsSet(object, {
@@ -1402,11 +1475,11 @@ class typedjson_TypedJSON {
             });
         }
         else {
-            this.errorHandler(new TypeError(`Expected 'json' to define a Set (using an Array), but got ${typeof object}.`));
+            this.errorHandler(new TypeError("Expected 'json' to define a Set (using an Array), but got " + typeof object + "."));
         }
         return new Set();
-    }
-    parseAsMap(object, keyConstructor) {
+    };
+    TypedJSON.prototype.parseAsMap = function (object, keyConstructor) {
         // A Set<T> is serialized as T[].
         if (object instanceof Array) {
             return this.deserializer.convertAsMap(object, {
@@ -1417,19 +1490,19 @@ class typedjson_TypedJSON {
             });
         }
         else {
-            this.errorHandler(new TypeError(`Expected 'json' to define a Set (using an Array), but got ${typeof object}.`));
+            this.errorHandler(new TypeError("Expected 'json' to define a Set (using an Array), but got " + typeof object + "."));
         }
         return new Map();
-    }
+    };
     /**
      * Converts an instance of the specified class type to a JSON string.
      * @param object The instance to convert to a JSON string.
      * @throws Error if any errors are thrown in the specified errorHandler callback (re-thrown).
      */
-    stringify(object) {
-        let serializedObject;
+    TypedJSON.prototype.stringify = function (object) {
+        var serializedObject;
         if (!(object instanceof this.rootConstructor)) {
-            this.errorHandler(TypeError(`Expected object type to be '${nameof(this.rootConstructor)}', got '${nameof(object.constructor)}'.`));
+            this.errorHandler(TypeError("Expected object type to be '" + nameof(this.rootConstructor) + "', got '" + nameof(object.constructor) + "'."));
             return undefined;
         }
         try {
@@ -1442,23 +1515,27 @@ class typedjson_TypedJSON {
             this.errorHandler(e);
         }
         return "";
-    }
-    stringifyAsArray(object, dimensions = 1) {
-        let elementConstructorArray = new Array((dimensions - 1) || 0).fill(Array).concat(this.rootConstructor);
+    };
+    TypedJSON.prototype.stringifyAsArray = function (object, dimensions) {
+        if (dimensions === void 0) { dimensions = 1; }
+        var elementConstructorArray = new Array((dimensions - 1) || 0).fill(Array).concat(this.rootConstructor);
         return JSON.stringify(this.serializer.convertAsArray(object, elementConstructorArray), this.replacer, this.indent);
-    }
-    stringifyAsSet(object) {
+    };
+    TypedJSON.prototype.stringifyAsSet = function (object) {
         return JSON.stringify(this.serializer.convertAsSet(object, this.rootConstructor), this.replacer, this.indent);
-    }
-    stringifyAsMap(object, keyConstructor) {
+    };
+    TypedJSON.prototype.stringifyAsMap = function (object, keyConstructor) {
         return JSON.stringify(this.serializer.convertAsMap(object, keyConstructor, this.rootConstructor), this.replacer, this.indent);
-    }
-    _mapKnownTypes(constructors) {
-        let map = new Map();
-        constructors.filter(ctor => ctor).forEach(ctor => map.set(this.nameResolver(ctor), ctor));
+    };
+    TypedJSON.prototype._mapKnownTypes = function (constructors) {
+        var _this = this;
+        var map = new Map();
+        constructors.filter(function (ctor) { return ctor; }).forEach(function (ctor) { return map.set(_this.nameResolver(ctor), ctor); });
         return map;
-    }
-}
+    };
+    return TypedJSON;
+}());
+
 
 
 
