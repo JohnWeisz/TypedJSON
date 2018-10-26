@@ -1,0 +1,12 @@
+{
+  "spec_dir": "spec",
+  "spec_files": [
+    "**/*[sS]pec.[jt]s"
+  ],
+  "helpers": [
+    "node_modules/ref",
+    "helpers/**/*.[jt]s"
+  ],
+  "stopSpecOnExpectationFailure": false,
+  "random": false
+}
