@@ -26,6 +26,7 @@ module.exports = {
     library: 'typedjson',
     libraryTarget: 'umd',
     umdNamedDefine: true,
+    globalObject: `(typeof self !== 'undefined' ? self : this)`,
   },
   optimization: {
     minimizer: [
