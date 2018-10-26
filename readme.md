@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/Neos3452/TypedJSON.svg?branch=master)](https://travis-ci.com/Neos3452/TypedJSON)
+
 **Example & how to use**
 
 There are no publicly available, dedicated docs yet for 1.0, but most methods are commented nicely, and here's a quick example on how to serialize various types (I recommend using [reflect-metadata](https://github.com/rbuckton/reflect-metadata) in your project, so you don't have to manually annotate the type of `@jsonMember` properties twice, see at the bottom of this page):
