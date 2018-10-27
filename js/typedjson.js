@@ -1,4 +1,4 @@
-// [typedjson]  Version: 1.1.0-rc3 - 2018-05-10  
+// [typedjson]  Version: 1.1.0 - 2018-10-27  
  (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -8,7 +8,7 @@
 		exports["typedjson"] = factory();
 	else
 		root["typedjson"] = factory();
-})(window, function() {
+})((typeof self !== 'undefined' ? self : this), function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
