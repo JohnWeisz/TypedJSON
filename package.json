@@ -6,7 +6,9 @@
   "typings": "./js/typedjson.d.ts",
   "scripts": {
     "test": "ts-node --no-cache -O '{\"module\": \"commonjs\"}' node_modules/jasmine/bin/jasmine",
-    "build": "webpack"
+    "build": "webpack",
+    "preversion": "npm test",
+    "version": "npm run build && git add -A js"
   },
   "repository": {
     "type": "git",
