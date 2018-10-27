@@ -43,7 +43,7 @@ export interface ITypedJSONSettings
 export class TypedJSON<T>
 {
     //#region Static
-    public static parse<T>(json: any, rootType: Constructor<T>, settings?: ITypedJSONSettings)
+    public static parse<T>(json: any, rootType: Constructor<T>, settings?: ITypedJSONSettings): T
     {
         const object = parseToJSObject(json);
         return new TypedJSON(rootType, settings).parse(object);
@@ -67,7 +67,7 @@ export class TypedJSON<T>
         return new TypedJSON(valueType, settings).parseAsMap(object, keyType);
     }
 
-    public static stringify<T>(object: T, rootType: Constructor<T>, settings?: ITypedJSONSettings)
+    public static stringify<T>(object: T, rootType: Constructor<T>, settings?: ITypedJSONSettings): string
     {
         return new TypedJSON(rootType, settings).stringify(object);
     }
