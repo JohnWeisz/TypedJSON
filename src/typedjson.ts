@@ -15,8 +15,10 @@ export interface ITypedJSONSettings
     errorHandler?: (e: Error) => void;
 
     /**
-     * Sets a callback that determines the constructor of the correct sub-type of polymorphic objects while deserializing.
-     * The default behavior is to read the type-name from the '__type' property of 'sourceObject', and look it up in 'knownTypes'.
+     * Sets a callback that determines the constructor of the correct sub-type of polymorphic
+     * objects while deserializing.
+     * The default behavior is to read the type-name from the '__type' property of 'sourceObject',
+     * and look it up in 'knownTypes'.
      * The constructor of the sub-type should be returned.
      */
     typeResolver?: (sourceObject: Object, knownTypes: Map<string, Function>) => Function;
@@ -25,9 +27,11 @@ export interface ITypedJSONSettings
 
     /**
      * Sets a callback that writes type-hints to serialized objects.
-     * The default behavior is to write the type-name to the '__type' property, if a derived type is present in place of a base type.
+     * The default behavior is to write the type-name to the '__type' property, if a derived type
+     * is present in place of a base type.
      */
-    typeHintEmitter?: (targetObject: Object, sourceObject: Object, expectedSourceType: Function) => void;
+    typeHintEmitter?:
+        (targetObject: Object, sourceObject: Object, expectedSourceType: Function) => void;
 
     /**
      * Sets the amount of indentation to use in produced JSON strings.
@@ -43,52 +47,114 @@ export interface ITypedJSONSettings
 export class TypedJSON<T>
 {
     //#region Static
-    public static parse<T>(json: any, rootType: Constructor<T>, settings?: ITypedJSONSettings): T
-    {
-        const object = parseToJSObject(json);
+    public static parse<T>(
+        object: any, rootType: Constructor<T>, settings?: ITypedJSONSettings,
+    ): T|undefined {
         return new TypedJSON(rootType, settings).parse(object);
     }
 
-    public static parseAsArray<T>(json: any, elementType: Constructor<T>, settings?: ITypedJSONSettings): T[]
-    {
-        const object = parseToJSObject(json);
+    public static parseAsArray<T>(
+        object: any, elementType: Constructor<T>, settings?: ITypedJSONSettings,
+    ): T[] {
         return new TypedJSON(elementType, settings).parseAsArray(object);
     }
 
-    public static parseAsSet<T>(json: any, elementType: Constructor<T>, settings?: ITypedJSONSettings): Set<T>
-    {
-        const object = parseToJSObject(json);
+    public static parseAsSet<T>(
+        object: any, elementType: Constructor<T>, settings?: ITypedJSONSettings,
+    ): Set<T> {
         return new TypedJSON(elementType, settings).parseAsSet(object);
     }
 
-    public static parseAsMap<K, V>(json: any, keyType: Constructor<K>, valueType: Constructor<V>, settings?: ITypedJSONSettings): Map<K, V>
-    {
-        const object = parseToJSObject(json);
+    public static parseAsMap<K, V>(
+        object: any,
+        keyType: Constructor<K>,
+        valueType: Constructor<V>,
+        settings?: ITypedJSONSettings,
+    ): Map<K, V> {
         return new TypedJSON(valueType, settings).parseAsMap(object, keyType);
     }
 
-    public static stringify<T>(object: T, rootType: Constructor<T>, settings?: ITypedJSONSettings): string
-    {
-        return new TypedJSON(rootType, settings).stringify(object);
+    public static toPlainJson<T>(
+        object: T, rootType: Constructor<T>, settings?: ITypedJSONSettings,
+    ): Object|undefined {
+        return new TypedJSON(rootType, settings).toPlainJson(object);
     }
 
-    public static stringifyAsArray<T>(object: T[], elementType: Constructor<T>, dimensions?: 1, settings?: ITypedJSONSettings): string;
-    public static stringifyAsArray<T>(object: T[][], elementType: Constructor<T>, dimensions: 2, settings?: ITypedJSONSettings): string;
-    public static stringifyAsArray<T>(object: T[][][], elementType: Constructor<T>, dimensions: 3, settings?: ITypedJSONSettings): string;
-    public static stringifyAsArray<T>(object: T[][][][], elementType: Constructor<T>, dimensions: 4, settings?: ITypedJSONSettings): string;
-    public static stringifyAsArray<T>(object: T[][][][][], elementType: Constructor<T>, dimensions: 5, settings?: ITypedJSONSettings): string;
-    public static stringifyAsArray<T>(object: any[], elementType: Constructor<T>, dimensions: number = 1, settings?: ITypedJSONSettings): string
-    {
-        return new TypedJSON(elementType, settings).stringifyAsArray(object, dimensions as any);
+    public static toPlainArray<T>(
+        object: T[], elementType: Constructor<T>, dimensions?: 1, settings?: ITypedJSONSettings,
+    ): Object[];
+    public static toPlainArray<T>(
+        object: T[][], elementType: Constructor<T>, dimensions: 2, settings?: ITypedJSONSettings,
+    ): Object[][];
+    public static toPlainArray<T>(
+        object: T[][][], elementType: Constructor<T>, dimensions: 3, settings?: ITypedJSONSettings,
+    ): Object[][][];
+    public static toPlainArray<T>(
+        object: T[][][][], elementType: Constructor<T>, dimensions: 4, settings?: ITypedJSONSettings,
+    ): Object[][][][];
+    public static toPlainArray<T>(
+        object: T[][][][][], elementType: Constructor<T>, dimensions: 5, settings?: ITypedJSONSettings,
+    ): Object[][][][][];
+    public static toPlainArray<T>(
+        object: any[], elementType: Constructor<T>, dimensions?: any, settings?: ITypedJSONSettings,
+    ): any[] {
+        return new TypedJSON(elementType, settings).toPlainArray(object, dimensions);
     }
 
-    public static stringifyAsSet<T>(object: Set<T>, elementType: Constructor<T>, settings?: ITypedJSONSettings): string
-    {
+    public static toPlainSet<T>(
+        object: Set<T>, elementType: Constructor<T>, settings?: ITypedJSONSettings,
+    ): string {
         return new TypedJSON(elementType, settings).stringifyAsSet(object);
     }
 
-    public static stringifyAsMap<K, V>(object: Map<K, V>, keyCtor: Constructor<K>, valueCtor: Constructor<V>, settings?: ITypedJSONSettings): string
-    {
+    public static toPlainMap<K, V>(
+        object: Map<K, V>,
+        keyCtor: Constructor<K>,
+        valueCtor: Constructor<V>,
+        settings?: ITypedJSONSettings,
+    ): string {
+        return new TypedJSON(valueCtor, settings).stringifyAsMap(object, keyCtor);
+    }
+
+    public static stringify<T>(
+        object: T, rootType: Constructor<T>, settings?: ITypedJSONSettings,
+    ): string {
+        return new TypedJSON(rootType, settings).stringify(object);
+    }
+
+    public static stringifyAsArray<T>(
+        object: T[], elementType: Constructor<T>, dimensions?: 1, settings?: ITypedJSONSettings,
+    ): string;
+    public static stringifyAsArray<T>(
+        object: T[][], elementType: Constructor<T>, dimensions: 2, settings?: ITypedJSONSettings,
+    ): string;
+    public static stringifyAsArray<T>(
+        object: T[][][], elementType: Constructor<T>, dimensions: 3, settings?: ITypedJSONSettings,
+    ): string;
+    public static stringifyAsArray<T>(
+        object: T[][][][], elementType: Constructor<T>, dimensions: 4, settings?: ITypedJSONSettings,
+    ): string;
+    public static stringifyAsArray<T>(
+        object: T[][][][][], elementType: Constructor<T>, dimensions: 5, settings?: ITypedJSONSettings,
+    ): string;
+    public static stringifyAsArray<T>(
+        object: any[], elementType: Constructor<T>, dimensions?: any, settings?: ITypedJSONSettings,
+    ): string {
+        return new TypedJSON(elementType, settings).stringifyAsArray(object, dimensions);
+    }
+
+    public static stringifyAsSet<T>(
+        object: Set<T>, elementType: Constructor<T>, settings?: ITypedJSONSettings,
+    ): string {
+        return new TypedJSON(elementType, settings).stringifyAsSet(object);
+    }
+
+    public static stringifyAsMap<K, V>(
+        object: Map<K, V>,
+        keyCtor: Constructor<K>,
+        valueCtor: Constructor<V>,
+        settings?: ITypedJSONSettings,
+    ): string {
         return new TypedJSON(valueCtor, settings).stringifyAsMap(object, keyCtor);
     }
 
@@ -115,10 +181,11 @@ export class TypedJSON<T>
     private rootConstructor: Constructor<T>;
     private errorHandler: (e: Error) => void;
     private nameResolver: (ctor: Function) => string;
-    private replacer: (key: string, value: any) => any;
+    private replacer?: (key: string, value: any) => any;
 
     /**
-     * Creates a new TypedJSON instance to serialize (stringify) and deserialize (parse) object instances of the specified root class type.
+     * Creates a new TypedJSON instance to serialize (stringify) and deserialize (parse) object
+     *     instances of the specified root class type.
      * @param rootType The constructor of the root class type.
      * @param settings Additional configuration settings.
      */
@@ -161,7 +228,9 @@ export class TypedJSON<T>
             if (settings.knownTypes && TypedJSON._globalConfig.knownTypes)
             {
                 // Merge known-types (also de-duplicate them, so Array -> Set -> Array).
-                settings.knownTypes = Array.from(new Set(settings.knownTypes.concat(TypedJSON._globalConfig.knownTypes)));
+                settings.knownTypes = Array.from(new Set(
+                    settings.knownTypes.concat(TypedJSON._globalConfig.knownTypes),
+                ));
             }
         }
 
@@ -192,7 +261,8 @@ export class TypedJSON<T>
                 // tslint:disable-next-line:no-null-keyword
                 if (typeof knownType === "undefined" || knownType === null)
                 {
-                    Helpers.logWarning(`TypedJSON.config: 'knownTypes' contains an undefined/null value (element ${i}).`);
+                    Helpers.logWarning(
+                        `TypedJSON.config: 'knownTypes' contains an undefined/null value (element ${i}).`);
                 }
             });
 
@@ -204,11 +274,14 @@ export class TypedJSON<T>
      * Converts a JSON string to the root class type.
      * @param object The JSON to parse and convert.
      * @throws Error if any errors are thrown in the specified errorHandler callback (re-thrown).
+     * @returns Deserialized T or undefined if there were errors.
      */
-    public parse(object: Object): T
+    public parse(object: any): T|undefined
     {
+        const jsonObj = parseToJSObject(object);
+
         let rootMetadata = JsonObjectMetadata.getFromConstructor(this.rootConstructor);
-        let result: T;
+        let result: T|undefined;
         let knownTypes = new Map<string, Function>();
 
         this.globalKnownTypes.filter(ktc => ktc).forEach(knownTypeCtor =>
@@ -226,9 +299,9 @@ export class TypedJSON<T>
 
         try
         {
-            result = this.deserializer.convertSingleValue(object, {
+            result = this.deserializer.convertSingleValue(jsonObj, {
                 selfConstructor: this.rootConstructor,
-                knownTypes: knownTypes
+                knownTypes: knownTypes,
             }) as T;
         }
         catch (e)
@@ -239,30 +312,35 @@ export class TypedJSON<T>
         return result;
     }
 
-    public parseAsArray(object: Object, dimensions: number = 1): T[]
+    public parseAsArray(object: any, dimensions: number = 1): T[]
     {
-        if (object instanceof Array)
+        const jsonObj = parseToJSObject(object);
+        if (jsonObj instanceof Array)
         {
-            return this.deserializer.convertAsArray(object, {
+            return this.deserializer.convertAsArray(jsonObj, {
                 selfConstructor: Array,
-                elementConstructor: new Array((dimensions - 1) || 0).fill(Array).concat(this.rootConstructor),
-                knownTypes: this._mapKnownTypes(this.globalKnownTypes)
+                elementConstructor: new Array(dimensions - 1)
+                    .fill(Array)
+                    .concat(this.rootConstructor),
+                knownTypes: this._mapKnownTypes(this.globalKnownTypes),
             });
         }
         else
         {
-            this.errorHandler(new TypeError(`Expected 'json' to define an Array, but got ${typeof object}.`));
+            this.errorHandler(new TypeError(`Expected 'json' to define an Array`
+                + `, but got ${typeof jsonObj}.`));
         }
 
         return [];
     }
 
-    public parseAsSet(object: Object): Set<T>
+    public parseAsSet(object: any): Set<T>
     {
+        const jsonObj = parseToJSObject(object);
         // A Set<T> is serialized as T[].
-        if (object instanceof Array)
+        if (jsonObj instanceof Array)
         {
-            return this.deserializer.convertAsSet(object, {
+            return this.deserializer.convertAsSet(jsonObj, {
                 selfConstructor: Array,
                 elementConstructor: [this.rootConstructor],
                 knownTypes: this._mapKnownTypes(this.globalKnownTypes)
@@ -270,18 +348,21 @@ export class TypedJSON<T>
         }
         else
         {
-            this.errorHandler(new TypeError(`Expected 'json' to define a Set (using an Array), but got ${typeof object}.`));
+            this.errorHandler(new TypeError(`Expected 'json' to define a Set (using an Array)`
+                + `, but got ${typeof jsonObj}.`,
+            ));
         }
 
         return new Set<T>();
     }
 
-    public parseAsMap<K>(object: Object, keyConstructor: Constructor<K>): Map<K, T>
+    public parseAsMap<K>(object: any, keyConstructor: Constructor<K>): Map<K, T>
     {
+        const jsonObj = parseToJSObject(object);
         // A Set<T> is serialized as T[].
-        if (object instanceof Array)
+        if (jsonObj instanceof Array)
         {
-            return this.deserializer.convertAsMap(object, {
+            return this.deserializer.convertAsMap(jsonObj, {
                 selfConstructor: Array,
                 elementConstructor: [this.rootConstructor],
                 knownTypes: this._mapKnownTypes(this.globalKnownTypes),
@@ -290,41 +371,99 @@ export class TypedJSON<T>
         }
         else
         {
-            this.errorHandler(new TypeError(`Expected 'json' to define a Set (using an Array), but got ${typeof object}.`));
+            this.errorHandler(new TypeError(`Expected 'json' to define a Set (using an Array)`
+                + `, but got ${typeof jsonObj}.`,
+            ));
         }
 
         return new Map<K, T>();
     }
 
     /**
-     * Converts an instance of the specified class type to a JSON string.
+     * Converts an instance of the specified class type to a plain JSON object.
      * @param object The instance to convert to a JSON string.
-     * @throws Error if any errors are thrown in the specified errorHandler callback (re-thrown).
+     * @returns Serialized object or undefined if an error has occured.
      */
-    public stringify(object: T): string
+    public toPlainJson(object: T): Object|undefined
     {
-        let serializedObject: Object;
-
         if (!(object as any instanceof this.rootConstructor))
         {
-            this.errorHandler(TypeError(`Expected object type to be '${Helpers.nameof(this.rootConstructor)}', got '${Helpers.nameof(object.constructor)}'.`));
+            this.errorHandler(new TypeError(
+                `Expected object type to be '${Helpers.nameof(this.rootConstructor)}'`
+                    + `, got '${Helpers.nameof(object.constructor)}'.`,
+            ));
             return undefined;
         }
 
         try
         {
-            serializedObject = this.serializer.convertSingleValue(object, {
+            return this.serializer.convertSingleValue(object, {
                 selfType: this.rootConstructor
             });
-
-            return JSON.stringify(serializedObject, this.replacer, this.indent);
         }
         catch (e)
         {
             this.errorHandler(e);
         }
+    }
 
-        return "";
+    public toPlainArray(object: T[], dimensions?: 1): Object[];
+    public toPlainArray(object: T[][], dimensions: 2): Object[][];
+    public toPlainArray(object: T[][][], dimensions: 3): Object[][][];
+    public toPlainArray(object: T[][][][], dimensions: 4): Object[][][][];
+    public toPlainArray(object: T[][][][][], dimensions: 5): Object[][][][][];
+    public toPlainArray(object: any[], dimensions: 1|2|3|4|5 = 1): Object[]|undefined
+    {
+        try
+        {
+            const elementConstructorArray =
+                new Array(dimensions - 1).fill(Array).concat(this.rootConstructor);
+            return this.serializer.convertAsArray(object, elementConstructorArray);
+        }
+        catch (e)
+        {
+            this.errorHandler(e);
+        }
+    }
+
+    public toPlainSet(object: Set<T>): Object[]|undefined
+    {
+        try
+        {
+            return this.serializer.convertAsSet(object, this.rootConstructor);
+        }
+        catch (e)
+        {
+            this.errorHandler(e);
+        }
+    }
+
+    public toPlainMap<K>(object: Map<K, T>, keyConstructor: Constructor<K>): { key: any, value: any }[]|undefined
+    {
+        try
+        {
+            return this.serializer.convertAsMap(object, keyConstructor, this.rootConstructor);
+        }
+        catch (e)
+        {
+            this.errorHandler(e);
+        }
+    }
+
+    /**
+     * Converts an instance of the specified class type to a JSON string.
+     * @param object The instance to convert to a JSON string.
+     * @throws Error if any errors are thrown in the specified errorHandler callback (re-thrown).
+     * @returns String with the serialized object or an empty string if an error has occured, but
+     *     the errorHandler did not throw.
+     */
+    public stringify(object: T): string
+    {
+        const result = this.toPlainJson(object);
+        if (result === undefined) {
+            return '';
+        }
+        return JSON.stringify(result, this.replacer, this.indent);
     }
 
     public stringifyAsArray(object: T[], dimensions?: 1): string;
@@ -332,21 +471,19 @@ export class TypedJSON<T>
     public stringifyAsArray(object: T[][][], dimensions: 3): string;
     public stringifyAsArray(object: T[][][][], dimensions: 4): string;
     public stringifyAsArray(object: T[][][][][], dimensions: 5): string;
-    public stringifyAsArray(object: any[], dimensions: number = 1): string
+    public stringifyAsArray(object: any[], dimensions: any): string
     {
-        let elementConstructorArray = new Array((dimensions - 1) || 0).fill(Array).concat(this.rootConstructor);
-
-        return JSON.stringify(this.serializer.convertAsArray(object, elementConstructorArray), this.replacer, this.indent);
+        return JSON.stringify(this.toPlainArray(object, dimensions), this.replacer, this.indent);
     }
 
     public stringifyAsSet(object: Set<T>): string
     {
-        return JSON.stringify(this.serializer.convertAsSet(object, this.rootConstructor), this.replacer, this.indent);
+        return JSON.stringify(this.toPlainSet(object), this.replacer, this.indent);
     }
 
     public stringifyAsMap<K>(object: Map<K, T>, keyConstructor: Constructor<K>): string
     {
-        return JSON.stringify(this.serializer.convertAsMap(object, keyConstructor, this.rootConstructor), this.replacer, this.indent);
+        return JSON.stringify(this.toPlainMap(object, keyConstructor), this.replacer, this.indent);
     }
 
     private _mapKnownTypes(constructors: Array<Constructor<any>>)

@@ -1,6 +1,7 @@
-﻿import { nameof } from "./helpers";
-import { JsonMemberMetadata, injectMetadataInformation } from "./metadata";
-import * as Helpers from "./helpers";
+﻿import {
+    nameof, logError, isReflectMetadataSupported, isValueDefined, logWarning, isSubtypeOf
+} from "./helpers";
+import { injectMetadataInformation } from "./metadata";
 
 declare abstract class Reflect
 {
@@ -48,36 +49,36 @@ export function jsonMember<TFunction extends Function>(optionsOrTarget?: IJsonMe
 {
     if (optionsOrTarget instanceof Object && (typeof propKey === "string" || typeof propKey === "symbol"))
     {
-        let target = optionsOrTarget;
-        let decoratorName = `@jsonMember on ${nameof(target.constructor)}.${propKey}`; // For error messages.
+        const target = optionsOrTarget;
+        // For error messages.
+        const decoratorName = `@jsonMember on ${nameof(target.constructor)}.${String(propKey)}`;
 
         // jsonMember used directly, no additional information directly available besides target and propKey.
         // Obtain property constructor through ReflectDecorators.
-        if (Helpers.isReflectMetadataSupported)
+        if (isReflectMetadataSupported)
         {
-            let reflectPropCtor = Reflect.getMetadata("design:type", target, propKey) as Function;
-            let memberMetadata = new JsonMemberMetadata();
+            const reflectPropCtor = Reflect.getMetadata("design:type", target, propKey) as Function;
 
             if (!reflectPropCtor)
             {
-                Helpers.logError(`${decoratorName}: could not resolve detected property constructor at runtime.`);
+                logError(`${decoratorName}: could not resolve detected property constructor at runtime.`);
                 return;
             }
 
-            if (isSpecialPropertyType(reflectPropCtor, decoratorName))
+            if (isSpecialPropertyType(decoratorName, reflectPropCtor))
             {
                 return;
             }
 
-            memberMetadata.ctor = reflectPropCtor;
-            memberMetadata.key = propKey.toString();
-            memberMetadata.name = propKey.toString();
-
-            injectMetadataInformation(target, propKey, memberMetadata);
+            injectMetadataInformation(target, propKey, {
+                ctor: reflectPropCtor,
+                key: propKey.toString(),
+                name: propKey.toString(),
+            });
         }
         else
         {
-            Helpers.logError(`${decoratorName}: ReflectDecorators is required if no 'constructor' option is specified.`);
+            logError(`${decoratorName}: ReflectDecorators is required if no 'constructor' option is specified.`);
             return;
         }
     }
@@ -87,21 +88,21 @@ export function jsonMember<TFunction extends Function>(optionsOrTarget?: IJsonMe
         return (target: Object, _propKey: string | symbol) =>
         {
             let options: IJsonMemberOptions = optionsOrTarget || {};
-            let propCtor: Function;
-            let decoratorName = `@jsonMember on ${nameof(target.constructor)}.${_propKey}`; // For error messages.
+            let propCtor: Function|undefined;
+            let decoratorName = `@jsonMember on ${nameof(target.constructor)}.${String(_propKey)}`; // For error messages.
 
             if (options.hasOwnProperty("constructor"))
             {
-                if (!Helpers.isValueDefined(options.constructor))
+                if (!isValueDefined(options.constructor))
                 {
-                    Helpers.logError(`${decoratorName}: cannot resolve specified property constructor at runtime.`);
+                    logError(`${decoratorName}: cannot resolve specified property constructor at runtime.`);
                     return;
                 }
 
                 // Property constructor has been specified. Use ReflectDecorators (if available) to check whether that constructor is correct. Warn if not.
-                if (Helpers.isReflectMetadataSupported && !Helpers.isSubtypeOf(options.constructor, Reflect.getMetadata("design:type", target, _propKey)))
+                if (isReflectMetadataSupported && !isSubtypeOf(options.constructor, Reflect.getMetadata("design:type", target, _propKey)))
                 {
-                    Helpers.logWarning(`${decoratorName}: detected property type does not match 'constructor' option.`);
+                    logWarning(`${decoratorName}: detected property type does not match 'constructor' option.`);
                 }
 
                 propCtor = options.constructor;
@@ -109,60 +110,61 @@ export function jsonMember<TFunction extends Function>(optionsOrTarget?: IJsonMe
             else
             {
                 // Use ReflectDecorators to obtain property constructor.
-                if (Helpers.isReflectMetadataSupported)
+                if (isReflectMetadataSupported)
                 {
                     propCtor = Reflect.getMetadata("design:type", target, _propKey) as Function;
 
                     if (!propCtor)
                     {
-                        Helpers.logError(`${decoratorName}: cannot resolve detected property constructor at runtime.`);
+                        logError(`${decoratorName}: cannot resolve detected property constructor at runtime.`);
                         return;
                     }
                 }
                 else if (!options.deserializer)
                 {
-                    Helpers.logError(`${decoratorName}: ReflectDecorators is required if no 'constructor' option is specified.`);
+                    logError(`${decoratorName}: ReflectDecorators is required if no 'constructor' option is specified.`);
                     return;
                 }
             }
 
-            if (isSpecialPropertyType(propCtor, decoratorName))
+            if (isSpecialPropertyType(decoratorName, propCtor))
             {
                 return;
             }
 
-            let memberMetadata = new JsonMemberMetadata();
-
-            memberMetadata.ctor = propCtor;
-            memberMetadata.emitDefaultValue = options.emitDefaultValue || false;
-            memberMetadata.isRequired = options.isRequired || false;
-            memberMetadata.key = _propKey.toString();
-            memberMetadata.name = options.name || _propKey.toString();
-            memberMetadata.deserializer = options.deserializer;
-            memberMetadata.serializer = options.serializer;
-
-            injectMetadataInformation(target, _propKey, memberMetadata);
+            injectMetadataInformation(target, _propKey, {
+                ctor: propCtor,
+                emitDefaultValue: options.emitDefaultValue || false,
+                isRequired: options.isRequired || false,
+                key: _propKey.toString(),
+                name: options.name || _propKey.toString(),
+                deserializer: options.deserializer,
+                serializer: options.serializer,
+            });
         };
     }
 }
 
-function isSpecialPropertyType(propCtor: Function, decoratorName: string)
+function isSpecialPropertyType(decoratorName: string, propCtor?: Function)
 {
     if (propCtor === Array)
     {
-        Helpers.logError(`${decoratorName}: property is an Array. Use the jsonArrayMember decorator to serialize this property.`);
+        logError(`${decoratorName}: property is an Array. Use the jsonArrayMember decorator to`
+            + ` serialize this property.`);
         return true;
     }
 
     if (propCtor === Set)
     {
-        Helpers.logError(`${decoratorName}: property is a Set. Use the jsonSetMember decorator to serialize this property.`);
+        logError(`${decoratorName}: property is a Set. Use the jsonSetMember decorator to`
+            + ` serialize this property.`);
         return true;
     }
 
     if (propCtor === Map)
     {
-        Helpers.logError(`${decoratorName}: property is a Map. Use the jsonMapMember decorator to serialize this property.`);
+        logError(`${decoratorName}: property is a Map. Use the jsonMapMember decorator to`
+            + ` serialize this property.`);
         return true;
     }
 

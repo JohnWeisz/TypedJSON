@@ -10,6 +10,37 @@ export interface IScopeTypeInfo
     keyType?: Function;
 }
 
+export interface IScopeArrayTypeInfo extends IScopeTypeInfo
+{
+    selfType: new () => Array<any>;
+    elementTypes: Function[];
+}
+
+function isArrayTypeInfo(typeInfo: IScopeTypeInfo): typeInfo is IScopeArrayTypeInfo {
+    return typeInfo.selfType === Array;
+}
+
+export interface IScopeSetTypeInfo extends IScopeTypeInfo
+{
+    selfType: new () => Set<any>;
+    elementTypes: [Function];
+}
+
+function isSetTypeInfo(typeInfo: IScopeTypeInfo): typeInfo is IScopeSetTypeInfo {
+    return typeInfo.selfType === Set;
+}
+
+export interface IScopeMapTypeInfo extends IScopeTypeInfo
+{
+    selfType: new () => Map<any, any>;
+    elementTypes: [Function];
+    keyType: Function;
+}
+
+function isMapTypeInfo(typeInfo: IScopeTypeInfo): typeInfo is IScopeMapTypeInfo {
+    return typeInfo.selfType === Map;
+}
+
 /**
  * Utility class, converts a typed object tree (i.e. a tree of class instances, arrays of class instances, and so on) to an untyped javascript object (also
  * called "simple javascript object"), and emits any necessary type hints in the process (for polymorphism).
@@ -89,15 +120,15 @@ export class Serializer
         {
             return this.convertAsDataView(sourceObject);
         }
-        else if (typeInfo.selfType === Array)
+        else if (isArrayTypeInfo(typeInfo))
         {
             return this.convertAsArray(sourceObject, typeInfo.elementTypes, memberName);
         }
-        else if (typeInfo.selfType === Set)
+        else if (isSetTypeInfo(typeInfo))
         {
             return this.convertAsSet(sourceObject, typeInfo.elementTypes[0], memberName);
         }
-        else if (typeInfo.selfType === Map)
+        else if (isMapTypeInfo(typeInfo))
         {
             return this.convertAsMap(sourceObject, typeInfo.keyType, typeInfo.elementTypes[0], memberName);
         }
@@ -116,7 +147,7 @@ export class Serializer
      */
     public convertAsObject(sourceObject: IndexedObject, typeInfo: IScopeTypeInfo, memberName?: string)
     {
-        let sourceTypeMetadata: JsonObjectMetadata;
+        let sourceTypeMetadata: JsonObjectMetadata|undefined;
         let targetObject: IndexedObject;
 
         if (sourceObject.constructor !== typeInfo.selfType && sourceObject instanceof typeInfo.selfType)
@@ -132,21 +163,32 @@ export class Serializer
 
         if (sourceTypeMetadata)
         {
+            const sourceMeta = sourceTypeMetadata;
             // Strong-typed serialization available.
             // We'll serialize by members that have been marked with @jsonMember (including array/set/map members), and perform recursive conversion on
             // each of them. The converted objects are put on the 'targetObject', which is what will be put into 'JSON.stringify' finally.
             targetObject = {};
 
-            sourceTypeMetadata.dataMembers.forEach((memberMetadata, propKey) =>
+            sourceTypeMetadata.dataMembers.forEach((memberMetadata) =>
             {
                 if (memberMetadata.serializer) {
-                    targetObject[memberMetadata.name] = memberMetadata.serializer(sourceObject[memberMetadata.key]);
+                    targetObject[memberMetadata.name] =
+                        memberMetadata.serializer(sourceObject[memberMetadata.key]);
+                } else if (memberMetadata.ctor) {
+                    targetObject[memberMetadata.name] = this.convertSingleValue(
+                        sourceObject[memberMetadata.key],
+                        {
+                            selfType: memberMetadata.ctor,
+                            elementTypes: memberMetadata.elementType,
+                            keyType: memberMetadata.keyType,
+                        },
+                        `${nameof(sourceMeta.classType)}.${memberMetadata.key}`,
+                    );
                 } else {
-                    targetObject[memberMetadata.name] = this.convertSingleValue(sourceObject[memberMetadata.key], {
-                        selfType: memberMetadata.ctor,
-                        elementTypes: memberMetadata.elementType,
-                        keyType: memberMetadata.keyType
-                    }, `${nameof(sourceTypeMetadata.classType)}.${memberMetadata.key}`);
+                    throw new TypeError(
+                        `Could not serialize ${memberMetadata.name}, there is`
+                        + ` no constructor nor serialization function to use.`,
+                    );
                 }
             });
         }
@@ -169,39 +211,28 @@ export class Serializer
      * @param expectedElementType The expected type of elements. If the array is supposed to be multi-dimensional, subsequent elements define lower dimensions.
      * @param memberName Name of the object being serialized, used for debugging purposes.
      */
-    public convertAsArray(sourceObject: any[], expectedElementType: Function[], memberName = "object")
+    public convertAsArray(sourceObject: any[], expectedElementType: Function[], memberName = "object"): any[]
     {
         if (expectedElementType.length === 0 || !expectedElementType[0])
-        {
-            this._errorHandler(new TypeError(`Could not serialize ${memberName} as Array: missing element type definition.`));
-            return;
-        }
+           throw new TypeError(`Could not serialize ${memberName} as Array: missing element type definition.`);
 
         // Check the type of each element, individually.
         // If at least one array element type is incorrect, we return undefined, which results in no value emitted during serialization.
         // This is so that invalid element types don't unexpectedly alter the ordering of other, valid elements, and that no unexpected undefined values are in
         // the emitted array.
-        try
+        sourceObject.forEach((element, i) =>
         {
-            sourceObject.forEach((element, i) =>
+            if (!Helpers.isInstanceOf(element, expectedElementType[0]))
             {
-                if (!Helpers.isInstanceOf(element, expectedElementType[0]))
-                {
-                    let expectedTypeName = nameof(expectedElementType[0]);
-                    let actualTypeName = nameof(element.constructor);
-                    throw new TypeError(`Could not serialize ${memberName}[${i}]: expected '${expectedTypeName}', got '${actualTypeName}'.`);
-                }
-            });
-        }
-        catch (e)
-        {
-            this._errorHandler(e);
-            return;
-        }
+                const expectedTypeName = nameof(expectedElementType[0]);
+                const actualTypeName = nameof(element.constructor);
+                throw new TypeError(`Could not serialize ${memberName}[${i}]: expected '${expectedTypeName}', got '${actualTypeName}'.`);
+            }
+        });
 
-        let typeInfoForElements: IScopeTypeInfo = {
+        const typeInfoForElements: IScopeTypeInfo = {
             selfType: expectedElementType[0],
-            elementTypes: expectedElementType.length > 1 ? expectedElementType.slice(1) : [] // For multidimensional arrays.
+            elementTypes: expectedElementType.length > 1 ? expectedElementType.slice(1) : [], // For multidimensional arrays.
         };
 
         if (memberName)
@@ -221,16 +252,13 @@ export class Serializer
      * @param memberName Name of the object being serialized, used for debugging purposes.
      * @returns
      */
-    public convertAsSet(sourceObject: Set<any>, expectedElementType: Function, memberName = "object")
+    public convertAsSet(sourceObject: Set<any>, expectedElementType: Function, memberName = "object"): any[]
     {
         if (!expectedElementType)
-        {
-            this._errorHandler(new TypeError(`Could not serialize ${memberName} as Set: missing element type definition.`));
-            return;
-        }
+            throw new TypeError(`Could not serialize ${memberName} as Set: missing element type definition.`);
 
         let elementTypeInfo: IScopeTypeInfo = {
-            selfType: expectedElementType
+            selfType: expectedElementType,
         };
 
         // For debugging and error tracking.
@@ -263,7 +291,7 @@ export class Serializer
      * @param expectedElementType The constructor of the expected Map values (e.g. `Number` for `Map<any, number>`, or `MyClass` for `Map<any, MyClass>`).
      * @param memberName Name of the object being serialized, used for debugging purposes.
      */
-    public convertAsMap(sourceObject: Map<any, any>, expectedKeyType: Function, expectedElementType: Function, memberName = "object")
+    public convertAsMap(sourceObject: Map<any, any>, expectedKeyType: Function, expectedElementType: Function, memberName = "object"): Array<{ key: any, value: any }>
     {
         if (!expectedElementType)
             throw new TypeError(`Could not serialize ${memberName} as Map: missing value type definition.`);

@@ -1,7 +1,5 @@
-﻿import { nameof } from "./helpers";
-import { IJsonMemberOptions } from "./json-member";
-import { JsonMemberMetadata, JsonObjectMetadata, injectMetadataInformation } from "./metadata";
-import * as Helpers from "./helpers";
+﻿import { nameof, logError, isReflectMetadataSupported } from "./helpers";
+import { injectMetadataInformation } from "./metadata";
 
 declare abstract class Reflect
 {
@@ -37,39 +35,37 @@ export function jsonMapMember(keyConstructor: Function, valueConstructor: Functi
 {
     return (target: Object, propKey: string | symbol) =>
     {
-        let decoratorName = `@jsonMapMember on ${nameof(target.constructor)}.${propKey}`; // For error messages.
+        let decoratorName = `@jsonMapMember on ${nameof(target.constructor)}.${String(propKey)}`; // For error messages.
 
         if (typeof keyConstructor !== "function")
         {
-            Helpers.logError(`${decoratorName}: could not resolve constructor of map keys at runtime.`);
+            logError(`${decoratorName}: could not resolve constructor of map keys at runtime.`);
             return;
         }
 
         if (typeof valueConstructor !== "function")
         {
-            Helpers.logError(`${decoratorName}: could not resolve constructor of map values at runtime.`);
+            logError(`${decoratorName}: could not resolve constructor of map values at runtime.`);
             return;
         }
 
         // If ReflectDecorators is available, use it to check whether 'jsonMapMember' has been used on a map. Warn if not.
-        if (Helpers.isReflectMetadataSupported && Reflect.getMetadata("design:type", target, propKey) !== Map)
+        if (isReflectMetadataSupported && Reflect.getMetadata("design:type", target, propKey) !== Map)
         {
-            Helpers.logError(`${decoratorName}: property is not a Map.`);
+            logError(`${decoratorName}: property is not a Map.`);
             return;
         }
 
-        let metadata = new JsonMemberMetadata();
-
-        metadata.ctor = Map;
-        metadata.elementType = [valueConstructor];
-        metadata.keyType = keyConstructor;
-        metadata.emitDefaultValue = options.emitDefaultValue || false;
-        metadata.isRequired = options.isRequired || false;
-        metadata.key = propKey.toString();
-        metadata.name = options.name || propKey.toString();
-        metadata.deserializer = options.deserializer;
-        metadata.serializer = options.serializer;
-
-        injectMetadataInformation(target, propKey, metadata);
+        injectMetadataInformation(target, propKey, {
+            ctor: Map,
+            elementType: [valueConstructor],
+            keyType: keyConstructor,
+            emitDefaultValue: options.emitDefaultValue || false,
+            isRequired: options.isRequired || false,
+            key: propKey.toString(),
+            name: options.name || propKey.toString(),
+            deserializer: options.deserializer,
+            serializer: options.serializer,
+        });
     };
 }

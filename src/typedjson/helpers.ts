@@ -5,7 +5,7 @@
 
 export const METADATA_FIELD_KEY = "__typedJsonJsonObjectMetadataInformation__";
 
-export function getDefaultValue<T>(type: { new (): T }): T
+export function getDefaultValue<T>(type: { new (): T }): T|undefined
 {
     switch (type as any)
     {
@@ -105,7 +105,7 @@ export function logWarning(message?: any, ...optionalParams: any[])
  * Checks if the value is considered defined (not undefined and not null).
  * @param value
  */
-export function isValueDefined(value: any): boolean
+export function isValueDefined<T>(value: T): value is Exclude<T, undefined | null>
 {
     return !(typeof value === "undefined" || value === null);
 }
@@ -132,12 +132,8 @@ export function isInstanceOf<T>(value: any, constructor: Function): boolean
     return false;
 }
 
-export const isReflectMetadataSupported = (typeof Reflect === "object" && typeof Reflect.getMetadata === "function");
-
-export function multilineString(...values: string[])
-{
-    return values.join(" ");
-}
+export const isReflectMetadataSupported =
+    (typeof Reflect === "object" && typeof Reflect.getMetadata === "function");
 
 /**
  * Gets the name of a function.

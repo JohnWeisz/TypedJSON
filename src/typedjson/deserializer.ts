@@ -1,5 +1,4 @@
-import { nameof } from "./helpers";
-import * as Helpers from "./helpers";
+import { nameof, logError, isSubtypeOf, isValueDefined } from "./helpers";
 import { IndexedObject } from "./types";
 import { JsonObjectMetadata } from "./metadata";
 
@@ -17,8 +16,8 @@ export interface IScopeTypeInfo
  */
 export class Deserializer<T>
 {
-    private _typeResolver: (sourceObject: Object, knownTypes: Map<string, Function>) => Function;
-    private _nameResolver: (ctor: Function) => string;
+    private _typeResolver: (sourceObject: Object, knownTypes: Map<string, Function>) => Function|undefined;
+    private _nameResolver?: (ctor: Function) => string;
     private _errorHandler: (error: Error) => void;
 
     constructor()
@@ -28,7 +27,7 @@ export class Deserializer<T>
             if (sourceObject.__type) return knownTypes.get(sourceObject.__type);
         };
 
-        this._errorHandler = (error) => Helpers.logError(error);
+        this._errorHandler = (error) => logError(error);
     }
 
     public setNameResolver(nameResolverCallback: (ctor: Function) => string)
@@ -74,7 +73,7 @@ export class Deserializer<T>
         if (typeFromTypeHint)
         {
             // Check if type hint is a valid subtype of the expected source type.
-            if (Helpers.isSubtypeOf(typeFromTypeHint, expectedSelfType))
+            if (isSubtypeOf(typeFromTypeHint, expectedSelfType))
             {
                 // Hell yes.
                 expectedSelfType = typeFromTypeHint;
@@ -90,30 +89,38 @@ export class Deserializer<T>
 
         if (sourceObjectMetadata && sourceObjectMetadata.isExplicitlyMarked)
         {
+            const sourceMetadata = sourceObjectMetadata;
             // Strong-typed deserialization available, get to it.
             // First deserialize properties into a temporary object.
-            let sourceObjectWithDeserializedProperties = {} as IndexedObject;
+            const sourceObjectWithDeserializedProperties = {} as IndexedObject;
 
             // Deserialize by expected properties.
-            sourceObjectMetadata.dataMembers.forEach((memberMetadata, propKey) =>
+            sourceMetadata.dataMembers.forEach((memberMetadata, propKey) =>
             {
-                let memberValue = sourceObject[propKey];
-                let memberNameForDebug = `${nameof(sourceObjectMetadata.classType)}.${propKey}`;
-                let expectedMemberType = memberMetadata.ctor;
+                const memberValue = sourceObject[propKey];
+                const memberNameForDebug = `${nameof(sourceMetadata.classType)}.${propKey}`;
 
                 let revivedValue;
                 if (memberMetadata.deserializer) {
                     revivedValue = memberMetadata.deserializer(memberValue);
+                } else if (memberMetadata.ctor) {
+                    revivedValue = this.convertSingleValue(
+                        memberValue, {
+                            selfConstructor: memberMetadata.ctor,
+                            elementConstructor: memberMetadata.elementType,
+                            keyConstructor: memberMetadata.keyType,
+                            knownTypes: knownTypeConstructors
+                        },
+                        memberNameForDebug,
+                    );
                 } else {
-                    revivedValue = this.convertSingleValue(memberValue, {
-                        selfConstructor: expectedMemberType,
-                        elementConstructor: memberMetadata.elementType,
-                        keyConstructor: memberMetadata.keyType,
-                        knownTypes: knownTypeConstructors
-                    }, memberNameForDebug);
+                    throw new TypeError(
+                        `Cannot deserialize ${memberNameForDebug} thers is`
+                        + ` no constructor nor deserlization function to use.`,
+                    );
                 }
 
-                if (Helpers.isValueDefined(revivedValue))
+                if (isValueDefined(revivedValue))
                 {
                     sourceObjectWithDeserializedProperties[memberMetadata.key] = revivedValue;
                 }
@@ -130,23 +137,29 @@ export class Deserializer<T>
             {
                 try
                 {
-                    targetObject = sourceObjectMetadata.initializerCallback(sourceObjectWithDeserializedProperties, sourceObject);
+                    targetObject = sourceObjectMetadata.initializerCallback(
+                        sourceObjectWithDeserializedProperties,
+                        sourceObject,
+                    );
 
                     // Check the validity of user-defined initializer callback.
                     if (!targetObject)
                     {
-                        throw new TypeError(Helpers.multilineString(
-                            `Cannot deserialize ${objectName}:`,
-                            `'initializer' function returned undefined/null, but '${nameof(sourceObjectMetadata.classType)}' was expected.`
-                        ));
+                        throw new TypeError(
+                            `Cannot deserialize ${objectName}:`
+                            + ` 'initializer' function returned undefined/null`
+                            + `, but '${nameof(sourceObjectMetadata.classType)}' was expected.`,
+                        );
                     }
                     else if (!(targetObject instanceof sourceObjectMetadata.classType))
                     {
-                        throw new TypeError(Helpers.multilineString(
-                            `Cannot deserialize ${objectName}:`,
-                            `'initializer' returned '${nameof(targetObject.constructor)}', but '${nameof(sourceObjectMetadata.classType)}' was expected,`,
-                            `and '${nameof(targetObject.constructor)}' is not a subtype of '${nameof(sourceObjectMetadata.classType)}'`
-                        ));
+                        throw new TypeError(
+                            `Cannot deserialize ${objectName}:`
+                            + `'initializer' returned '${nameof(targetObject.constructor)}'`
+                            + `, but '${nameof(sourceObjectMetadata.classType)}' was expected,`
+                            + `and '${nameof(targetObject.constructor)}' is not a subtype of`
+                            + ` '${nameof(sourceObjectMetadata.classType)}'`,
+                        );
                     }
                 }
                 catch (e)
@@ -204,7 +217,7 @@ export class Deserializer<T>
         let expectedSelfType = typeInfo.selfConstructor;
         let srcTypeNameForDebug = sourceObject ? nameof(sourceObject.constructor) : "undefined";
 
-        if (!Helpers.isValueDefined(sourceObject))
+        if (!isValueDefined(sourceObject))
         {
             return sourceObject;
         }
@@ -437,14 +450,17 @@ export class Deserializer<T>
                 let key = this.convertSingleValue(element.key, keyTypeInfo);
 
                 // Undefined/null keys not supported, skip if so.
-                if (Helpers.isValueDefined(key))
+                if (isValueDefined(key))
                 {
-                    resultMap.set(key, this.convertSingleValue(element.value, valueTypeInfo, memberName + `[${key}]`));
+                    resultMap.set(key, this.convertSingleValue(
+                        element.value, valueTypeInfo, `${memberName}[${key}]`,
+                    ));
                 }
             }
             catch (e)
             {
-                // Faulty entries are skipped, because a Map is not ordered, and skipping an entry does not affect others.
+                // Faulty entries are skipped, because a Map is not ordered,
+                // and skipping an entry does not affect others.
                 this._errorHandler(e);
             }
         });
@@ -452,9 +468,16 @@ export class Deserializer<T>
         return resultMap;
     }
 
-    private _throwTypeMismatchError(targetType: string, expectedSourceType: string, actualSourceType: string, memberName = "object")
-    {
-        throw new TypeError(`Could not deserialize ${memberName} as ${targetType}: expected ${expectedSourceType}, got ${actualSourceType}.`);
+    private _throwTypeMismatchError(
+        targetType: string,
+        expectedSourceType: string,
+        actualSourceType: string,
+        memberName: string = "object",
+    ) {
+        throw new TypeError(
+            `Could not deserialize ${memberName} as ${targetType}:`
+            + ` expected ${expectedSourceType}, got ${actualSourceType}.`,
+        );
     }
 
     private _makeTypeErrorMessage(expectedType: Function | string, actualType: Function | string, memberName = "object")

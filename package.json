@@ -5,7 +5,7 @@
   "main": "./js/typedjson.js",
   "typings": "./js/typedjson.d.ts",
   "scripts": {
-    "test": "ts-node --no-cache -O '{\"module\": \"commonjs\"}' node_modules/jasmine/bin/jasmine",
+    "test": "ts-node --no-cache -O '{\"module\": \"commonjs\", \"strict\": false}' node_modules/jasmine/bin/jasmine",
     "build": "webpack",
     "preversion": "npm test",
     "version": "npm run build && git add -A js"

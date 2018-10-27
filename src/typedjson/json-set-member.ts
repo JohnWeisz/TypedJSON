@@ -36,7 +36,7 @@ export function jsonSetMember(elementConstructor: Function, options: IJsonSetMem
 {
     return (target: Object, propKey: string | symbol) =>
     {
-        var decoratorName = `@jsonSetMember on ${nameof(target.constructor)}.${propKey}`; // For error messages.
+        var decoratorName = `@jsonSetMember on ${nameof(target.constructor)}.${String(propKey)}`; // For error messages.
 
         if (typeof elementConstructor !== "function")
         {
@@ -51,17 +51,15 @@ export function jsonSetMember(elementConstructor: Function, options: IJsonSetMem
             return;
         }
 
-        var metadata = new JsonMemberMetadata();
-
-        metadata.ctor = Set;
-        metadata.elementType = [elementConstructor];
-        metadata.emitDefaultValue = options.emitDefaultValue || false;
-        metadata.isRequired = options.isRequired || false;
-        metadata.key = propKey.toString();
-        metadata.name = options.name || propKey.toString();
-        metadata.deserializer = options.deserializer;
-        metadata.serializer = options.serializer;
-
-        injectMetadataInformation(target, propKey, metadata);
+        injectMetadataInformation(target, propKey, {
+            ctor: Set,
+            elementType: [elementConstructor],
+            emitDefaultValue: options.emitDefaultValue || false,
+            isRequired: options.isRequired || false,
+            key: propKey.toString(),
+            name: options.name || propKey.toString(),
+            deserializer: options.deserializer,
+            serializer: options.serializer,
+        });
     };
 }

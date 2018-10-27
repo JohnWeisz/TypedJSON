@@ -1,7 +1,5 @@
-﻿import { nameof } from "./helpers";
-import { IJsonMemberOptions } from "./json-member";
-import { JsonMemberMetadata, JsonObjectMetadata, injectMetadataInformation } from "./metadata";
-import * as Helpers from "./helpers";
+﻿import { nameof, logError, isReflectMetadataSupported } from "./helpers";
+import { injectMetadataInformation } from "./metadata";
 
 declare abstract class Reflect
 {
@@ -38,54 +36,43 @@ export function jsonArrayMember(elementConstructor: Function, options: IJsonArra
 {
     return (target: Object, propKey: string | symbol) =>
     {
-        let decoratorName = `@jsonArrayMember on ${nameof(target.constructor)}.${propKey}`; // For error messages.
+        let decoratorName = `@jsonArrayMember on ${nameof(target.constructor)}.${String(propKey)}`; // For error messages.
 
         if (typeof elementConstructor !== "function")
         {
-            Helpers.logError(`${decoratorName}: could not resolve constructor of array elements at runtime.`);
+            logError(`${decoratorName}: could not resolve constructor of array elements at runtime.`);
             return;
         }
 
-        if (!isNaN(options.dimensions) && options.dimensions < 1)
+        const dimensions = options.dimensions === undefined ? 1 : options.dimensions;
+        if (!isNaN(dimensions) && dimensions < 1)
         {
-            Helpers.logError(`${decoratorName}: 'dimensions' option must be at least 1.`);
+            logError(`${decoratorName}: 'dimensions' option must be at least 1.`);
             return;
         }
 
         // If ReflectDecorators is available, use it to check whether 'jsonArrayMember' has been used on an array.
-        if (Helpers.isReflectMetadataSupported && Reflect.getMetadata("design:type", target, propKey) !== Array)
+        if (isReflectMetadataSupported && Reflect.getMetadata("design:type", target, propKey) !== Array)
         {
-            Helpers.logError(`${decoratorName}: property is not an Array.`);
+            logError(`${decoratorName}: property is not an Array.`);
             return;
         }
 
-        let metadata = new JsonMemberMetadata();
-
-        metadata.ctor = Array;
-
-        if (options.dimensions && options.dimensions >= 1)
-        {
-            metadata.elementType = [];
-
-            for (let i = 1; i < options.dimensions; i++)
-            {
-                metadata.elementType.push(Array);
-            }
-
-            metadata.elementType.push(elementConstructor);
-        }
-        else
-        {
-            metadata.elementType = [elementConstructor];
-        }
-
-        metadata.emitDefaultValue = options.emitDefaultValue || false;
-        metadata.isRequired = options.isRequired || false;
-        metadata.key = propKey.toString();
-        metadata.name = options.name || propKey.toString();
-        metadata.deserializer = options.deserializer;
-        metadata.serializer = options.serializer;
-
-        injectMetadataInformation(target, propKey, metadata);
+        injectMetadataInformation(target, propKey, {
+            ctor: Array,
+            elementType: createArrayElementType(elementConstructor, dimensions),
+            emitDefaultValue: options.emitDefaultValue || false,
+            isRequired: options.isRequired || false,
+            key: propKey.toString(),
+            name: options.name || propKey.toString(),
+            deserializer: options.deserializer,
+            serializer: options.serializer,
+        });
     };
+}
+
+function createArrayElementType(elementCtor: Function, dimensions: number) {
+    const elementTypes = new Array(dimensions).fill(Array, 0, -1);
+    elementTypes[dimensions-1] = elementCtor;
+    return elementTypes;
 }
