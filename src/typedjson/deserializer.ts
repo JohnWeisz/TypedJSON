@@ -44,13 +44,19 @@ export class Deserializer<T>
 
     public setErrorHandler(errorHandlerCallback: (error: Error) => void)
     {
-        if (typeof errorHandlerCallback !== "function") throw new TypeError("'errorHandlerCallback' is not a function.");
+        if (typeof errorHandlerCallback !== "function")
+        {
+            throw new TypeError("'errorHandlerCallback' is not a function.");
+        }
 
         this._errorHandler = errorHandlerCallback;
     }
 
-    public convertAsObject(sourceObject: IndexedObject, sourceObjectTypeInfo: IScopeTypeInfo, objectName = "object")
-    {
+    public convertAsObject(
+        sourceObject: IndexedObject,
+        sourceObjectTypeInfo: IScopeTypeInfo,
+        objectName = "object",
+    ) {
         if (typeof sourceObject !== "object" || sourceObject === null)
         {
             this._errorHandler(new TypeError(`Cannot deserialize ${objectName}: 'sourceObject' must be a defined object.`));
@@ -64,7 +70,10 @@ export class Deserializer<T>
         if (sourceObjectMetadata)
         {
             // Merge known types received from "above" with known types defined on the current type.
-            knownTypeConstructors = this._mergeKnownTypes(knownTypeConstructors, this._createKnownTypesMap(sourceObjectMetadata.knownTypes));
+            knownTypeConstructors = this._mergeKnownTypes(
+                knownTypeConstructors,
+                this._createKnownTypesMap(sourceObjectMetadata.knownTypes),
+            );
         }
 
         // Check if a type-hint is available from the source object.
@@ -82,7 +91,10 @@ export class Deserializer<T>
                 if (sourceObjectMetadata)
                 {
                     // Also merge new known types from subtype.
-                    knownTypeConstructors = this._mergeKnownTypes(knownTypeConstructors, this._createKnownTypesMap(sourceObjectMetadata.knownTypes));
+                    knownTypeConstructors = this._mergeKnownTypes(
+                        knownTypeConstructors,
+                        this._createKnownTypesMap(sourceObjectMetadata.knownTypes),
+                    );
                 }
             }
         }
@@ -518,7 +530,7 @@ export class Deserializer<T>
 
     private _createKnownTypesMap(knowTypes: Set<Function>)
     {
-        let map = new Map<string, Function>();
+        const map = new Map<string, Function>();
 
         knowTypes.forEach(ctor =>
         {
@@ -528,7 +540,11 @@ export class Deserializer<T>
             }
             else
             {
-                map.set(ctor.name, ctor);
+                const knownTypeMeta = JsonObjectMetadata.getFromConstructor(ctor);
+                const name = knownTypeMeta && knownTypeMeta.isExplicitlyMarked && knownTypeMeta.name
+                    ? knownTypeMeta.name
+                    : ctor.name;
+                map.set(name, ctor);
             }
         });
 

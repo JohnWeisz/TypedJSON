@@ -50,20 +50,23 @@ function isMapTypeInfo(typeInfo: IScopeTypeInfo): typeInfo is IScopeMapTypeInfo 
  */
 export class Serializer
 {
-    private _typeHintEmitter: (targetObject: IndexedObject, sourceObject: IndexedObject, expectedSourceType: Function) => void;
+    private _typeHintEmitter: (targetObject: IndexedObject, sourceObject: IndexedObject, expectedSourceType: Function, sourceTypeMetadata?: JsonObjectMetadata) => void;
     private _errorHandler: (error: Error) => void;
 
     constructor()
     {
-        this._typeHintEmitter = (targetObject, sourceObject, expectedSourceType) =>
+        this._typeHintEmitter = (targetObject, sourceObject, expectedSourceType, sourceTypeMetadata?: JsonObjectMetadata) =>
         {
             // By default, we put a "__type" property on the output object if the actual object is not the same as the expected one, so that deserialization
             // will know what to deserialize into (given the required known-types are defined, and the object is a valid subtype of the expected type).
             if (sourceObject.constructor !== expectedSourceType)
             {
+                const name = sourceTypeMetadata && sourceTypeMetadata.name
+                    ? sourceTypeMetadata.name
+                    : nameof(sourceObject.constructor);
                 // TODO: Perhaps this can work correctly without string-literal access?
                 // tslint:disable-next-line:no-string-literal
-                targetObject["__type"] = nameof(sourceObject.constructor);
+                targetObject["__type"] = name;
             }
         };
 
@@ -199,7 +202,7 @@ export class Serializer
         }
 
         // Add type-hint.
-        this._typeHintEmitter(targetObject, sourceObject, typeInfo.selfType);
+        this._typeHintEmitter(targetObject, sourceObject, typeInfo.selfType, sourceTypeMetadata);
 
         return targetObject;
     }

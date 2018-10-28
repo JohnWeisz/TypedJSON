@@ -210,7 +210,7 @@ function nameof(fn) {
 
 var metadata_JsonObjectMetadata = /** @class */ (function () {
     //#endregion
-    function JsonObjectMetadata(name, classType) {
+    function JsonObjectMetadata(classType) {
         this.dataMembers = new Map();
         this.knownTypes = new Set();
         /**
@@ -218,9 +218,6 @@ var metadata_JsonObjectMetadata = /** @class */ (function () {
          * or implicitly by @jsonMember
          */
         this.isExplicitlyMarked = false;
-        /** Indicates whether this is an abstract class */
-        this.isAbstract = false;
-        this.name = name;
         this.classType = classType;
     }
     //#region Static
@@ -302,7 +299,7 @@ function injectMetadataInformation(target, propKey, metadata) {
     // NOTE: this will not fire up custom serialization, as 'target' must be explicitly marked with '@jsonObject' as well.
     if (!target.hasOwnProperty(METADATA_FIELD_KEY)) {
         // No *own* metadata, create new.
-        objectMetadata = new metadata_JsonObjectMetadata(target.constructor.name, target.constructor);
+        objectMetadata = new metadata_JsonObjectMetadata(target.constructor);
         // Inherit @JsonMembers from parent @jsonObject (if any).
         var parentMetadata = target[METADATA_FIELD_KEY];
         if (parentMetadata) // && !target.hasOwnProperty(Helpers.METADATA_FIELD_KEY)
@@ -356,8 +353,9 @@ var deserializer_Deserializer = /** @class */ (function () {
         this._typeResolver = typeResolverCallback;
     };
     Deserializer.prototype.setErrorHandler = function (errorHandlerCallback) {
-        if (typeof errorHandlerCallback !== "function")
+        if (typeof errorHandlerCallback !== "function") {
             throw new TypeError("'errorHandlerCallback' is not a function.");
+        }
         this._errorHandler = errorHandlerCallback;
     };
     Deserializer.prototype.convertAsObject = function (sourceObject, sourceObjectTypeInfo, objectName) {
@@ -711,7 +709,11 @@ var deserializer_Deserializer = /** @class */ (function () {
                 map.set(_this._nameResolver(ctor), ctor);
             }
             else {
-                map.set(ctor.name, ctor);
+                var knownTypeMeta = metadata_JsonObjectMetadata.getFromConstructor(ctor);
+                var name_1 = knownTypeMeta && knownTypeMeta.isExplicitlyMarked && knownTypeMeta.name
+                    ? knownTypeMeta.name
+                    : ctor.name;
+                map.set(name_1, ctor);
             }
         });
         return map;
@@ -767,13 +769,16 @@ function isMapTypeInfo(typeInfo) {
  */
 var serializer_Serializer = /** @class */ (function () {
     function Serializer() {
-        this._typeHintEmitter = function (targetObject, sourceObject, expectedSourceType) {
+        this._typeHintEmitter = function (targetObject, sourceObject, expectedSourceType, sourceTypeMetadata) {
             // By default, we put a "__type" property on the output object if the actual object is not the same as the expected one, so that deserialization
             // will know what to deserialize into (given the required known-types are defined, and the object is a valid subtype of the expected type).
             if (sourceObject.constructor !== expectedSourceType) {
+                var name_1 = sourceTypeMetadata && sourceTypeMetadata.name
+                    ? sourceTypeMetadata.name
+                    : nameof(sourceObject.constructor);
                 // TODO: Perhaps this can work correctly without string-literal access?
                 // tslint:disable-next-line:no-string-literal
-                targetObject["__type"] = nameof(sourceObject.constructor);
+                targetObject["__type"] = name_1;
             }
         };
         this._errorHandler = function (error) { return logError(error); };
@@ -874,7 +879,7 @@ var serializer_Serializer = /** @class */ (function () {
             targetObject = __assign({}, sourceObject);
         }
         // Add type-hint.
-        this._typeHintEmitter(targetObject, sourceObject, typeInfo.selfType);
+        this._typeHintEmitter(targetObject, sourceObject, typeInfo.selfType, sourceTypeMetadata);
         return targetObject;
     };
     /**
@@ -1035,8 +1040,7 @@ function jsonObject(optionsOrTarget) {
         // Create or obtain JsonObjectMetadata object.
         if (!target.prototype.hasOwnProperty(METADATA_FIELD_KEY)) {
             // Target has no JsonObjectMetadata associated with it yet, create it now.
-            var name_1 = options.name ? options.name : target.name;
-            objectMetadata = new metadata_JsonObjectMetadata(name_1, target);
+            objectMetadata = new metadata_JsonObjectMetadata(target);
             // Inherit json members and known types from parent @jsonObject (if any).
             var parentMetadata = target.prototype[METADATA_FIELD_KEY];
             if (parentMetadata) {
@@ -1058,16 +1062,15 @@ function jsonObject(optionsOrTarget) {
             // Target already has JsonObjectMetadata associated with it.
             objectMetadata = target.prototype[METADATA_FIELD_KEY];
             objectMetadata.classType = target;
-            if (options.name) {
-                objectMetadata.name = options.name;
-            }
         }
         // Fill JsonObjectMetadata.
         objectMetadata.isExplicitlyMarked = true;
-        objectMetadata.isAbstract = false;
         objectMetadata.onDeserializedMethodName = options.onDeserialized;
         // T extend Object so it is fine
         objectMetadata.initializerCallback = options.initializer;
+        if (options.name) {
+            objectMetadata.name = options.name;
+        }
         // Obtain known-types.
         if (typeof options.knownTypes === "string") {
             objectMetadata.knownTypeMethodName = options.knownTypes;
@@ -1078,7 +1081,6 @@ function jsonObject(optionsOrTarget) {
                 .forEach(function (knownType) { return objectMetadata.knownTypes.add(knownType); });
         }
     }
-    ;
     if (typeof optionsOrTarget === "function") {
         // jsonObject is being used as a decorator, directly.
         decorator(optionsOrTarget);

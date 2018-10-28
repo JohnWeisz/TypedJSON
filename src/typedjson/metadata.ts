@@ -103,10 +103,8 @@ export class JsonObjectMetadata
     //#endregion
 
     constructor(
-        name: string,
         classType: Function,
     ) {
-        this.name = name;
         this.classType = classType;
     }
 
@@ -125,14 +123,12 @@ export class JsonObjectMetadata
      */
     public isExplicitlyMarked: boolean = false;
 
-    /** Indicates whether this is an abstract class */
-    public isAbstract: boolean = false;
+    /** Name used to encode polymorphic type */
+    public name?: string;
 
     public onDeserializedMethodName?: string;
 
     public initializerCallback?: (sourceObject: Object, rawSourceObject: Object) => Object;
-
-    public name: string;
 }
 
 export function injectMetadataInformation(target: IndexedObject, propKey: string | symbol, metadata: JsonMemberMetadata)
@@ -168,7 +164,7 @@ export function injectMetadataInformation(target: IndexedObject, propKey: string
     if (!target.hasOwnProperty(METADATA_FIELD_KEY))
     {
         // No *own* metadata, create new.
-        objectMetadata = new JsonObjectMetadata(target.constructor.name, target.constructor);
+        objectMetadata = new JsonObjectMetadata(target.constructor);
 
         // Inherit @JsonMembers from parent @jsonObject (if any).
         const parentMetadata: JsonObjectMetadata = target[METADATA_FIELD_KEY];

@@ -46,7 +46,7 @@ export declare class JsonObjectMetadata {
      * @param target The target instance.
      */
     static getKnownTypeNameFromInstance(target: any): string;
-    constructor(name: string, classType: Function);
+    constructor(classType: Function);
     dataMembers: Map<string, JsonMemberMetadata>;
     knownTypes: Set<Function>;
     knownTypeMethodName?: string;
@@ -57,10 +57,9 @@ export declare class JsonObjectMetadata {
      * or implicitly by @jsonMember
      */
     isExplicitlyMarked: boolean;
-    /** Indicates whether this is an abstract class */
-    isAbstract: boolean;
+    /** Name used to encode polymorphic type */
+    name?: string;
     onDeserializedMethodName?: string;
     initializerCallback?: (sourceObject: Object, rawSourceObject: Object) => Object;
-    name: string;
 }
 export declare function injectMetadataInformation(target: IndexedObject, propKey: string | symbol, metadata: JsonMemberMetadata): void;

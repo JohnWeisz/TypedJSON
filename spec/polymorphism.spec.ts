@@ -61,7 +61,7 @@ class Investor extends Person {
     }
 }
 
-@jsonObject({ name: "company", knownTypes: [PartTimeEmployee, Investor] })
+@jsonObject({ knownTypes: [PartTimeEmployee, Investor] })
 class Company {
     @jsonMember
     public name: string;
