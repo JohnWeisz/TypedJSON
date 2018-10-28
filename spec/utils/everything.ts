@@ -82,6 +82,13 @@ export class Everything implements IEverything {
         };
     }
 
+    static expected(): Everything {
+        const obj = Everything.create();
+        // properties that are undefined are not serialized
+        delete obj.undefinable;
+        return new Everything(obj);
+    }
+
     @jsonMember
     strProp: string;
     @jsonMember

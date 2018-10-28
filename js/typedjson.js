@@ -1356,8 +1356,8 @@ var typedjson_TypedJSON = /** @class */ (function () {
     TypedJSON.parse = function (object, rootType, settings) {
         return new TypedJSON(rootType, settings).parse(object);
     };
-    TypedJSON.parseAsArray = function (object, elementType, settings) {
-        return new TypedJSON(elementType, settings).parseAsArray(object);
+    TypedJSON.parseAsArray = function (object, elementType, settings, dimensions) {
+        return new TypedJSON(elementType, settings).parseAsArray(object, dimensions);
     };
     TypedJSON.parseAsSet = function (object, elementType, settings) {
         return new TypedJSON(elementType, settings).parseAsSet(object);

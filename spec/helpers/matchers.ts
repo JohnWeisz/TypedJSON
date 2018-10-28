@@ -3,6 +3,9 @@ declare namespace jasmine {
         toHaveProperties(expectation: Partial<T>|(keyof T)[], ...expectationFailOutput: any[]);
         toBeInstanceOf(expectation: Function, ...expectationFailOutput: any[]);
     }
+    interface ArrayLikeMatchers<T> extends Matchers<ArrayLike<T>> {
+        toBeOfLength(expectation: number, ...expectationFailOutput: any[]);
+    }
 }
 
 beforeEach(function() {
@@ -57,6 +60,23 @@ beforeEach(function() {
                         pass,
                         message: util.buildFailureMessage(
                             'To be instance of', pass, actual, expected, ...customMsgs,
+                        ),
+                    }
+                },
+            };
+        },
+        toBeOfLength(util) {
+            return {
+                compare<T extends ArrayLike<T>>(
+                    actual: T,
+                    expected: number,
+                    ...customMsgs: any[]
+                ) {
+                    const pass = actual && actual.length === expected;
+                    return {
+                        pass,
+                        message: util.buildFailureMessage(
+                            'To be of length', pass, actual, expected, ...customMsgs,
                         ),
                     }
                 },

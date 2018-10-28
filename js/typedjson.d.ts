@@ -31,7 +31,11 @@ export interface ITypedJSONSettings {
 }
 export declare class TypedJSON<T> {
     static parse<T>(object: any, rootType: Constructor<T>, settings?: ITypedJSONSettings): T | undefined;
-    static parseAsArray<T>(object: any, elementType: Constructor<T>, settings?: ITypedJSONSettings): T[];
+    static parseAsArray<T>(object: any, elementType: Constructor<T>, settings?: ITypedJSONSettings, dimensions?: 1): T[];
+    static parseAsArray<T>(object: any, elementType: Constructor<T>, settings: ITypedJSONSettings | undefined, dimensions: 2): T[][];
+    static parseAsArray<T>(object: any, elementType: Constructor<T>, settings: ITypedJSONSettings | undefined, dimensions: 3): T[][][];
+    static parseAsArray<T>(object: any, elementType: Constructor<T>, settings: ITypedJSONSettings | undefined, dimensions: 4): T[][][][];
+    static parseAsArray<T>(object: any, elementType: Constructor<T>, settings: ITypedJSONSettings | undefined, dimensions: 5): T[][][][][];
     static parseAsSet<T>(object: any, elementType: Constructor<T>, settings?: ITypedJSONSettings): Set<T>;
     static parseAsMap<K, V>(object: any, keyType: Constructor<K>, valueType: Constructor<V>, settings?: ITypedJSONSettings): Map<K, V>;
     static toPlainJson<T>(object: T, rootType: Constructor<T>, settings?: ITypedJSONSettings): Object | undefined;
@@ -40,6 +44,7 @@ export declare class TypedJSON<T> {
     static toPlainArray<T>(object: T[][][], elementType: Constructor<T>, dimensions: 3, settings?: ITypedJSONSettings): Object[][][];
     static toPlainArray<T>(object: T[][][][], elementType: Constructor<T>, dimensions: 4, settings?: ITypedJSONSettings): Object[][][][];
     static toPlainArray<T>(object: T[][][][][], elementType: Constructor<T>, dimensions: 5, settings?: ITypedJSONSettings): Object[][][][][];
+    static toPlainArray<T>(object: any[], elementType: Constructor<T>, dimensions: number, settings?: ITypedJSONSettings): any[];
     static toPlainSet<T>(object: Set<T>, elementType: Constructor<T>, settings?: ITypedJSONSettings): string;
     static toPlainMap<K, V>(object: Map<K, V>, keyCtor: Constructor<K>, valueCtor: Constructor<V>, settings?: ITypedJSONSettings): string;
     static stringify<T>(object: T, rootType: Constructor<T>, settings?: ITypedJSONSettings): string;
@@ -48,6 +53,7 @@ export declare class TypedJSON<T> {
     static stringifyAsArray<T>(object: T[][][], elementType: Constructor<T>, dimensions: 3, settings?: ITypedJSONSettings): string;
     static stringifyAsArray<T>(object: T[][][][], elementType: Constructor<T>, dimensions: 4, settings?: ITypedJSONSettings): string;
     static stringifyAsArray<T>(object: T[][][][][], elementType: Constructor<T>, dimensions: 5, settings?: ITypedJSONSettings): string;
+    static stringifyAsArray<T>(object: any[], elementType: Constructor<T>, dimensions: number, settings?: ITypedJSONSettings): string;
     static stringifyAsSet<T>(object: Set<T>, elementType: Constructor<T>, settings?: ITypedJSONSettings): string;
     static stringifyAsMap<K, V>(object: Map<K, V>, keyCtor: Constructor<K>, valueCtor: Constructor<V>, settings?: ITypedJSONSettings): string;
     private static _globalConfig;
@@ -79,7 +85,12 @@ export declare class TypedJSON<T> {
      * @returns Deserialized T or undefined if there were errors.
      */
     parse(object: any): T | undefined;
-    parseAsArray(object: any, dimensions?: number): T[];
+    parseAsArray(object: any, dimensions?: 1): T[];
+    parseAsArray(object: any, dimensions: 2): T[][];
+    parseAsArray(object: any, dimensions: 3): T[][][];
+    parseAsArray(object: any, dimensions: 4): T[][][][];
+    parseAsArray(object: any, dimensions: 5): T[][][][][];
+    parseAsArray(object: any, dimensions: number): any[];
     parseAsSet(object: any): Set<T>;
     parseAsMap<K>(object: any, keyConstructor: Constructor<K>): Map<K, T>;
     /**

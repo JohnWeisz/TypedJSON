@@ -54,9 +54,42 @@ export class TypedJSON<T>
     }
 
     public static parseAsArray<T>(
-        object: any, elementType: Constructor<T>, settings?: ITypedJSONSettings,
-    ): T[] {
-        return new TypedJSON(elementType, settings).parseAsArray(object);
+        object: any,
+        elementType: Constructor<T>,
+        settings?: ITypedJSONSettings,
+        dimensions?: 1
+    ): T[];
+    public static parseAsArray<T>(
+        object: any,
+        elementType: Constructor<T>,
+        settings: ITypedJSONSettings|undefined,
+        dimensions: 2
+    ): T[][];
+    public static parseAsArray<T>(
+        object: any,
+        elementType: Constructor<T>,
+        settings: ITypedJSONSettings|undefined,
+        dimensions: 3
+    ): T[][][];
+    public static parseAsArray<T>(
+        object: any,
+        elementType: Constructor<T>,
+        settings: ITypedJSONSettings|undefined,
+        dimensions: 4
+    ): T[][][][];
+    public static parseAsArray<T>(
+        object: any,
+        elementType: Constructor<T>,
+        settings: ITypedJSONSettings|undefined,
+        dimensions: 5
+    ): T[][][][][];
+    public static parseAsArray<T>(
+        object: any,
+        elementType: Constructor<T>,
+        settings?: ITypedJSONSettings,
+        dimensions?: number
+    ): any[] {
+        return new TypedJSON(elementType, settings).parseAsArray(object, dimensions as any);
     }
 
     public static parseAsSet<T>(
@@ -95,6 +128,9 @@ export class TypedJSON<T>
     public static toPlainArray<T>(
         object: T[][][][][], elementType: Constructor<T>, dimensions: 5, settings?: ITypedJSONSettings,
     ): Object[][][][][];
+    public static toPlainArray<T>(
+        object: any[], elementType: Constructor<T>, dimensions: number, settings?: ITypedJSONSettings,
+    ): any[];
     public static toPlainArray<T>(
         object: any[], elementType: Constructor<T>, dimensions?: any, settings?: ITypedJSONSettings,
     ): any[] {
@@ -136,6 +172,9 @@ export class TypedJSON<T>
     ): string;
     public static stringifyAsArray<T>(
         object: T[][][][][], elementType: Constructor<T>, dimensions: 5, settings?: ITypedJSONSettings,
+    ): string;
+    public static stringifyAsArray<T>(
+        object: any[], elementType: Constructor<T>, dimensions: number, settings?: ITypedJSONSettings,
     ): string;
     public static stringifyAsArray<T>(
         object: any[], elementType: Constructor<T>, dimensions?: any, settings?: ITypedJSONSettings,
@@ -312,7 +351,13 @@ export class TypedJSON<T>
         return result;
     }
 
-    public parseAsArray(object: any, dimensions: number = 1): T[]
+    public parseAsArray(object: any, dimensions?: 1): T[];
+    public parseAsArray(object: any, dimensions: 2): T[][];
+    public parseAsArray(object: any, dimensions: 3): T[][][];
+    public parseAsArray(object: any, dimensions: 4): T[][][][];
+    public parseAsArray(object: any, dimensions: 5): T[][][][][];
+    public parseAsArray(object: any, dimensions: number): any[];
+    public parseAsArray(object: any, dimensions: number = 1): any[]
     {
         const jsonObj = parseToJSObject(object);
         if (jsonObj instanceof Array)

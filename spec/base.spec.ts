@@ -48,10 +48,7 @@ describe('basic serialization', function () {
 
             const deserialized = TypedJSON.parse(JSON.stringify(everything), Everything);
 
-            expect(deserialized).toBeInstanceOf(Everything);
-            // undefined is not deserialized
-            delete everything.undefinable;
-            expect(deserialized).toHaveProperties(everything);
+            expect(deserialized).toEqual(Everything.expected());
         });
 
         it('should serialize', function () {
@@ -84,15 +81,13 @@ describe('basic serialization', function () {
         it('should deserialize to nothing when null', function () {
             const deserialized = TypedJSON.parse('{"nullable":null}', WithNullable);
 
-            expect(deserialized).toBeInstanceOf(WithNullable);
-            expect(deserialized).toHaveProperties({});
+            expect(deserialized).toEqual(new WithNullable);
         });
 
         it('should deserialize to nothing when nothing', function () {
             const deserialized = TypedJSON.parse('{}', WithNullable);
 
-            expect(deserialized).toBeInstanceOf(WithNullable);
-            expect(deserialized).toHaveProperties({});
+            expect(deserialized).toEqual(new WithNullable);
         });
     });
 });
