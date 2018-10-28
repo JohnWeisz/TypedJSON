@@ -1,4 +1,4 @@
-﻿import {isEqual} from "./object-compare";
+﻿import {isEqual} from "./utils/object-compare";
 import {jsonObject, jsonMember, jsonArrayMember, TypedJSON} from "../js/typedjson";
 
 abstract class Node {
@@ -58,7 +58,7 @@ function randPortType() {
 
 export function test(log: boolean) {
     var graph = new Graph();
-    
+
     for (var i = 0; i < 20; i++) {
         graph.smallItems.push([]);
 
@@ -107,7 +107,7 @@ export function test(log: boolean) {
             graph.items[i].push(node);
         }
     }
-    
+
     var json = TypedJSON.stringify(graph, Graph);
 
     if (log) {
@@ -115,7 +115,7 @@ export function test(log: boolean) {
         console.log(graph);
         console.log(JSON.parse(json));
     }
-    
+
     var clone = TypedJSON.parse(json, Graph);
 
     if (log) {

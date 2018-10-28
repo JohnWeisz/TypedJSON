@@ -1,4 +1,4 @@
-﻿import {isEqual} from "./object-compare";
+﻿import {isEqual} from "./utils/object-compare";
 import {TypedJSON, jsonObject, jsonMember, jsonArrayMember} from "../js/typedjson";
 
 abstract class Node {
@@ -59,13 +59,13 @@ function randPortType() {
 
 export function test(log: boolean) {
     var graph = new Graph();
-    
+
     for (var i = 0; i < 20; i++) {
         let node: Node;
 
         if (Math.random() < 0.25) {
             let bigNode = new BigNode();
-            
+
             bigNode.inputs = [
                 randPortType(),
                 randPortType(),

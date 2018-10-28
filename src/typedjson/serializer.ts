@@ -1,7 +1,6 @@
-﻿import { nameof } from "./helpers";
-import * as Helpers from "./helpers";
+﻿import { nameof, logError, isValueDefined, isInstanceOf } from "./helpers";
 import { IndexedObject } from "./types";
-import { JsonMemberMetadata, JsonObjectMetadata } from "./metadata";
+import { JsonObjectMetadata } from "./metadata";
 
 export interface IScopeTypeInfo
 {
@@ -68,7 +67,7 @@ export class Serializer
             }
         };
 
-        this._errorHandler = (error) => Helpers.logError(error);
+        this._errorHandler = (error) => logError(error);
     }
 
     public setTypeHintEmitter(typeEmitterCallback: (targetObject: Object, sourceObject: Object, expectedSourceType: Function) => void)
@@ -97,9 +96,9 @@ export class Serializer
      */
     public convertSingleValue(sourceObject: any, typeInfo: IScopeTypeInfo, memberName: string = "object"): any
     {
-        if (!Helpers.isValueDefined(sourceObject)) return;
+        if (!isValueDefined(sourceObject)) return;
 
-        if (!Helpers.isInstanceOf(sourceObject, typeInfo.selfType))
+        if (!isInstanceOf(sourceObject, typeInfo.selfType))
         {
             let expectedName = nameof(typeInfo.selfType);
             let actualName = nameof(sourceObject.constructor);
@@ -222,7 +221,7 @@ export class Serializer
         // the emitted array.
         sourceObject.forEach((element, i) =>
         {
-            if (!Helpers.isInstanceOf(element, expectedElementType[0]))
+            if (!isInstanceOf(element, expectedElementType[0]))
             {
                 const expectedTypeName = nameof(expectedElementType[0]);
                 const actualTypeName = nameof(element.constructor);
@@ -274,7 +273,7 @@ export class Serializer
 
             // Add to output if the source element was undefined, OR the converted element is defined. This will add intentionally undefined values to output,
             // but not values that became undefined DURING serializing (usually because of a type-error).
-            if (!Helpers.isValueDefined(element) || Helpers.isValueDefined(resultElement))
+            if (!isValueDefined(element) || isValueDefined(resultElement))
             {
                 resultArray.push(resultElement);
             }
@@ -321,7 +320,7 @@ export class Serializer
             };
 
             // We are not going to emit entries with undefined keys OR undefined values.
-            if (Helpers.isValueDefined(resultKeyValuePairObj.key) && Helpers.isValueDefined(resultKeyValuePairObj.value))
+            if (isValueDefined(resultKeyValuePairObj.key) && isValueDefined(resultKeyValuePairObj.value))
             {
                 resultArray.push(resultKeyValuePairObj);
             }

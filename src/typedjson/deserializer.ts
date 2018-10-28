@@ -105,7 +105,8 @@ export class Deserializer<T>
                     revivedValue = memberMetadata.deserializer(memberValue);
                 } else if (memberMetadata.ctor) {
                     revivedValue = this.convertSingleValue(
-                        memberValue, {
+                        memberValue,
+                        {
                             selfConstructor: memberMetadata.ctor,
                             elementConstructor: memberMetadata.elementType,
                             keyConstructor: memberMetadata.keyType,
@@ -212,7 +213,7 @@ export class Deserializer<T>
         }
     }
 
-    public convertSingleValue(sourceObject: Object, typeInfo: IScopeTypeInfo, memberName = "object")
+    public convertSingleValue(sourceObject: any, typeInfo: IScopeTypeInfo, memberName = "object")
     {
         let expectedSelfType = typeInfo.selfConstructor;
         let srcTypeNameForDebug = sourceObject ? nameof(sourceObject.constructor) : "undefined";

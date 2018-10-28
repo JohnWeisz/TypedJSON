@@ -11,14 +11,14 @@ export interface IScopeTypeInfo {
  */
 export declare class Deserializer<T> {
     private _typeResolver;
-    private _nameResolver;
+    private _nameResolver?;
     private _errorHandler;
     constructor();
     setNameResolver(nameResolverCallback: (ctor: Function) => string): void;
     setTypeResolver(typeResolverCallback: (sourceObject: Object, knownTypes: Map<string, Function>) => Function): void;
     setErrorHandler(errorHandlerCallback: (error: Error) => void): void;
-    convertAsObject(sourceObject: IndexedObject, sourceObjectTypeInfo: IScopeTypeInfo, objectName?: string): IndexedObject;
-    convertSingleValue(sourceObject: Object, typeInfo: IScopeTypeInfo, memberName?: string): Object;
+    convertAsObject(sourceObject: IndexedObject, sourceObjectTypeInfo: IScopeTypeInfo, objectName?: string): IndexedObject | undefined;
+    convertSingleValue(sourceObject: any, typeInfo: IScopeTypeInfo, memberName?: string): any;
     convertAsArray(sourceObject: any, typeInfo: IScopeTypeInfo, memberName?: string): any[];
     convertAsSet(sourceObject: any, typeInfo: IScopeTypeInfo, memberName?: string): Set<any>;
     convertAsMap(sourceObject: any, typeInfo: IScopeTypeInfo, memberName?: string): Map<any, any>;

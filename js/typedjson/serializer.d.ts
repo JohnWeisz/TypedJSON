@@ -4,6 +4,19 @@ export interface IScopeTypeInfo {
     elementTypes?: Function[];
     keyType?: Function;
 }
+export interface IScopeArrayTypeInfo extends IScopeTypeInfo {
+    selfType: new () => Array<any>;
+    elementTypes: Function[];
+}
+export interface IScopeSetTypeInfo extends IScopeTypeInfo {
+    selfType: new () => Set<any>;
+    elementTypes: [Function];
+}
+export interface IScopeMapTypeInfo extends IScopeTypeInfo {
+    selfType: new () => Map<any, any>;
+    elementTypes: [Function];
+    keyType: Function;
+}
 /**
  * Utility class, converts a typed object tree (i.e. a tree of class instances, arrays of class instances, and so on) to an untyped javascript object (also
  * called "simple javascript object"), and emits any necessary type hints in the process (for polymorphism).
@@ -51,10 +64,10 @@ export declare class Serializer {
      * @param expectedElementType The constructor of the expected Map values (e.g. `Number` for `Map<any, number>`, or `MyClass` for `Map<any, MyClass>`).
      * @param memberName Name of the object being serialized, used for debugging purposes.
      */
-    convertAsMap(sourceObject: Map<any, any>, expectedKeyType: Function, expectedElementType: Function, memberName?: string): {
+    convertAsMap(sourceObject: Map<any, any>, expectedKeyType: Function, expectedElementType: Function, memberName?: string): Array<{
         key: any;
         value: any;
-    }[];
+    }>;
     /**
      * Performs the conversion of a typed javascript array to a simple untyped javascript array.
      * This is needed because typed arrays are otherwise serialized as objects, so we'll end up with something like "{ 0: 0, 1: 1, ... }".

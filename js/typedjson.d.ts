@@ -7,15 +7,18 @@ export interface ITypedJSONSettings {
      */
     errorHandler?: (e: Error) => void;
     /**
-     * Sets a callback that determines the constructor of the correct sub-type of polymorphic objects while deserializing.
-     * The default behavior is to read the type-name from the '__type' property of 'sourceObject', and look it up in 'knownTypes'.
+     * Sets a callback that determines the constructor of the correct sub-type of polymorphic
+     * objects while deserializing.
+     * The default behavior is to read the type-name from the '__type' property of 'sourceObject',
+     * and look it up in 'knownTypes'.
      * The constructor of the sub-type should be returned.
      */
     typeResolver?: (sourceObject: Object, knownTypes: Map<string, Function>) => Function;
     nameResolver?: (ctor: Function) => string;
     /**
      * Sets a callback that writes type-hints to serialized objects.
-     * The default behavior is to write the type-name to the '__type' property, if a derived type is present in place of a base type.
+     * The default behavior is to write the type-name to the '__type' property, if a derived type
+     * is present in place of a base type.
      */
     typeHintEmitter?: (targetObject: Object, sourceObject: Object, expectedSourceType: Function) => void;
     /**
@@ -27,10 +30,18 @@ export interface ITypedJSONSettings {
     knownTypes?: Array<Constructor<any>>;
 }
 export declare class TypedJSON<T> {
-    static parse<T>(json: any, rootType: Constructor<T>, settings?: ITypedJSONSettings): T;
-    static parseAsArray<T>(json: any, elementType: Constructor<T>, settings?: ITypedJSONSettings): T[];
-    static parseAsSet<T>(json: any, elementType: Constructor<T>, settings?: ITypedJSONSettings): Set<T>;
-    static parseAsMap<K, V>(json: any, keyType: Constructor<K>, valueType: Constructor<V>, settings?: ITypedJSONSettings): Map<K, V>;
+    static parse<T>(object: any, rootType: Constructor<T>, settings?: ITypedJSONSettings): T | undefined;
+    static parseAsArray<T>(object: any, elementType: Constructor<T>, settings?: ITypedJSONSettings): T[];
+    static parseAsSet<T>(object: any, elementType: Constructor<T>, settings?: ITypedJSONSettings): Set<T>;
+    static parseAsMap<K, V>(object: any, keyType: Constructor<K>, valueType: Constructor<V>, settings?: ITypedJSONSettings): Map<K, V>;
+    static toPlainJson<T>(object: T, rootType: Constructor<T>, settings?: ITypedJSONSettings): Object | undefined;
+    static toPlainArray<T>(object: T[], elementType: Constructor<T>, dimensions?: 1, settings?: ITypedJSONSettings): Object[];
+    static toPlainArray<T>(object: T[][], elementType: Constructor<T>, dimensions: 2, settings?: ITypedJSONSettings): Object[][];
+    static toPlainArray<T>(object: T[][][], elementType: Constructor<T>, dimensions: 3, settings?: ITypedJSONSettings): Object[][][];
+    static toPlainArray<T>(object: T[][][][], elementType: Constructor<T>, dimensions: 4, settings?: ITypedJSONSettings): Object[][][][];
+    static toPlainArray<T>(object: T[][][][][], elementType: Constructor<T>, dimensions: 5, settings?: ITypedJSONSettings): Object[][][][][];
+    static toPlainSet<T>(object: Set<T>, elementType: Constructor<T>, settings?: ITypedJSONSettings): string;
+    static toPlainMap<K, V>(object: Map<K, V>, keyCtor: Constructor<K>, valueCtor: Constructor<V>, settings?: ITypedJSONSettings): string;
     static stringify<T>(object: T, rootType: Constructor<T>, settings?: ITypedJSONSettings): string;
     static stringifyAsArray<T>(object: T[], elementType: Constructor<T>, dimensions?: 1, settings?: ITypedJSONSettings): string;
     static stringifyAsArray<T>(object: T[][], elementType: Constructor<T>, dimensions: 2, settings?: ITypedJSONSettings): string;
@@ -48,9 +59,10 @@ export declare class TypedJSON<T> {
     private rootConstructor;
     private errorHandler;
     private nameResolver;
-    private replacer;
+    private replacer?;
     /**
-     * Creates a new TypedJSON instance to serialize (stringify) and deserialize (parse) object instances of the specified root class type.
+     * Creates a new TypedJSON instance to serialize (stringify) and deserialize (parse) object
+     *     instances of the specified root class type.
      * @param rootType The constructor of the root class type.
      * @param settings Additional configuration settings.
      */
@@ -64,15 +76,34 @@ export declare class TypedJSON<T> {
      * Converts a JSON string to the root class type.
      * @param object The JSON to parse and convert.
      * @throws Error if any errors are thrown in the specified errorHandler callback (re-thrown).
+     * @returns Deserialized T or undefined if there were errors.
      */
-    parse(object: Object): T;
-    parseAsArray(object: Object, dimensions?: number): T[];
-    parseAsSet(object: Object): Set<T>;
-    parseAsMap<K>(object: Object, keyConstructor: Constructor<K>): Map<K, T>;
+    parse(object: any): T | undefined;
+    parseAsArray(object: any, dimensions?: number): T[];
+    parseAsSet(object: any): Set<T>;
+    parseAsMap<K>(object: any, keyConstructor: Constructor<K>): Map<K, T>;
+    /**
+     * Converts an instance of the specified class type to a plain JSON object.
+     * @param object The instance to convert to a JSON string.
+     * @returns Serialized object or undefined if an error has occured.
+     */
+    toPlainJson(object: T): Object | undefined;
+    toPlainArray(object: T[], dimensions?: 1): Object[];
+    toPlainArray(object: T[][], dimensions: 2): Object[][];
+    toPlainArray(object: T[][][], dimensions: 3): Object[][][];
+    toPlainArray(object: T[][][][], dimensions: 4): Object[][][][];
+    toPlainArray(object: T[][][][][], dimensions: 5): Object[][][][][];
+    toPlainSet(object: Set<T>): Object[] | undefined;
+    toPlainMap<K>(object: Map<K, T>, keyConstructor: Constructor<K>): {
+        key: any;
+        value: any;
+    }[] | undefined;
     /**
      * Converts an instance of the specified class type to a JSON string.
      * @param object The instance to convert to a JSON string.
      * @throws Error if any errors are thrown in the specified errorHandler callback (re-thrown).
+     * @returns String with the serialized object or an empty string if an error has occured, but
+     *     the errorHandler did not throw.
      */
     stringify(object: T): string;
     stringifyAsArray(object: T[], dimensions?: 1): string;
