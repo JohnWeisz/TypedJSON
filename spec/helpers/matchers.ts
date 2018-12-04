@@ -83,4 +83,29 @@ beforeEach(function() {
             };
         },
     });
+    jasmine.addCustomEqualityTester(function (first: any, second: any): boolean|undefined {
+        let firstAsInt8Array: Int8Array = tryAsInt8Array(first);
+        let secondAsInt8Array: Int8Array = tryAsInt8Array(second);
+
+        if (!firstAsInt8Array || !secondAsInt8Array)
+        {
+            return;
+        }
+
+        if (firstAsInt8Array.length !== secondAsInt8Array.length) {
+            return false;
+        }
+        return firstAsInt8Array.every((num, i) => num == secondAsInt8Array[i]);
+    });
 });
+
+function tryAsInt8Array(obj: any): Int8Array|undefined {
+    if (obj instanceof ArrayBuffer)
+    {
+        return new Int8Array(obj);
+    }
+    else if (ArrayBuffer.isView(obj))
+    {
+        return new Int8Array(obj.buffer);
+    }
+}

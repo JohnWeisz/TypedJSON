@@ -2,10 +2,15 @@ export declare const METADATA_FIELD_KEY = "__typedJsonJsonObjectMetadataInformat
 export declare function getDefaultValue<T>(type: {
     new (): T;
 }): T | undefined;
-export declare function isPrimitiveType(type: any): type is (typeof Number | typeof String | typeof Boolean);
+/**
+ * Determines whether the specified type is a type that can be passed on "as-is" into `JSON.stringify`.
+ * Values of these types don't need special conversion.
+ * @param ctor The constructor of the type (wrapper constructor for primitive types, e.g. `Number` for `number`).
+ */
+export declare function isDirectlySerializableNativeType(type: Function): boolean;
+export declare function isTypeTypedArray(type: Function): boolean;
 export declare function isPrimitiveValue(obj: any): boolean;
 export declare function isObject(value: any): value is Object;
-export declare function parseToJSObject(json: any): Object;
 /**
  * Determines if 'A' is a sub-type of 'B' (or if 'A' equals 'B').
  * @param A The supposed derived type.

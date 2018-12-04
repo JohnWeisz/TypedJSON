@@ -26,12 +26,23 @@ export function getDefaultValue<T>(type: { new (): T }): T|undefined
     }
 }
 
-export function isPrimitiveType(type: any): type is (typeof Number | typeof String | typeof Boolean)
+/**
+ * Determines whether the specified type is a type that can be passed on "as-is" into `JSON.stringify`.
+ * Values of these types don't need special conversion.
+ * @param ctor The constructor of the type (wrapper constructor for primitive types, e.g. `Number` for `number`).
+ */
+export function isDirectlySerializableNativeType(type: Function): boolean
 {
-    return (type === String || type === Boolean || type === Number);
+    return !!(~[Date, Number, String, Boolean].indexOf(type as any));
 }
 
-export function isPrimitiveValue(obj: any)
+export function isTypeTypedArray(type: Function): boolean
+{
+    return !!(~[Float32Array, Float64Array, Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array]
+        .indexOf(type as any));
+}
+
+export function isPrimitiveValue(obj: any): boolean
 {
     switch (typeof obj)
     {
@@ -47,17 +58,6 @@ export function isPrimitiveValue(obj: any)
 export function isObject(value: any): value is Object
 {
     return typeof value === "object";
-}
-
-export function parseToJSObject(json: any): Object {
-    if (isObject(json)) {
-        return json;
-    }
-    json = JSON.parse(json);
-    if (!isObject(json)) {
-        throw new TypeError("TypedJSON can only parse JSON strings or plain JS objects");
-    }
-    return json;
 }
 
 /**

@@ -1,4 +1,5 @@
 import { Constructor } from "./typedjson/types";
+export declare type JsonTypes = Object | boolean | string | number | null | undefined;
 export interface ITypedJSONSettings {
     /**
      * Sets the handler callback to invoke on errors during serializing and deserializing.
@@ -38,7 +39,7 @@ export declare class TypedJSON<T> {
     static parseAsArray<T>(object: any, elementType: Constructor<T>, settings: ITypedJSONSettings | undefined, dimensions: 5): T[][][][][];
     static parseAsSet<T>(object: any, elementType: Constructor<T>, settings?: ITypedJSONSettings): Set<T>;
     static parseAsMap<K, V>(object: any, keyType: Constructor<K>, valueType: Constructor<V>, settings?: ITypedJSONSettings): Map<K, V>;
-    static toPlainJson<T>(object: T, rootType: Constructor<T>, settings?: ITypedJSONSettings): Object | undefined;
+    static toPlainJson<T>(object: T, rootType: Constructor<T>, settings?: ITypedJSONSettings): JsonTypes;
     static toPlainArray<T>(object: T[], elementType: Constructor<T>, dimensions?: 1, settings?: ITypedJSONSettings): Object[];
     static toPlainArray<T>(object: T[][], elementType: Constructor<T>, dimensions: 2, settings?: ITypedJSONSettings): Object[][];
     static toPlainArray<T>(object: T[][][], elementType: Constructor<T>, dimensions: 3, settings?: ITypedJSONSettings): Object[][][];
@@ -98,7 +99,7 @@ export declare class TypedJSON<T> {
      * @param object The instance to convert to a JSON string.
      * @returns Serialized object or undefined if an error has occured.
      */
-    toPlainJson(object: T): Object | undefined;
+    toPlainJson(object: T): JsonTypes;
     toPlainArray(object: T[], dimensions?: 1): Object[];
     toPlainArray(object: T[][], dimensions: 2): Object[][];
     toPlainArray(object: T[][][], dimensions: 3): Object[][][];

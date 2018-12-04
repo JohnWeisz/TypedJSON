@@ -84,11 +84,4 @@ export declare class Serializer {
      * Performs the conversion of DataView, converting its internal ArrayBuffer to a string and returning that string.
      */
     convertAsDataView(dataView: DataView): string;
-    /**
-     * Determines whether the specified type is a type that can be passed on "as-is" into `JSON.stringify`.
-     * Values of these types don't need special conversion.
-     * @param ctor The constructor of the type (wrapper constructor for primitive types, e.g. `Number` for `number`).
-     */
-    private _isDirectlySerializableNativeType(ctor);
-    private _isTypeTypedArray(ctor);
 }

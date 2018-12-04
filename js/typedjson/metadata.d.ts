@@ -26,26 +26,16 @@ export declare class JsonObjectMetadata {
      */
     static getJsonObjectName(ctor: Function): string;
     /**
-     * Gets jsonObject metadata information from a class or its prototype.
-     * @param target The target class or prototype.
-     * @param allowInherited Whether to use inherited metadata information from base classes (if own metadata does not exist).
+     * Gets jsonObject metadata information from a class.
+     * @param ctor The constructor class.
      */
-    static getFromConstructor(target: Object | Function): JsonObjectMetadata | undefined;
-    /**
-     * Gets jsonObject metadata information from a class instance.
-     * @param target The target instance.
-     */
-    static getFromInstance(target: any): JsonObjectMetadata | undefined;
+    static getFromConstructor(ctor: Function): JsonObjectMetadata | undefined;
     /**
      * Gets the known type name of a jsonObject class for type hint.
-     * @param target The target class.
+     * @param constructor The constructor class.
      */
-    static getKnownTypeNameFromType(target: Function): string;
-    /**
-     * Gets the known type name of a jsonObject instance for type hint.
-     * @param target The target instance.
-     */
-    static getKnownTypeNameFromInstance(target: any): string;
+    static getKnownTypeNameFromType(constructor: Function): string;
+    private static doesHandleWithoutAnnotation(ctor);
     constructor(classType: Function);
     dataMembers: Map<string, JsonMemberMetadata>;
     knownTypes: Set<Function>;
@@ -57,9 +47,14 @@ export declare class JsonObjectMetadata {
      * or implicitly by @jsonMember
      */
     isExplicitlyMarked: boolean;
+    /**
+     * Indicates whether this type is handled without annotation. This is usually
+     * used for the builtin types (except for Maps, Sets, and normal Arrays).
+     */
+    isHandledWithoutAnnotation: boolean;
     /** Name used to encode polymorphic type */
     name?: string;
     onDeserializedMethodName?: string;
     initializerCallback?: (sourceObject: Object, rawSourceObject: Object) => Object;
 }
-export declare function injectMetadataInformation(target: IndexedObject, propKey: string | symbol, metadata: JsonMemberMetadata): void;
+export declare function injectMetadataInformation(constructor: IndexedObject, propKey: string | symbol, metadata: JsonMemberMetadata): void;

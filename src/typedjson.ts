@@ -1,9 +1,10 @@
-import { parseToJSObject } from './typedjson/helpers';
+import { nameof, logError, logWarning } from './typedjson/helpers';
 import { Constructor } from "./typedjson/types";
-import * as Helpers from "./typedjson/helpers";
 import { JsonObjectMetadata } from "./typedjson/metadata";
 import { Deserializer } from "./typedjson/deserializer";
 import { Serializer } from "./typedjson/serializer";
+
+export type JsonTypes = Object|boolean|string|number|null|undefined;
 
 export interface ITypedJSONSettings
 {
@@ -109,7 +110,7 @@ export class TypedJSON<T>
 
     public static toPlainJson<T>(
         object: T, rootType: Constructor<T>, settings?: ITypedJSONSettings,
-    ): Object|undefined {
+    ): JsonTypes {
         return new TypedJSON(rootType, settings).toPlainJson(object);
     }
 
@@ -232,14 +233,14 @@ export class TypedJSON<T>
     {
         let rootMetadata = JsonObjectMetadata.getFromConstructor(rootConstructor);
 
-        if (!rootMetadata || !rootMetadata.isExplicitlyMarked)
+        if (!rootMetadata || (!rootMetadata.isExplicitlyMarked && !rootMetadata.isHandledWithoutAnnotation))
         {
             throw new TypeError("The TypedJSON root data type must have the @jsonObject decorator used.");
         }
 
-        this.nameResolver = (ctor) => Helpers.nameof(ctor);
+        this.nameResolver = (ctor) => nameof(ctor);
         this.rootConstructor = rootConstructor;
-        this.errorHandler = (error) => Helpers.logError(error);
+        this.errorHandler = (error) => logError(error);
 
         if (settings)
         {
@@ -300,7 +301,7 @@ export class TypedJSON<T>
                 // tslint:disable-next-line:no-null-keyword
                 if (typeof knownType === "undefined" || knownType === null)
                 {
-                    Helpers.logWarning(
+                    logWarning(
                         `TypedJSON.config: 'knownTypes' contains an undefined/null value (element ${i}).`);
                 }
             });
@@ -317,7 +318,7 @@ export class TypedJSON<T>
      */
     public parse(object: any): T|undefined
     {
-        const jsonObj = parseToJSObject(object);
+        const json = JSON.parse(object);
 
         let rootMetadata = JsonObjectMetadata.getFromConstructor(this.rootConstructor);
         let result: T|undefined;
@@ -338,7 +339,7 @@ export class TypedJSON<T>
 
         try
         {
-            result = this.deserializer.convertSingleValue(jsonObj, {
+            result = this.deserializer.convertSingleValue(json, {
                 selfConstructor: this.rootConstructor,
                 knownTypes: knownTypes,
             }) as T;
@@ -359,10 +360,10 @@ export class TypedJSON<T>
     public parseAsArray(object: any, dimensions: number): any[];
     public parseAsArray(object: any, dimensions: number = 1): any[]
     {
-        const jsonObj = parseToJSObject(object);
-        if (jsonObj instanceof Array)
+        const json = JSON.parse(object);
+        if (json instanceof Array)
         {
-            return this.deserializer.convertAsArray(jsonObj, {
+            return this.deserializer.convertAsArray(json, {
                 selfConstructor: Array,
                 elementConstructor: new Array(dimensions - 1)
                     .fill(Array)
@@ -373,7 +374,7 @@ export class TypedJSON<T>
         else
         {
             this.errorHandler(new TypeError(`Expected 'json' to define an Array`
-                + `, but got ${typeof jsonObj}.`));
+                + `, but got ${typeof json}.`));
         }
 
         return [];
@@ -381,11 +382,11 @@ export class TypedJSON<T>
 
     public parseAsSet(object: any): Set<T>
     {
-        const jsonObj = parseToJSObject(object);
+        const json = JSON.parse(object);
         // A Set<T> is serialized as T[].
-        if (jsonObj instanceof Array)
+        if (json instanceof Array)
         {
-            return this.deserializer.convertAsSet(jsonObj, {
+            return this.deserializer.convertAsSet(json, {
                 selfConstructor: Array,
                 elementConstructor: [this.rootConstructor],
                 knownTypes: this._mapKnownTypes(this.globalKnownTypes)
@@ -394,7 +395,7 @@ export class TypedJSON<T>
         else
         {
             this.errorHandler(new TypeError(`Expected 'json' to define a Set (using an Array)`
-                + `, but got ${typeof jsonObj}.`,
+                + `, but got ${typeof json}.`,
             ));
         }
 
@@ -403,11 +404,11 @@ export class TypedJSON<T>
 
     public parseAsMap<K>(object: any, keyConstructor: Constructor<K>): Map<K, T>
     {
-        const jsonObj = parseToJSObject(object);
+        const json = JSON.parse(object);
         // A Set<T> is serialized as T[].
-        if (jsonObj instanceof Array)
+        if (json instanceof Array)
         {
-            return this.deserializer.convertAsMap(jsonObj, {
+            return this.deserializer.convertAsMap(json, {
                 selfConstructor: Array,
                 elementConstructor: [this.rootConstructor],
                 knownTypes: this._mapKnownTypes(this.globalKnownTypes),
@@ -417,7 +418,7 @@ export class TypedJSON<T>
         else
         {
             this.errorHandler(new TypeError(`Expected 'json' to define a Set (using an Array)`
-                + `, but got ${typeof jsonObj}.`,
+                + `, but got ${typeof json}.`,
             ));
         }
 
@@ -429,17 +430,8 @@ export class TypedJSON<T>
      * @param object The instance to convert to a JSON string.
      * @returns Serialized object or undefined if an error has occured.
      */
-    public toPlainJson(object: T): Object|undefined
+    public toPlainJson(object: T): JsonTypes
     {
-        if (!(object as any instanceof this.rootConstructor))
-        {
-            this.errorHandler(new TypeError(
-                `Expected object type to be '${Helpers.nameof(this.rootConstructor)}'`
-                    + `, got '${Helpers.nameof(object.constructor)}'.`,
-            ));
-            return undefined;
-        }
-
         try
         {
             return this.serializer.convertSingleValue(object, {

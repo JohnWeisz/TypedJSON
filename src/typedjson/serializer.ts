@@ -1,4 +1,4 @@
-﻿import { nameof, logError, isValueDefined, isInstanceOf } from "./helpers";
+﻿import { nameof, logError, isValueDefined, isInstanceOf, isTypeTypedArray, isDirectlySerializableNativeType } from "./helpers";
 import { IndexedObject } from "./types";
 import { JsonObjectMetadata } from "./metadata";
 
@@ -110,7 +110,7 @@ export class Serializer
             return;
         }
 
-        if (this._isDirectlySerializableNativeType(typeInfo.selfType))
+        if (isDirectlySerializableNativeType(typeInfo.selfType))
         {
             return sourceObject;
         }
@@ -134,7 +134,7 @@ export class Serializer
         {
             return this.convertAsMap(sourceObject, typeInfo.keyType, typeInfo.elementTypes[0], memberName);
         }
-        else if (this._isTypeTypedArray(typeInfo.selfType))
+        else if (isTypeTypedArray(typeInfo.selfType))
         {
             return this.convertAsTypedArray(sourceObject);
         }
@@ -359,20 +359,5 @@ export class Serializer
     public convertAsDataView(dataView: DataView)
     {
         return this.convertAsArrayBuffer(dataView.buffer);
-    }
-
-    /**
-     * Determines whether the specified type is a type that can be passed on "as-is" into `JSON.stringify`.
-     * Values of these types don't need special conversion.
-     * @param ctor The constructor of the type (wrapper constructor for primitive types, e.g. `Number` for `number`).
-     */
-    private _isDirectlySerializableNativeType(ctor: Function)
-    {
-        return ~[Date, Number, String, Boolean].indexOf(ctor as any);
-    }
-
-    private _isTypeTypedArray(ctor: Function)
-    {
-        return ~[Float32Array, Float64Array, Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array].indexOf(ctor as any);
     }
 }
