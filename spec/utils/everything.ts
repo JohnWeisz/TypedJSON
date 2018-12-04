@@ -42,6 +42,7 @@ export interface IEverything {
     strProp: string;
     numProp: number;
     boolProp: boolean;
+    dateProp: Date;
     // nullable is not supported, use optional instead
     // nullable: {}|null;
     optional?: {};
@@ -68,6 +69,7 @@ export class Everything implements IEverything {
             strProp: 'string',
             numProp: 123,
             boolProp: true,
+            dateProp: new Date(1543912019),
             // nullable: null,
             undefinable: undefined,
             enum: JustEnum.Four,
@@ -95,6 +97,8 @@ export class Everything implements IEverything {
     numProp: number;
     @jsonMember
     boolProp: boolean;
+    @jsonMember
+    dateProp: Date;
     // @jsonMember
     // nullable: {}|null;
     @jsonMember

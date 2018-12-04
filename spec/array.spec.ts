@@ -1,6 +1,5 @@
 import {jsonObject, jsonMember, jsonArrayMember, TypedJSON} from "../js/typedjson";
 import { Everything, IEverything } from "./utils/everything";
-import { clone } from "./utils/poorsman-clone";
 
 describe('array of objects', function () {
     @jsonObject
