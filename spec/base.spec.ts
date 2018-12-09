@@ -20,8 +20,8 @@ describe('basic serialization', function () {
             expect(TypedJSON.stringify('str', String)).toEqual('"str"');
             expect(TypedJSON.stringify(45834, Number)).toEqual('45834');
             expect(TypedJSON.stringify(true, Boolean)).toEqual('true');
-            expect(TypedJSON.stringify(new Date(1543915254), Date)).toEqual('"1970-01-18T20:51:55.254Z"');
-            expect(TypedJSON.stringify(new Date('2018-12-04T09:20:54'), Date)).toEqual('"2018-12-04T08:20:54.000Z"');
+            expect(TypedJSON.stringify(new Date(1543915254), Date)).toEqual(`"${new Date(1543915254).toISOString()}"`);
+            expect(TypedJSON.stringify(new Date('2018-12-04T09:20:54'), Date)).toEqual(`"${new Date('2018-12-04T09:20:54').toISOString()}"`);
 
             const buffer = new ArrayBuffer(4);
             const view = new DataView(buffer);
