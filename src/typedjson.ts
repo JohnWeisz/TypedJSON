@@ -1,4 +1,4 @@
-import { nameof, logError, logWarning } from './typedjson/helpers';
+import { nameof, logError, logWarning, parseToJSObject } from './typedjson/helpers';
 import { Constructor } from "./typedjson/types";
 import { JsonObjectMetadata } from "./typedjson/metadata";
 import { Deserializer } from "./typedjson/deserializer";
@@ -318,7 +318,7 @@ export class TypedJSON<T>
      */
     public parse(object: any): T|undefined
     {
-        const json = JSON.parse(object);
+        const json = parseToJSObject(object, this.rootConstructor);
 
         let rootMetadata = JsonObjectMetadata.getFromConstructor(this.rootConstructor);
         let result: T|undefined;
@@ -360,7 +360,7 @@ export class TypedJSON<T>
     public parseAsArray(object: any, dimensions: number): any[];
     public parseAsArray(object: any, dimensions: number = 1): any[]
     {
-        const json = JSON.parse(object);
+        const json = parseToJSObject(object, Array);
         if (json instanceof Array)
         {
             return this.deserializer.convertAsArray(json, {
@@ -382,7 +382,7 @@ export class TypedJSON<T>
 
     public parseAsSet(object: any): Set<T>
     {
-        const json = JSON.parse(object);
+        const json = parseToJSObject(object, Set);
         // A Set<T> is serialized as T[].
         if (json instanceof Array)
         {
@@ -404,7 +404,7 @@ export class TypedJSON<T>
 
     public parseAsMap<K>(object: any, keyConstructor: Constructor<K>): Map<K, T>
     {
-        const json = JSON.parse(object);
+        const json = parseToJSObject(object, Map);
         // A Set<T> is serialized as T[].
         if (json instanceof Array)
         {

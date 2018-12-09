@@ -11,6 +11,7 @@ export declare function isDirectlySerializableNativeType(type: Function): boolea
 export declare function isTypeTypedArray(type: Function): boolean;
 export declare function isPrimitiveValue(obj: any): boolean;
 export declare function isObject(value: any): value is Object;
+export declare function parseToJSObject(json: any, expectedType: Function): Object;
 /**
  * Determines if 'A' is a sub-type of 'B' (or if 'A' equals 'B').
  * @param A The supposed derived type.

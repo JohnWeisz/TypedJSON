@@ -128,6 +128,20 @@ function isPrimitiveValue(obj) {
 function isObject(value) {
     return typeof value === "object";
 }
+function shouldOmitParseString(jsonStr, expectedType) {
+    var expectsTypesSerializedAsStrings = expectedType === String
+        || expectedType === ArrayBuffer
+        || expectedType === DataView;
+    var hasQuotes = jsonStr.length >= 2 && jsonStr[0] === '"' && jsonStr[jsonStr.length - 1] === '"';
+    var isInteger = /^\d+$/.test(jsonStr.trim());
+    return (expectsTypesSerializedAsStrings && !hasQuotes) || ((!hasQuotes && !isInteger) && expectedType === Date);
+}
+function parseToJSObject(json, expectedType) {
+    if (typeof json !== 'string' || shouldOmitParseString(json, expectedType)) {
+        return json;
+    }
+    return JSON.parse(json);
+}
 /**
  * Determines if 'A' is a sub-type of 'B' (or if 'A' equals 'B').
  * @param A The supposed derived type.
@@ -1435,7 +1449,7 @@ var typedjson_TypedJSON = /** @class */ (function () {
      */
     TypedJSON.prototype.parse = function (object) {
         var _this = this;
-        var json = JSON.parse(object);
+        var json = parseToJSObject(object, this.rootConstructor);
         var rootMetadata = metadata_JsonObjectMetadata.getFromConstructor(this.rootConstructor);
         var result;
         var knownTypes = new Map();
@@ -1460,7 +1474,7 @@ var typedjson_TypedJSON = /** @class */ (function () {
     };
     TypedJSON.prototype.parseAsArray = function (object, dimensions) {
         if (dimensions === void 0) { dimensions = 1; }
-        var json = JSON.parse(object);
+        var json = parseToJSObject(object, Array);
         if (json instanceof Array) {
             return this.deserializer.convertAsArray(json, {
                 selfConstructor: Array,
@@ -1477,7 +1491,7 @@ var typedjson_TypedJSON = /** @class */ (function () {
         return [];
     };
     TypedJSON.prototype.parseAsSet = function (object) {
-        var json = JSON.parse(object);
+        var json = parseToJSObject(object, Set);
         // A Set<T> is serialized as T[].
         if (json instanceof Array) {
             return this.deserializer.convertAsSet(json, {
@@ -1493,7 +1507,7 @@ var typedjson_TypedJSON = /** @class */ (function () {
         return new Set();
     };
     TypedJSON.prototype.parseAsMap = function (object, keyConstructor) {
-        var json = JSON.parse(object);
+        var json = parseToJSObject(object, Map);
         // A Set<T> is serialized as T[].
         if (json instanceof Array) {
             return this.deserializer.convertAsMap(json, {

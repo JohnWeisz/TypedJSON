@@ -60,6 +60,25 @@ export function isObject(value: any): value is Object
     return typeof value === "object";
 }
 
+function shouldOmitParseString(jsonStr: string, expectedType: Function): boolean {
+    const expectsTypesSerializedAsStrings = expectedType === String
+        || expectedType === ArrayBuffer
+        || expectedType === DataView;
+
+    const hasQuotes = jsonStr.length >= 2 && jsonStr[0] === '"' && jsonStr[jsonStr.length-1] === '"';
+    const isInteger = /^\d+$/.test(jsonStr.trim());
+
+    return (expectsTypesSerializedAsStrings && !hasQuotes) || ((!hasQuotes && !isInteger) && expectedType === Date);
+}
+
+export function parseToJSObject(json: any, expectedType: Function): Object {
+    if (typeof json !== 'string' || shouldOmitParseString(json, expectedType))
+    {
+      return json;
+    }
+    return JSON.parse(json);
+}
+
 /**
  * Determines if 'A' is a sub-type of 'B' (or if 'A' equals 'B').
  * @param A The supposed derived type.
