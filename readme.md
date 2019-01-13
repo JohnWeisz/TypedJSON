@@ -69,8 +69,11 @@ class MyDataClass
     @jsonArrayMember(Number)
     public prop1: number[];
 
-    @jsonArrayMember(String)
-    public prop2: string[];
+    @jsonSetMember(String)
+    public prop2: Set<string>;
+    
+    @jsonMapMember(Number, MySecondDataClass)
+    public prop3: Map<number, MySecondDataClass>;
 }
 ```
 
