@@ -1,32 +1,84 @@
 [![Build Status](https://travis-ci.com/Neos3452/TypedJSON.svg?branch=master)](https://travis-ci.com/Neos3452/TypedJSON)
 
-**Example & how to use**
+Typed JSON parsing and serializing for TypeScript with [decorators](https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md). Parse JSON into actual class instances. Recommended (but not required) to be used with [ReflectDecorators](https://github.com/rbuckton/ReflectDecorators), a prototype for an ES7 Reflection API for Decorator Metadata.
 
-There are no publicly available, dedicated docs yet for 1.0, but most methods are commented nicely, and here's a quick example on how to serialize various types (I recommend using [reflect-metadata](https://github.com/rbuckton/reflect-metadata) in your project, so you don't have to manually annotate the type of `@jsonMember` properties twice, see at the bottom of this page):
+ - Seamlessly integrate into existing code with [decorators](https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md), ultra-lightweight syntax
+ - Parse standard JSON to typed class instances, safely, without requiring any type-information to be specified in the source JSON
+   - _Note: polymorphic object structures require simple type-annotations to be present in JSON, this is configurable to be complatible with other serializers, like [Json.NET](https://www.newtonsoft.com/json)_
+ 
+## Installation
+
+TypedJSON is available from npm, both for browser (e.g. using webpack) and NodeJS:
+
+```
+npm install typedjson
+```
+
+ - _Optional: install [ReflectDecorators](https://github.com/rbuckton/ReflectDecorators) for additional type-safety and reduced syntax requirements. ReflectDecorators must be available globally to work._
+
+## How to use
+
+TypedJSON uses decorators, and requires your classes to be annotated with `@jsonObject`, and properties with `@jsonMember` (or its specific `@jsonArrayMember`, `@jsonSetMember`, and `@jsonMapMember` for collections). Properties which are not annotated will not be serialized or deserialized.
+
+### Simple class
+
+The following example demonstrates how to annotate a basic, non-nested class for serialization, and how to serialize to JSON and back:
 
 ```ts
 @jsonObject
 class MyDataClass
 {
-    // Primitives serialization
     @jsonMember
-    public prop1: number; // or string, boolean, etc.
+    public prop1: number;
 
-    // Array serialization
-    @jsonArrayMember(Number)
-    public arrayProp: number[];
-
-    // Map serialization
-    @jsonMapMember(Number, String)
-    public mapProp: Map<number, string>;
-
-    // Set serialization
-    @jsonSetMember(Number)
-    public setProp: Set<number>;
+    @jsonMember
+    public prop2: string;
 }
 ```
 
-Of course, all 4 serialization techniques (single, array, map, set) support nested objects (nested object class must be also decorated with `@jsonObject` for this to work, obviously). Example:
+ - _Note: this example assumes you are using ReflectDecorators. Without it, `@jsonMember` requires a type argument, which is detailed below._
+
+To convert between your typed (and annotated) class instance and JSON, create an instance of `TypedJSON`, with the class as its argument. The class argument specifies the root type of the object-tree represented by the emitted/parsed JSON:
+
+```ts
+let serializer = new TypedJSON(MyDataClass);
+let object = new MyDataClass();
+
+let json = serializer.stringify(object);
+let object2 = serializer.parse(json);
+
+object2 instanceof MyDataClass; // true
+```
+
+Since TypedJSON does not require special syntax to be present in the source JSON, any raw JSON conforming to your object schema can work, so it's not required that the JSON comes from TypedJSON, it can come from anywhere:
+
+```ts
+let object3 = serializer.parse('{ "prop1": 1, "prop2": "2" }');
+
+object3 instanceof MyDataClass; // true
+```
+
+### Collections
+
+Properties which are of type Array, Set, or Map require the special `@jsonArrayMember`, `@jsonSetMember` and `@jsonMapMember` property decorators (respectively), which require a type argument for members (and keys in case of Maps). For primitive types, the type arguments are the corresponding wrapper types, which the following example showcases. Everything else works the same way:
+
+```ts
+@jsonObject
+class MyDataClass
+{
+    @jsonArrayMember(Number)
+    public prop1: number[];
+
+    @jsonArrayMember(String)
+    public prop2: string[];
+}
+```
+
+Multidimensional arrays require additional configuration, see Limitations below.
+
+### Complex, nested object tree
+
+TypedJSON works through your objects recursively, and can consume massively complex, nested object trees (except for some limitations with uncommon, untyped structures, see below in the limitations section).
 
 ```ts
 @jsonObject
@@ -53,25 +105,9 @@ class MyDataClass
 }
 ```
 
-Additionally, there's built-in support for TypedArray objects (serialized as `number[]`), `Date`, `ArrayBuffer` (serialized as string at this time, so this might not be a good idea, prefer using a TypedArray instead), this is available by simply using `@jsonMember`. Serialization of Maps, Sets, and Arrays of root objects is also supported.
+### Using without ReflectDecorators
 
-After annotating your objects as shown above, you simply consume them by creating a new `TypedJSON` object, supplying the _constructor_ of the root data type to it:
-
-```ts
-let object = new MyDataClass(); // ...
-let serializer = new TypedJSON(MyDataClass);
-
-let json = serializer.stringify(object);
-let object2 = serializer.parse(json);
-```
-
-**How are these objects serialized?**
-
-Sets and arrays are simply serialized as arrays, Maps are serialized as arrays of _key-value-pair objects_, TypedArrays are serialized as numeric arrays.
-
-**How to use without reflect-metadata?**
-
-If you don't use `reflect-metadata`, you need to manually add the constructor reference to `@jsonMember`, e.g.:
+Without ReflectDecorators, `@jsonMember` requires an additional type argument, because TypeScript cannot infer it automatically:
 
 ```diff
 @jsonObject
@@ -87,4 +123,73 @@ class MyDataClass
 }
 ```
 
-This is not needed for `@jsonArrayMember`, `@jsonMapMember`, and `@jsonSetMember`, as those types already know the property type itself, as well as element/key types (although using `reflect-metadata` adds runtime-type checking to these decorators, to help you spot errors).
+This is not needed for `@jsonArrayMember`, `@jsonMapMember`, and `@jsonSetMember`, as those types already know the property type itself, as well as element/key types (although using ReflectDecorators adds runtime-type checking to these decorators, to help you spot errors).
+
+## Limitations
+
+### Type-definitions
+
+TypedJSON is primarily for use-cases where object-trees are defined using instantiatible classes, and thus only supports a subset of all type-definitions possible in TypeScript. Interfaces and inline type definitions, for example, are not supported, and the following is not going to work so well:
+
+```ts
+@jsonObject
+class MyDataClass
+{
+    @jsonMember
+    public prop1: { prop2: { prop3: [1, 2, 3] } };
+}
+```
+
+Instead, prefer creating the necessary class-structure for your object tree.
+
+### Multi-dimensional arrays
+
+TypedJSON only supports multi-dimensional arrays of a single type (can be polymorphic), and requires specifying the array dimension:
+
+```ts
+@jsonObject
+class MyDataClass
+{
+    @jsonArrayMember(Number, { dimensions: 2 })
+    public prop1: number[][][];
+
+    @jsonArrayMember(Number, { dimensions: 3 })
+    public prop1: number[][][];
+}
+```
+
+### Class declaration order matters
+
+When referencing a class in a nested object structure, the referenced class must be declared in advance, e.g.:
+
+```typescript
+class Employee
+{
+    @jsonMember
+    public name: string;
+}
+
+class Company
+{
+    @jsonArrayMember(Employee)
+    public employees: Employee[];
+}
+```
+
+### No inferred property types
+
+If using ReflectDecorators to infer the constructor (type) of properties, it's always required to manually specify the property type:
+
+```diff
+@jsonObject
+class MyDataClass
+{
+    @jsonObject
+-   public firstName = "john";
++   public firstName: string = "john";
+}
+```
+
+## License
+
+TypedJSON is licensed under the MIT License.
