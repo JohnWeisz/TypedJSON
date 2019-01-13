@@ -77,6 +77,8 @@ class MyDataClass
 }
 ```
 
+Sets are serialized as arrays, maps are serialized as arrays objects, each object having a `key` and a `value` property.
+
 Multidimensional arrays require additional configuration, see Limitations below.
 
 ### Complex, nested object tree
