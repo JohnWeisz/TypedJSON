@@ -50,7 +50,7 @@ let object2 = serializer.parse(json);
 object2 instanceof MyDataClass; // true
 ```
 
-Since TypedJSON does not require special syntax to be present in the source JSON, any raw JSON conforming to your object schema can work, so it's not required that the JSON comes from TypedJSON, it can come from anywhere:
+Since TypedJSON does not require special syntax to be present in the source JSON (except when using polymorphic objects), any raw JSON conforming to your object schema can work, so it's not required that the JSON comes from TypedJSON, it can come from anywhere:
 
 ```ts
 let object3 = serializer.parse('{ "prop1": 1, "prop2": "2" }');
