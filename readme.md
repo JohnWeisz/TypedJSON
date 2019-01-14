@@ -197,6 +197,10 @@ class MyDataClass
 }
 ```
 
+### No support for wrapped primitives
+
+TypedJSON requires type-detection and considers wrapped primitives as their corresponding primitive type. For example, `Number` is always treated as `number` (note the case-difference), and no distinction can be made.
+
 ## License
 
 TypedJSON is licensed under the MIT License.
