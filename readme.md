@@ -18,7 +18,9 @@ npm install typedjson
 
 ## How to use
 
-TypedJSON uses decorators, and requires your classes to be annotated with `@jsonObject`, and properties with `@jsonMember` (or its specific `@jsonArrayMember`, `@jsonSetMember`, and `@jsonMapMember` for collections). Properties which are not annotated will not be serialized or deserialized.
+TypedJSON uses decorators, and requires your classes to be annotated with `@jsonObject`, and properties with `@jsonMember` (or the specific `@jsonArrayMember`, `@jsonSetMember`, and `@jsonMapMember` decorators for collections, see below). Properties which are not annotated will not be serialized or deserialized.
+
+TypeScript needs to run with the `experimentalDecorators` and `emitDecoratorMetadata` options enabled.
 
 ### Simple class
 
