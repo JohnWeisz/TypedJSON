@@ -1,10 +1,4 @@
-﻿if (!console) {
-    console = {
-        warn: function (...args: any[]) { }
-    } as any;
-}
-
-export function isEqual<T>(a: Object, b: Object): boolean;
+﻿export function isEqual<T>(a: Object, b: Object): boolean;
 export function isEqual<T>(a: T, b: T): boolean;
 export function isEqual<T>(a: Array < T >, b: Array<T>): boolean;
 export function isEqual<T>(a: any, b: any): boolean {
@@ -49,4 +43,5 @@ export function isEqual<T>(a: any, b: any): boolean {
             return true;
         }
     }
+    return false;
 }

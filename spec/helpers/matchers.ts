@@ -1,21 +1,11 @@
-declare namespace jasmine {
-    interface Matchers<T> {
-        toHaveProperties(expectation: Partial<T>|(keyof T)[], ...expectationFailOutput: any[]);
-        toBeInstanceOf(expectation: Function, ...expectationFailOutput: any[]);
-    }
-    interface ArrayLikeMatchers<T> extends Matchers<ArrayLike<T>> {
-        toBeOfLength(expectation: number, ...expectationFailOutput: any[]);
-    }
-}
-
 beforeEach(function() {
     jasmine.addMatchers({
-        toHaveProperties(util, customEqualityMatchers) {
-            function equalOnPropNames<T extends Object>(actual: T, expected: (keyof T)[]) {
+        toHaveProperties(util, customEqualityMatchers): jasmine.CustomMatcher {
+            function equalOnPropNames<T extends Object>(actual: T, expected: (keyof T)[]): boolean {
                 return expected.every(prop => prop in actual);
             }
 
-            function equalOnPropValues<T extends Object>(actual: T, expected: Partial<T>) {
+            function equalOnPropValues<T extends {[k: string]: any}>(actual: T, expected: Partial<T>): boolean {
                 return Object.keys(expected)
                     .every(
                         key => key in actual
@@ -48,7 +38,7 @@ beforeEach(function() {
                 }
             };
         },
-        toBeInstanceOf(util) {
+        toBeInstanceOf(util): jasmine.CustomMatcher {
             return {
                 compare<T>(
                     actual: T,
@@ -65,7 +55,7 @@ beforeEach(function() {
                 },
             };
         },
-        toBeOfLength(util) {
+        toBeOfLength(util): jasmine.CustomMatcher {
             return {
                 compare<T extends ArrayLike<T>>(
                     actual: T,
@@ -84,8 +74,8 @@ beforeEach(function() {
         },
     });
     jasmine.addCustomEqualityTester(function (first: any, second: any): boolean|undefined {
-        let firstAsInt8Array: Int8Array = tryAsInt8Array(first);
-        let secondAsInt8Array: Int8Array = tryAsInt8Array(second);
+        const firstAsInt8Array: Int8Array|undefined = tryAsInt8Array(first);
+        const secondAsInt8Array: Int8Array|undefined = tryAsInt8Array(second);
 
         if (!firstAsInt8Array || !secondAsInt8Array)
         {
@@ -107,5 +97,16 @@ function tryAsInt8Array(obj: any): Int8Array|undefined {
     else if (ArrayBuffer.isView(obj))
     {
         return new Int8Array(obj.buffer);
+    }
+}
+
+
+declare namespace jasmine {
+    interface Matchers<T> {
+        toHaveProperties(expectation: Partial<T>|(keyof T)[], ...expectationFailOutput: any[]): boolean;
+        toBeInstanceOf(expectation: Function, ...expectationFailOutput: any[]): boolean;
+    }
+    interface ArrayLikeMatchers<T> extends Matchers<ArrayLike<T>> {
+        toBeOfLength(expectation: number, ...expectationFailOutput: any[]): boolean;
     }
 }
