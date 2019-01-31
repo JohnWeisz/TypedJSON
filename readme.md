@@ -158,10 +158,10 @@ TypedJSON only supports multi-dimensional arrays of a single type (can be polymo
 class MyDataClass
 {
     @jsonArrayMember(Number, { dimensions: 2 })
-    public prop1: number[][][];
+    public prop1: number[][];
 
     @jsonArrayMember(Number, { dimensions: 3 })
-    public prop1: number[][][];
+    public prop2: number[][][];
 }
 ```
 
