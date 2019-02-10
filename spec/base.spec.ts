@@ -1,7 +1,7 @@
-﻿import { jsonObject, jsonMember, TypedJSON } from "../js/typedjson";
+﻿import { jsonObject, jsonMember, TypedJSON, jsonArrayMember } from "../js/typedjson";
 import { Everything } from "./utils/everything";
 
-describe('basic serialization', function () {
+describe('basic serialization of', function () {
     describe('builtins', function () {
         it('should deserialize', function () {
             expect(TypedJSON.parse('"str"', String)).toEqual('str');
@@ -121,6 +121,71 @@ describe('basic serialization', function () {
             const deserialized = TypedJSON.parse('{}', WithNullable);
 
             expect(deserialized).toEqual(new WithNullable);
+        });
+    });
+
+    describe('class with defaults', function () {
+
+        describe('by assigment', function () {
+            @jsonObject
+            class WithDefaults {
+                @jsonMember
+                num: number = 2;
+
+                @jsonMember
+                str: string = 'Hello world';
+
+                @jsonMember
+                bool: boolean = true;
+
+                @jsonArrayMember(String)
+                arr: string[] = [];
+
+                @jsonMember
+                present: number = 10;
+            }
+
+            it('should use defaults when missing', function () {
+                const deserialized = TypedJSON.parse('{"present":5}', WithDefaults);
+                const expected = new WithDefaults;
+                expected.present = 5;
+                expect(deserialized).toEqual(expected);
+            });
+        });
+
+        describe('by constructor', function () {
+            @jsonObject
+            class WithCtr {
+                @jsonMember
+                num: number;
+
+                @jsonMember
+                str: string;
+
+                @jsonMember
+                bool: boolean;
+
+                @jsonArrayMember(String)
+                arr: string[];
+
+                @jsonMember
+                present: number;
+
+                constructor() {
+                    this.num = 2;
+                    this.str = 'Hello world';
+                    this.bool = true;
+                    this.arr = [];
+                    this.present = 10;
+                }
+            }
+
+            it('should use defaults when missing', function () {
+                const deserialized = TypedJSON.parse('{"present":5}', WithCtr);
+                const expected = new WithCtr;
+                expected.present = 5;
+                expect(deserialized).toEqual(expected);
+            });
         });
     });
 });
