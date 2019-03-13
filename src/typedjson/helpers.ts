@@ -29,7 +29,7 @@ export function getDefaultValue<T>(type: { new (): T }): T|undefined
 /**
  * Determines whether the specified type is a type that can be passed on "as-is" into `JSON.stringify`.
  * Values of these types don't need special conversion.
- * @param ctor The constructor of the type (wrapper constructor for primitive types, e.g. `Number` for `number`).
+ * @param type The constructor of the type (wrapper constructor for primitive types, e.g. `Number` for `number`).
  */
 export function isDirectlySerializableNativeType(type: Function): boolean
 {
@@ -93,11 +93,11 @@ export function logError(message?: any, ...optionalParams: any[])
 {
     if (typeof console === "object" && typeof console.error === "function")
     {
-        console.error.apply(console, [message].concat(optionalParams));
+        console.error(message, ...optionalParams);
     }
     else if (typeof console === "object" && typeof console.log === "function")
     {
-        console.log.apply(console, ["ERROR: " + message].concat(optionalParams));
+        console.log(`ERROR: ${message}`, ...optionalParams);
     }
 }
 
@@ -105,7 +105,7 @@ export function logMessage(message?: any, ...optionalParams: any[])
 {
     if (typeof console === "object" && typeof console.log === "function")
     {
-        console.log.apply(console, [message].concat(optionalParams));
+        console.log(message, ...optionalParams);
     }
 }
 
@@ -113,10 +113,10 @@ export function logWarning(message?: any, ...optionalParams: any[])
 {
     if (typeof console === "object" && typeof console.warn === "function")
     {
-        console.warn.apply(console, [message].concat(optionalParams));
+        console.warn(message, ...optionalParams);
     } else if (typeof console === "object" && typeof console.log === "function")
     {
-        console.log.apply(console, ["WARNING: " + message].concat(optionalParams));
+        console.log(`WARNING: ${message}`, ...optionalParams);
     }
 }
 

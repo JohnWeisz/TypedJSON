@@ -17,18 +17,18 @@ export declare class Deserializer<T> {
     setNameResolver(nameResolverCallback: (ctor: Function) => string): void;
     setTypeResolver(typeResolverCallback: (sourceObject: Object, knownTypes: Map<string, Function>) => Function): void;
     setErrorHandler(errorHandlerCallback: (error: Error) => void): void;
-    convertAsObject(sourceObject: IndexedObject, sourceObjectTypeInfo: IScopeTypeInfo, objectName?: string): IndexedObject | undefined;
+    convertAsObject(sourceObject: IndexedObject, sourceObjectTypeInfo: IScopeTypeInfo, objectName?: string): {} | undefined;
     convertSingleValue(sourceObject: any, typeInfo: IScopeTypeInfo, memberName?: string): any;
     convertAsArray(sourceObject: any, typeInfo: IScopeTypeInfo, memberName?: string): any[];
     convertAsSet(sourceObject: any, typeInfo: IScopeTypeInfo, memberName?: string): Set<any>;
     convertAsMap(sourceObject: any, typeInfo: IScopeTypeInfo, memberName?: string): Map<any, any>;
-    private _throwTypeMismatchError(targetType, expectedSourceType, actualSourceType, memberName?);
-    private _makeTypeErrorMessage(expectedType, actualType, memberName?);
-    private _instantiateType(ctor);
-    private _mergeKnownTypes(...knownTypeMaps);
-    private _createKnownTypesMap(knowTypes);
-    private _isDirectlyDeserializableNativeType(ctor);
+    private _throwTypeMismatchError;
+    private _makeTypeErrorMessage;
+    private _instantiateType;
+    private _mergeKnownTypes;
+    private _createKnownTypesMap;
+    private _isDirectlyDeserializableNativeType;
     convertNativeObject(sourceObject: any): any;
-    private _stringToArrayBuffer(str);
-    private _stringToDataView(str);
+    private _stringToArrayBuffer;
+    private _stringToDataView;
 }

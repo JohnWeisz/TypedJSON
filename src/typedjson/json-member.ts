@@ -49,7 +49,7 @@ export function jsonMember<TFunction extends Function>(optionsOrTarget?: IJsonMe
 {
     if (optionsOrTarget instanceof Object && (typeof propKey === "string" || typeof propKey === "symbol"))
     {
-        const target = optionsOrTarget;
+        const target = optionsOrTarget as Object;
         // For error messages.
         const decoratorName = `@jsonMember on ${nameof(target.constructor)}.${String(propKey)}`;
 

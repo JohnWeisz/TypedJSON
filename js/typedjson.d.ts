@@ -125,7 +125,7 @@ export declare class TypedJSON<T> {
     stringifyAsArray(object: T[][][][][], dimensions: 5): string;
     stringifyAsSet(object: Set<T>): string;
     stringifyAsMap<K>(object: Map<K, T>, keyConstructor: Constructor<K>): string;
-    private _mapKnownTypes(constructors);
+    private _mapKnownTypes;
 }
 export { jsonObject } from "./typedjson/json-object";
 export { jsonMember } from "./typedjson/json-member";

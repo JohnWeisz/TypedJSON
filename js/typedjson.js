@@ -1,4 +1,4 @@
-// [typedjson]  Version: 1.2.3 - 2018-12-09  
+// [typedjson]  Version: 1.2.3 - 2019-03-13  
  (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -47,17 +47,32 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, {
-/******/ 				configurable: false,
-/******/ 				enumerable: true,
-/******/ 				get: getter
-/******/ 			});
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
 /******/ 		}
 /******/ 	};
 /******/
 /******/ 	// define __esModule on exports
 /******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
 /******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
 /******/ 	};
 /******/
 /******/ 	// getDefaultExport function for compatibility with non-harmony modules
@@ -106,7 +121,7 @@ function getDefaultValue(type) {
 /**
  * Determines whether the specified type is a type that can be passed on "as-is" into `JSON.stringify`.
  * Values of these types don't need special conversion.
- * @param ctor The constructor of the type (wrapper constructor for primitive types, e.g. `Number` for `number`).
+ * @param type The constructor of the type (wrapper constructor for primitive types, e.g. `Number` for `number`).
  */
 function isDirectlySerializableNativeType(type) {
     return !!(~[Date, Number, String, Boolean].indexOf(type));
@@ -753,13 +768,16 @@ var deserializer_Deserializer = /** @class */ (function () {
 
 
 // CONCATENATED MODULE: ./src/typedjson/serializer.ts
-var __assign = (undefined && undefined.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
+var __assign = (undefined && undefined.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
 };
 
 
@@ -1311,18 +1329,21 @@ function jsonMapMember(keyConstructor, valueConstructor, options) {
 
 // CONCATENATED MODULE: ./src/typedjson.ts
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TypedJSON", function() { return typedjson_TypedJSON; });
-/* concated harmony reexport */__webpack_require__.d(__webpack_exports__, "jsonObject", function() { return jsonObject; });
-/* concated harmony reexport */__webpack_require__.d(__webpack_exports__, "jsonMember", function() { return jsonMember; });
-/* concated harmony reexport */__webpack_require__.d(__webpack_exports__, "jsonArrayMember", function() { return jsonArrayMember; });
-/* concated harmony reexport */__webpack_require__.d(__webpack_exports__, "jsonSetMember", function() { return jsonSetMember; });
-/* concated harmony reexport */__webpack_require__.d(__webpack_exports__, "jsonMapMember", function() { return jsonMapMember; });
-var typedjson_assign = (undefined && undefined.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
+/* concated harmony reexport jsonObject */__webpack_require__.d(__webpack_exports__, "jsonObject", function() { return jsonObject; });
+/* concated harmony reexport jsonMember */__webpack_require__.d(__webpack_exports__, "jsonMember", function() { return jsonMember; });
+/* concated harmony reexport jsonArrayMember */__webpack_require__.d(__webpack_exports__, "jsonArrayMember", function() { return jsonArrayMember; });
+/* concated harmony reexport jsonSetMember */__webpack_require__.d(__webpack_exports__, "jsonSetMember", function() { return jsonSetMember; });
+/* concated harmony reexport jsonMapMember */__webpack_require__.d(__webpack_exports__, "jsonMapMember", function() { return jsonMapMember; });
+var typedjson_assign = (undefined && undefined.__assign) || function () {
+    typedjson_assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return typedjson_assign.apply(this, arguments);
 };
 
 

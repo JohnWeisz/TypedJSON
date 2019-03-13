@@ -35,7 +35,7 @@ export declare class JsonObjectMetadata {
      * @param constructor The constructor class.
      */
     static getKnownTypeNameFromType(constructor: Function): string;
-    private static doesHandleWithoutAnnotation(ctor);
+    private static doesHandleWithoutAnnotation;
     constructor(classType: Function);
     dataMembers: Map<string, JsonMemberMetadata>;
     knownTypes: Set<Function>;

@@ -5,7 +5,7 @@ export declare function getDefaultValue<T>(type: {
 /**
  * Determines whether the specified type is a type that can be passed on "as-is" into `JSON.stringify`.
  * Values of these types don't need special conversion.
- * @param ctor The constructor of the type (wrapper constructor for primitive types, e.g. `Number` for `number`).
+ * @param type The constructor of the type (wrapper constructor for primitive types, e.g. `Number` for `number`).
  */
 export declare function isDirectlySerializableNativeType(type: Function): boolean;
 export declare function isTypeTypedArray(type: Function): boolean;
