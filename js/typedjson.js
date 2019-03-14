@@ -1,4 +1,4 @@
-// [typedjson]  Version: 1.2.3 - 2019-03-13  
+// [typedjson]  Version: 1.2.3 - 2019-03-14  
  (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -356,6 +356,281 @@ function injectMetadataInformation(constructor, propKey, metadata) {
         metadata.elementType.forEach(function (elemCtor) { return objectMetadata.knownTypes.add(elemCtor); });
     objectMetadata.dataMembers.set(metadata.name, metadata);
 }
+
+// CONCATENATED MODULE: ./src/typedjson/serializer.ts
+var __assign = (undefined && undefined.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+
+
+function isArrayTypeInfo(typeInfo) {
+    return typeInfo.selfType === Array;
+}
+function isSetTypeInfo(typeInfo) {
+    return typeInfo.selfType === Set;
+}
+function isMapTypeInfo(typeInfo) {
+    return typeInfo.selfType === Map;
+}
+/**
+ * Utility class, converts a typed object tree (i.e. a tree of class instances, arrays of class instances, and so on) to an untyped javascript object (also
+ * called "simple javascript object"), and emits any necessary type hints in the process (for polymorphism).
+ *
+ * The converted object tree is what will be given to `JSON.stringify` to convert to string as the last step, the serialization is basically like:
+ *
+ * (1) typed object-tree -> (2) simple JS object-tree -> (3) JSON-string
+ */
+var serializer_Serializer = /** @class */ (function () {
+    function Serializer() {
+        this._typeHintEmitter = function (targetObject, sourceObject, expectedSourceType, sourceTypeMetadata) {
+            // By default, we put a "__type" property on the output object if the actual object is not the same as the expected one, so that deserialization
+            // will know what to deserialize into (given the required known-types are defined, and the object is a valid subtype of the expected type).
+            if (sourceObject.constructor !== expectedSourceType) {
+                var name_1 = sourceTypeMetadata && sourceTypeMetadata.name
+                    ? sourceTypeMetadata.name
+                    : nameof(sourceObject.constructor);
+                // TODO: Perhaps this can work correctly without string-literal access?
+                // tslint:disable-next-line:no-string-literal
+                targetObject["__type"] = name_1;
+            }
+        };
+        this._errorHandler = function (error) { return logError(error); };
+    }
+    Serializer.prototype.setTypeHintEmitter = function (typeEmitterCallback) {
+        if (typeof typeEmitterCallback !== "function") {
+            throw new TypeError("'typeEmitterCallback' is not a function.");
+        }
+        this._typeHintEmitter = typeEmitterCallback;
+    };
+    Serializer.prototype.setErrorHandler = function (errorHandlerCallback) {
+        if (typeof errorHandlerCallback !== "function") {
+            throw new TypeError("'errorHandlerCallback' is not a function.");
+        }
+        this._errorHandler = errorHandlerCallback;
+    };
+    /**
+     * Convert a value of any supported serializable type.
+     * The value type will be detected, and the correct serialization method will be called.
+     */
+    Serializer.prototype.convertSingleValue = function (sourceObject, typeInfo, memberName) {
+        if (memberName === void 0) { memberName = "object"; }
+        if (!isValueDefined(sourceObject))
+            return;
+        if (!isInstanceOf(sourceObject, typeInfo.selfType)) {
+            var expectedName = nameof(typeInfo.selfType);
+            var actualName = nameof(sourceObject.constructor);
+            this._errorHandler(new TypeError("Could not serialize '" + memberName + "': expected '" + expectedName + "', got '" + actualName + "'."));
+            return;
+        }
+        if (isDirectlySerializableNativeType(typeInfo.selfType)) {
+            return sourceObject;
+        }
+        else if (typeInfo.selfType === ArrayBuffer) {
+            return this.convertAsArrayBuffer(sourceObject);
+        }
+        else if (typeInfo.selfType === DataView) {
+            return this.convertAsDataView(sourceObject);
+        }
+        else if (isArrayTypeInfo(typeInfo)) {
+            return this.convertAsArray(sourceObject, typeInfo.elementTypes, memberName);
+        }
+        else if (isSetTypeInfo(typeInfo)) {
+            return this.convertAsSet(sourceObject, typeInfo.elementTypes[0], memberName);
+        }
+        else if (isMapTypeInfo(typeInfo)) {
+            return this.convertAsMap(sourceObject, typeInfo.keyType, typeInfo.elementTypes[0], memberName);
+        }
+        else if (isTypeTypedArray(typeInfo.selfType)) {
+            return this.convertAsTypedArray(sourceObject);
+        }
+        else if (typeof sourceObject === "object") {
+            return this.convertAsObject(sourceObject, typeInfo, memberName);
+        }
+    };
+    /**
+     * Performs the conversion of a typed object (usually a class instance) to a simple javascript object for serialization.
+     */
+    Serializer.prototype.convertAsObject = function (sourceObject, typeInfo, memberName) {
+        var _this = this;
+        var sourceTypeMetadata;
+        var targetObject;
+        if (sourceObject.constructor !== typeInfo.selfType && sourceObject instanceof typeInfo.selfType) {
+            // The source object is not of the expected type, but it is a valid subtype.
+            // This is OK, and we'll proceed to gather object metadata from the subtype instead.
+            sourceTypeMetadata = metadata_JsonObjectMetadata.getFromConstructor(sourceObject.constructor);
+        }
+        else {
+            sourceTypeMetadata = metadata_JsonObjectMetadata.getFromConstructor(typeInfo.selfType);
+        }
+        if (sourceTypeMetadata) {
+            var sourceMeta_1 = sourceTypeMetadata;
+            // Strong-typed serialization available.
+            // We'll serialize by members that have been marked with @jsonMember (including array/set/map members), and perform recursive conversion on
+            // each of them. The converted objects are put on the 'targetObject', which is what will be put into 'JSON.stringify' finally.
+            targetObject = {};
+            sourceTypeMetadata.dataMembers.forEach(function (memberMetadata) {
+                if (memberMetadata.serializer) {
+                    targetObject[memberMetadata.name] =
+                        memberMetadata.serializer(sourceObject[memberMetadata.key]);
+                }
+                else if (memberMetadata.ctor) {
+                    targetObject[memberMetadata.name] = _this.convertSingleValue(sourceObject[memberMetadata.key], {
+                        selfType: memberMetadata.ctor,
+                        elementTypes: memberMetadata.elementType,
+                        keyType: memberMetadata.keyType,
+                    }, nameof(sourceMeta_1.classType) + "." + memberMetadata.key);
+                }
+                else {
+                    throw new TypeError("Could not serialize " + memberMetadata.name + ", there is"
+                        + " no constructor nor serialization function to use.");
+                }
+            });
+        }
+        else {
+            // Untyped serialization, "as-is", we'll just pass the object on.
+            // We'll clone the source object, because type hints are added to the object itself, and we don't want to modify to the original object.
+            targetObject = __assign({}, sourceObject);
+        }
+        // Add type-hint.
+        this._typeHintEmitter(targetObject, sourceObject, typeInfo.selfType, sourceTypeMetadata);
+        return targetObject;
+    };
+    /**
+     * Performs the conversion of an array of typed objects (or primitive values) to an array of simple javascript objects (or primitive values) for
+     * serialization.
+     * @param expectedElementType The expected type of elements. If the array is supposed to be multi-dimensional, subsequent elements define lower dimensions.
+     * @param memberName Name of the object being serialized, used for debugging purposes.
+     */
+    Serializer.prototype.convertAsArray = function (sourceObject, expectedElementType, memberName) {
+        var _this = this;
+        if (memberName === void 0) { memberName = "object"; }
+        if (expectedElementType.length === 0 || !expectedElementType[0])
+            throw new TypeError("Could not serialize " + memberName + " as Array: missing element type definition.");
+        // Check the type of each element, individually.
+        // If at least one array element type is incorrect, we return undefined, which results in no value emitted during serialization.
+        // This is so that invalid element types don't unexpectedly alter the ordering of other, valid elements, and that no unexpected undefined values are in
+        // the emitted array.
+        sourceObject.forEach(function (element, i) {
+            if (!isInstanceOf(element, expectedElementType[0])) {
+                var expectedTypeName = nameof(expectedElementType[0]);
+                var actualTypeName = nameof(element.constructor);
+                throw new TypeError("Could not serialize " + memberName + "[" + i + "]: expected '" + expectedTypeName + "', got '" + actualTypeName + "'.");
+            }
+        });
+        var typeInfoForElements = {
+            selfType: expectedElementType[0],
+            elementTypes: expectedElementType.length > 1 ? expectedElementType.slice(1) : [],
+        };
+        if (memberName) {
+            // Just for debugging purposes.
+            memberName += "[]";
+        }
+        return sourceObject.map(function (element) { return _this.convertSingleValue(element, typeInfoForElements, memberName); });
+    };
+    /**
+     * Performs the conversion of a set of typed objects (or primitive values) into an array of simple javascript objects.
+     *
+     * @param sourceObject
+     * @param expectedElementType The constructor of the expected Set elements (e.g. `Number` for `Set<number>`, or `MyClass` for `Set<MyClass>`).
+     * @param memberName Name of the object being serialized, used for debugging purposes.
+     * @returns
+     */
+    Serializer.prototype.convertAsSet = function (sourceObject, expectedElementType, memberName) {
+        var _this = this;
+        if (memberName === void 0) { memberName = "object"; }
+        if (!expectedElementType)
+            throw new TypeError("Could not serialize " + memberName + " as Set: missing element type definition.");
+        var elementTypeInfo = {
+            selfType: expectedElementType,
+        };
+        // For debugging and error tracking.
+        if (memberName)
+            memberName += "[]";
+        var resultArray = [];
+        // Convert each element of the set, and put it into an output array.
+        // The output array is the one serialized, as JSON.stringify does not support Set serialization. (TODO: clarification needed)
+        sourceObject.forEach(function (element) {
+            var resultElement = _this.convertSingleValue(element, elementTypeInfo, memberName);
+            // Add to output if the source element was undefined, OR the converted element is defined. This will add intentionally undefined values to output,
+            // but not values that became undefined DURING serializing (usually because of a type-error).
+            if (!isValueDefined(element) || isValueDefined(resultElement)) {
+                resultArray.push(resultElement);
+            }
+        });
+        return resultArray;
+    };
+    /**
+     * Performs the conversion of a map of typed objects (or primitive values) into an array of simple javascript objects with `key` and `value` properties.
+     *
+     * @param sourceObject
+     * @param expectedKeyType The constructor of the expected Map keys (e.g. `Number` for `Map<number, any>`, or `MyClass` for `Map<MyClass, any>`).
+     * @param expectedElementType The constructor of the expected Map values (e.g. `Number` for `Map<any, number>`, or `MyClass` for `Map<any, MyClass>`).
+     * @param memberName Name of the object being serialized, used for debugging purposes.
+     */
+    Serializer.prototype.convertAsMap = function (sourceObject, expectedKeyType, expectedElementType, memberName) {
+        var _this = this;
+        if (memberName === void 0) { memberName = "object"; }
+        if (!expectedElementType)
+            throw new TypeError("Could not serialize " + memberName + " as Map: missing value type definition.");
+        if (!expectedKeyType)
+            throw new TypeError("Could not serialize " + memberName + " as Map: missing key type definition.");
+        var elementTypeInfo = {
+            selfType: expectedElementType,
+            elementTypes: [expectedElementType]
+        };
+        var keyTypeInfo = {
+            selfType: expectedKeyType
+        };
+        if (memberName)
+            memberName += "[]";
+        var resultArray = [];
+        // Convert each *entry* in the map to a simple javascript object with key and value properties.
+        sourceObject.forEach(function (value, key) {
+            var resultKeyValuePairObj = {
+                key: _this.convertSingleValue(key, keyTypeInfo, memberName),
+                value: _this.convertSingleValue(value, elementTypeInfo, memberName)
+            };
+            // We are not going to emit entries with undefined keys OR undefined values.
+            if (isValueDefined(resultKeyValuePairObj.key) && isValueDefined(resultKeyValuePairObj.value)) {
+                resultArray.push(resultKeyValuePairObj);
+            }
+        });
+        return resultArray;
+    };
+    /**
+     * Performs the conversion of a typed javascript array to a simple untyped javascript array.
+     * This is needed because typed arrays are otherwise serialized as objects, so we'll end up with something like "{ 0: 0, 1: 1, ... }".
+     *
+     * @param sourceObject
+     * @returns
+     */
+    Serializer.prototype.convertAsTypedArray = function (sourceObject) {
+        return Array.from(sourceObject);
+    };
+    /**
+     * Performs the conversion of a raw ArrayBuffer to a string.
+     */
+    Serializer.prototype.convertAsArrayBuffer = function (buffer) {
+        // ArrayBuffer -> 16-bit character codes -> character array -> joined string.
+        return Array.from(new Uint16Array(buffer)).map(function (charCode) { return String.fromCharCode(charCode); }).join("");
+    };
+    /**
+     * Performs the conversion of DataView, converting its internal ArrayBuffer to a string and returning that string.
+     */
+    Serializer.prototype.convertAsDataView = function (dataView) {
+        return this.convertAsArrayBuffer(dataView.buffer);
+    };
+    return Serializer;
+}());
+
 
 // CONCATENATED MODULE: ./src/typedjson/deserializer.ts
 
@@ -767,9 +1042,9 @@ var deserializer_Deserializer = /** @class */ (function () {
 }());
 
 
-// CONCATENATED MODULE: ./src/typedjson/serializer.ts
-var __assign = (undefined && undefined.__assign) || function () {
-    __assign = Object.assign || function(t) {
+// CONCATENATED MODULE: ./src/parser.ts
+var parser_assign = (undefined && undefined.__assign) || function () {
+    parser_assign = Object.assign || function(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
             s = arguments[i];
             for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
@@ -777,268 +1052,278 @@ var __assign = (undefined && undefined.__assign) || function () {
         }
         return t;
     };
-    return __assign.apply(this, arguments);
+    return parser_assign.apply(this, arguments);
 };
 
 
-function isArrayTypeInfo(typeInfo) {
-    return typeInfo.selfType === Array;
-}
-function isSetTypeInfo(typeInfo) {
-    return typeInfo.selfType === Set;
-}
-function isMapTypeInfo(typeInfo) {
-    return typeInfo.selfType === Map;
-}
-/**
- * Utility class, converts a typed object tree (i.e. a tree of class instances, arrays of class instances, and so on) to an untyped javascript object (also
- * called "simple javascript object"), and emits any necessary type hints in the process (for polymorphism).
- *
- * The converted object tree is what will be given to `JSON.stringify` to convert to string as the last step, the serialization is basically like:
- *
- * (1) typed object-tree -> (2) simple JS object-tree -> (3) JSON-string
- */
-var serializer_Serializer = /** @class */ (function () {
-    function Serializer() {
-        this._typeHintEmitter = function (targetObject, sourceObject, expectedSourceType, sourceTypeMetadata) {
-            // By default, we put a "__type" property on the output object if the actual object is not the same as the expected one, so that deserialization
-            // will know what to deserialize into (given the required known-types are defined, and the object is a valid subtype of the expected type).
-            if (sourceObject.constructor !== expectedSourceType) {
-                var name_1 = sourceTypeMetadata && sourceTypeMetadata.name
-                    ? sourceTypeMetadata.name
-                    : nameof(sourceObject.constructor);
-                // TODO: Perhaps this can work correctly without string-literal access?
-                // tslint:disable-next-line:no-string-literal
-                targetObject["__type"] = name_1;
-            }
-        };
-        this._errorHandler = function (error) { return logError(error); };
+
+
+var parser_TypedJSON = /** @class */ (function () {
+    /**
+     * Creates a new TypedJSON instance to serialize (stringify) and deserialize (parse) object
+     *     instances of the specified root class type.
+     * @param rootType The constructor of the root class type.
+     * @param settings Additional configuration settings.
+     */
+    function TypedJSON(rootConstructor, settings) {
+        //#endregion
+        this.serializer = new serializer_Serializer();
+        this.deserializer = new deserializer_Deserializer();
+        this.globalKnownTypes = [];
+        this.indent = 0;
+        var rootMetadata = metadata_JsonObjectMetadata.getFromConstructor(rootConstructor);
+        if (!rootMetadata || (!rootMetadata.isExplicitlyMarked && !rootMetadata.isHandledWithoutAnnotation)) {
+            throw new TypeError("The TypedJSON root data type must have the @jsonObject decorator used.");
+        }
+        this.nameResolver = function (ctor) { return nameof(ctor); };
+        this.rootConstructor = rootConstructor;
+        this.errorHandler = function (error) { return logError(error); };
+        if (settings) {
+            this.config(settings);
+        }
+        else if (TypedJSON._globalConfig) {
+            this.config({});
+        }
     }
-    Serializer.prototype.setTypeHintEmitter = function (typeEmitterCallback) {
-        if (typeof typeEmitterCallback !== "function") {
-            throw new TypeError("'typeEmitterCallback' is not a function.");
-        }
-        this._typeHintEmitter = typeEmitterCallback;
+    //#region Static
+    TypedJSON.parse = function (object, rootType, settings) {
+        return new TypedJSON(rootType, settings).parse(object);
     };
-    Serializer.prototype.setErrorHandler = function (errorHandlerCallback) {
-        if (typeof errorHandlerCallback !== "function") {
-            throw new TypeError("'errorHandlerCallback' is not a function.");
-        }
-        this._errorHandler = errorHandlerCallback;
+    TypedJSON.parseAsArray = function (object, elementType, settings, dimensions) {
+        return new TypedJSON(elementType, settings).parseAsArray(object, dimensions);
     };
-    /**
-     * Convert a value of any supported serializable type.
-     * The value type will be detected, and the correct serialization method will be called.
-     */
-    Serializer.prototype.convertSingleValue = function (sourceObject, typeInfo, memberName) {
-        if (memberName === void 0) { memberName = "object"; }
-        if (!isValueDefined(sourceObject))
-            return;
-        if (!isInstanceOf(sourceObject, typeInfo.selfType)) {
-            var expectedName = nameof(typeInfo.selfType);
-            var actualName = nameof(sourceObject.constructor);
-            this._errorHandler(new TypeError("Could not serialize '" + memberName + "': expected '" + expectedName + "', got '" + actualName + "'."));
-            return;
-        }
-        if (isDirectlySerializableNativeType(typeInfo.selfType)) {
-            return sourceObject;
-        }
-        else if (typeInfo.selfType === ArrayBuffer) {
-            return this.convertAsArrayBuffer(sourceObject);
-        }
-        else if (typeInfo.selfType === DataView) {
-            return this.convertAsDataView(sourceObject);
-        }
-        else if (isArrayTypeInfo(typeInfo)) {
-            return this.convertAsArray(sourceObject, typeInfo.elementTypes, memberName);
-        }
-        else if (isSetTypeInfo(typeInfo)) {
-            return this.convertAsSet(sourceObject, typeInfo.elementTypes[0], memberName);
-        }
-        else if (isMapTypeInfo(typeInfo)) {
-            return this.convertAsMap(sourceObject, typeInfo.keyType, typeInfo.elementTypes[0], memberName);
-        }
-        else if (isTypeTypedArray(typeInfo.selfType)) {
-            return this.convertAsTypedArray(sourceObject);
-        }
-        else if (typeof sourceObject === "object") {
-            return this.convertAsObject(sourceObject, typeInfo, memberName);
-        }
+    TypedJSON.parseAsSet = function (object, elementType, settings) {
+        return new TypedJSON(elementType, settings).parseAsSet(object);
     };
-    /**
-     * Performs the conversion of a typed object (usually a class instance) to a simple javascript object for serialization.
-     */
-    Serializer.prototype.convertAsObject = function (sourceObject, typeInfo, memberName) {
-        var _this = this;
-        var sourceTypeMetadata;
-        var targetObject;
-        if (sourceObject.constructor !== typeInfo.selfType && sourceObject instanceof typeInfo.selfType) {
-            // The source object is not of the expected type, but it is a valid subtype.
-            // This is OK, and we'll proceed to gather object metadata from the subtype instead.
-            sourceTypeMetadata = metadata_JsonObjectMetadata.getFromConstructor(sourceObject.constructor);
+    TypedJSON.parseAsMap = function (object, keyType, valueType, settings) {
+        return new TypedJSON(valueType, settings).parseAsMap(object, keyType);
+    };
+    TypedJSON.toPlainJson = function (object, rootType, settings) {
+        return new TypedJSON(rootType, settings).toPlainJson(object);
+    };
+    TypedJSON.toPlainArray = function (object, elementType, dimensions, settings) {
+        return new TypedJSON(elementType, settings).toPlainArray(object, dimensions);
+    };
+    TypedJSON.toPlainSet = function (object, elementType, settings) {
+        return new TypedJSON(elementType, settings).stringifyAsSet(object);
+    };
+    TypedJSON.toPlainMap = function (object, keyCtor, valueCtor, settings) {
+        return new TypedJSON(valueCtor, settings).stringifyAsMap(object, keyCtor);
+    };
+    TypedJSON.stringify = function (object, rootType, settings) {
+        return new TypedJSON(rootType, settings).stringify(object);
+    };
+    TypedJSON.stringifyAsArray = function (object, elementType, dimensions, settings) {
+        return new TypedJSON(elementType, settings).stringifyAsArray(object, dimensions);
+    };
+    TypedJSON.stringifyAsSet = function (object, elementType, settings) {
+        return new TypedJSON(elementType, settings).stringifyAsSet(object);
+    };
+    TypedJSON.stringifyAsMap = function (object, keyCtor, valueCtor, settings) {
+        return new TypedJSON(valueCtor, settings).stringifyAsMap(object, keyCtor);
+    };
+    TypedJSON.setGlobalConfig = function (config) {
+        if (this._globalConfig) {
+            Object.assign(this._globalConfig, config);
         }
         else {
-            sourceTypeMetadata = metadata_JsonObjectMetadata.getFromConstructor(typeInfo.selfType);
+            this._globalConfig = config;
         }
-        if (sourceTypeMetadata) {
-            var sourceMeta_1 = sourceTypeMetadata;
-            // Strong-typed serialization available.
-            // We'll serialize by members that have been marked with @jsonMember (including array/set/map members), and perform recursive conversion on
-            // each of them. The converted objects are put on the 'targetObject', which is what will be put into 'JSON.stringify' finally.
-            targetObject = {};
-            sourceTypeMetadata.dataMembers.forEach(function (memberMetadata) {
-                if (memberMetadata.serializer) {
-                    targetObject[memberMetadata.name] =
-                        memberMetadata.serializer(sourceObject[memberMetadata.key]);
+    };
+    /**
+     * Configures TypedJSON through a settings object.
+     * @param settings The configuration settings object.
+     */
+    TypedJSON.prototype.config = function (settings) {
+        if (TypedJSON._globalConfig) {
+            settings = parser_assign({}, TypedJSON._globalConfig, settings);
+            if (settings.knownTypes && TypedJSON._globalConfig.knownTypes) {
+                // Merge known-types (also de-duplicate them, so Array -> Set -> Array).
+                settings.knownTypes = Array.from(new Set(settings.knownTypes.concat(TypedJSON._globalConfig.knownTypes)));
+            }
+        }
+        if (settings.errorHandler) {
+            this.errorHandler = settings.errorHandler;
+            this.deserializer.setErrorHandler(settings.errorHandler);
+            this.serializer.setErrorHandler(settings.errorHandler);
+        }
+        if (settings.replacer)
+            this.replacer = settings.replacer;
+        if (settings.typeResolver)
+            this.deserializer.setTypeResolver(settings.typeResolver);
+        if (settings.typeHintEmitter)
+            this.serializer.setTypeHintEmitter(settings.typeHintEmitter);
+        if (settings.indent)
+            this.indent = settings.indent;
+        if (settings.nameResolver) {
+            this.nameResolver = settings.nameResolver;
+            this.deserializer.setNameResolver(settings.nameResolver);
+            // this.serializer.set
+        }
+        if (settings.knownTypes) {
+            // Type-check knownTypes elements to recognize errors in advance.
+            settings.knownTypes.forEach(function (knownType, i) {
+                // tslint:disable-next-line:no-null-keyword
+                if (typeof knownType === "undefined" || knownType === null) {
+                    logWarning("TypedJSON.config: 'knownTypes' contains an undefined/null value (element " + i + ").");
                 }
-                else if (memberMetadata.ctor) {
-                    targetObject[memberMetadata.name] = _this.convertSingleValue(sourceObject[memberMetadata.key], {
-                        selfType: memberMetadata.ctor,
-                        elementTypes: memberMetadata.elementType,
-                        keyType: memberMetadata.keyType,
-                    }, nameof(sourceMeta_1.classType) + "." + memberMetadata.key);
-                }
-                else {
-                    throw new TypeError("Could not serialize " + memberMetadata.name + ", there is"
-                        + " no constructor nor serialization function to use.");
-                }
+            });
+            this.globalKnownTypes = settings.knownTypes;
+        }
+    };
+    /**
+     * Converts a JSON string to the root class type.
+     * @param object The JSON to parse and convert.
+     * @throws Error if any errors are thrown in the specified errorHandler callback (re-thrown).
+     * @returns Deserialized T or undefined if there were errors.
+     */
+    TypedJSON.prototype.parse = function (object) {
+        var _this = this;
+        var json = parseToJSObject(object, this.rootConstructor);
+        var rootMetadata = metadata_JsonObjectMetadata.getFromConstructor(this.rootConstructor);
+        var result;
+        var knownTypes = new Map();
+        this.globalKnownTypes.filter(function (ktc) { return ktc; }).forEach(function (knownTypeCtor) {
+            knownTypes.set(_this.nameResolver(knownTypeCtor), knownTypeCtor);
+        });
+        if (rootMetadata) {
+            rootMetadata.knownTypes.forEach(function (knownTypeCtor) {
+                knownTypes.set(_this.nameResolver(knownTypeCtor), knownTypeCtor);
+            });
+        }
+        try {
+            result = this.deserializer.convertSingleValue(json, {
+                selfConstructor: this.rootConstructor,
+                knownTypes: knownTypes,
+            });
+        }
+        catch (e) {
+            this.errorHandler(e);
+        }
+        return result;
+    };
+    TypedJSON.prototype.parseAsArray = function (object, dimensions) {
+        if (dimensions === void 0) { dimensions = 1; }
+        var json = parseToJSObject(object, Array);
+        if (json instanceof Array) {
+            return this.deserializer.convertAsArray(json, {
+                selfConstructor: Array,
+                elementConstructor: new Array(dimensions - 1)
+                    .fill(Array)
+                    .concat(this.rootConstructor),
+                knownTypes: this._mapKnownTypes(this.globalKnownTypes),
             });
         }
         else {
-            // Untyped serialization, "as-is", we'll just pass the object on.
-            // We'll clone the source object, because type hints are added to the object itself, and we don't want to modify to the original object.
-            targetObject = __assign({}, sourceObject);
+            this.errorHandler(new TypeError("Expected 'json' to define an Array"
+                + (", but got " + typeof json + ".")));
         }
-        // Add type-hint.
-        this._typeHintEmitter(targetObject, sourceObject, typeInfo.selfType, sourceTypeMetadata);
-        return targetObject;
+        return [];
     };
-    /**
-     * Performs the conversion of an array of typed objects (or primitive values) to an array of simple javascript objects (or primitive values) for
-     * serialization.
-     * @param expectedElementType The expected type of elements. If the array is supposed to be multi-dimensional, subsequent elements define lower dimensions.
-     * @param memberName Name of the object being serialized, used for debugging purposes.
-     */
-    Serializer.prototype.convertAsArray = function (sourceObject, expectedElementType, memberName) {
-        var _this = this;
-        if (memberName === void 0) { memberName = "object"; }
-        if (expectedElementType.length === 0 || !expectedElementType[0])
-            throw new TypeError("Could not serialize " + memberName + " as Array: missing element type definition.");
-        // Check the type of each element, individually.
-        // If at least one array element type is incorrect, we return undefined, which results in no value emitted during serialization.
-        // This is so that invalid element types don't unexpectedly alter the ordering of other, valid elements, and that no unexpected undefined values are in
-        // the emitted array.
-        sourceObject.forEach(function (element, i) {
-            if (!isInstanceOf(element, expectedElementType[0])) {
-                var expectedTypeName = nameof(expectedElementType[0]);
-                var actualTypeName = nameof(element.constructor);
-                throw new TypeError("Could not serialize " + memberName + "[" + i + "]: expected '" + expectedTypeName + "', got '" + actualTypeName + "'.");
-            }
-        });
-        var typeInfoForElements = {
-            selfType: expectedElementType[0],
-            elementTypes: expectedElementType.length > 1 ? expectedElementType.slice(1) : [],
-        };
-        if (memberName) {
-            // Just for debugging purposes.
-            memberName += "[]";
+    TypedJSON.prototype.parseAsSet = function (object) {
+        var json = parseToJSObject(object, Set);
+        // A Set<T> is serialized as T[].
+        if (json instanceof Array) {
+            return this.deserializer.convertAsSet(json, {
+                selfConstructor: Array,
+                elementConstructor: [this.rootConstructor],
+                knownTypes: this._mapKnownTypes(this.globalKnownTypes)
+            });
         }
-        return sourceObject.map(function (element) { return _this.convertSingleValue(element, typeInfoForElements, memberName); });
+        else {
+            this.errorHandler(new TypeError("Expected 'json' to define a Set (using an Array)"
+                + (", but got " + typeof json + ".")));
+        }
+        return new Set();
+    };
+    TypedJSON.prototype.parseAsMap = function (object, keyConstructor) {
+        var json = parseToJSObject(object, Map);
+        // A Set<T> is serialized as T[].
+        if (json instanceof Array) {
+            return this.deserializer.convertAsMap(json, {
+                selfConstructor: Array,
+                elementConstructor: [this.rootConstructor],
+                knownTypes: this._mapKnownTypes(this.globalKnownTypes),
+                keyConstructor: keyConstructor
+            });
+        }
+        else {
+            this.errorHandler(new TypeError("Expected 'json' to define a Set (using an Array)"
+                + (", but got " + typeof json + ".")));
+        }
+        return new Map();
     };
     /**
-     * Performs the conversion of a set of typed objects (or primitive values) into an array of simple javascript objects.
-     *
-     * @param sourceObject
-     * @param expectedElementType The constructor of the expected Set elements (e.g. `Number` for `Set<number>`, or `MyClass` for `Set<MyClass>`).
-     * @param memberName Name of the object being serialized, used for debugging purposes.
-     * @returns
+     * Converts an instance of the specified class type to a plain JSON object.
+     * @param object The instance to convert to a JSON string.
+     * @returns Serialized object or undefined if an error has occured.
      */
-    Serializer.prototype.convertAsSet = function (sourceObject, expectedElementType, memberName) {
+    TypedJSON.prototype.toPlainJson = function (object) {
+        try {
+            return this.serializer.convertSingleValue(object, {
+                selfType: this.rootConstructor
+            });
+        }
+        catch (e) {
+            this.errorHandler(e);
+        }
+    };
+    TypedJSON.prototype.toPlainArray = function (object, dimensions) {
+        if (dimensions === void 0) { dimensions = 1; }
+        try {
+            var elementConstructorArray = new Array(dimensions - 1).fill(Array).concat(this.rootConstructor);
+            return this.serializer.convertAsArray(object, elementConstructorArray);
+        }
+        catch (e) {
+            this.errorHandler(e);
+        }
+    };
+    TypedJSON.prototype.toPlainSet = function (object) {
+        try {
+            return this.serializer.convertAsSet(object, this.rootConstructor);
+        }
+        catch (e) {
+            this.errorHandler(e);
+        }
+    };
+    TypedJSON.prototype.toPlainMap = function (object, keyConstructor) {
+        try {
+            return this.serializer.convertAsMap(object, keyConstructor, this.rootConstructor);
+        }
+        catch (e) {
+            this.errorHandler(e);
+        }
+    };
+    /**
+     * Converts an instance of the specified class type to a JSON string.
+     * @param object The instance to convert to a JSON string.
+     * @throws Error if any errors are thrown in the specified errorHandler callback (re-thrown).
+     * @returns String with the serialized object or an empty string if an error has occured, but
+     *     the errorHandler did not throw.
+     */
+    TypedJSON.prototype.stringify = function (object) {
+        var result = this.toPlainJson(object);
+        if (result === undefined) {
+            return '';
+        }
+        return JSON.stringify(result, this.replacer, this.indent);
+    };
+    TypedJSON.prototype.stringifyAsArray = function (object, dimensions) {
+        return JSON.stringify(this.toPlainArray(object, dimensions), this.replacer, this.indent);
+    };
+    TypedJSON.prototype.stringifyAsSet = function (object) {
+        return JSON.stringify(this.toPlainSet(object), this.replacer, this.indent);
+    };
+    TypedJSON.prototype.stringifyAsMap = function (object, keyConstructor) {
+        return JSON.stringify(this.toPlainMap(object, keyConstructor), this.replacer, this.indent);
+    };
+    TypedJSON.prototype._mapKnownTypes = function (constructors) {
         var _this = this;
-        if (memberName === void 0) { memberName = "object"; }
-        if (!expectedElementType)
-            throw new TypeError("Could not serialize " + memberName + " as Set: missing element type definition.");
-        var elementTypeInfo = {
-            selfType: expectedElementType,
-        };
-        // For debugging and error tracking.
-        if (memberName)
-            memberName += "[]";
-        var resultArray = [];
-        // Convert each element of the set, and put it into an output array.
-        // The output array is the one serialized, as JSON.stringify does not support Set serialization. (TODO: clarification needed)
-        sourceObject.forEach(function (element) {
-            var resultElement = _this.convertSingleValue(element, elementTypeInfo, memberName);
-            // Add to output if the source element was undefined, OR the converted element is defined. This will add intentionally undefined values to output,
-            // but not values that became undefined DURING serializing (usually because of a type-error).
-            if (!isValueDefined(element) || isValueDefined(resultElement)) {
-                resultArray.push(resultElement);
-            }
-        });
-        return resultArray;
+        var map = new Map();
+        constructors.filter(function (ctor) { return ctor; }).forEach(function (ctor) { return map.set(_this.nameResolver(ctor), ctor); });
+        return map;
     };
-    /**
-     * Performs the conversion of a map of typed objects (or primitive values) into an array of simple javascript objects with `key` and `value` properties.
-     *
-     * @param sourceObject
-     * @param expectedKeyType The constructor of the expected Map keys (e.g. `Number` for `Map<number, any>`, or `MyClass` for `Map<MyClass, any>`).
-     * @param expectedElementType The constructor of the expected Map values (e.g. `Number` for `Map<any, number>`, or `MyClass` for `Map<any, MyClass>`).
-     * @param memberName Name of the object being serialized, used for debugging purposes.
-     */
-    Serializer.prototype.convertAsMap = function (sourceObject, expectedKeyType, expectedElementType, memberName) {
-        var _this = this;
-        if (memberName === void 0) { memberName = "object"; }
-        if (!expectedElementType)
-            throw new TypeError("Could not serialize " + memberName + " as Map: missing value type definition.");
-        if (!expectedKeyType)
-            throw new TypeError("Could not serialize " + memberName + " as Map: missing key type definition.");
-        var elementTypeInfo = {
-            selfType: expectedElementType,
-            elementTypes: [expectedElementType]
-        };
-        var keyTypeInfo = {
-            selfType: expectedKeyType
-        };
-        if (memberName)
-            memberName += "[]";
-        var resultArray = [];
-        // Convert each *entry* in the map to a simple javascript object with key and value properties.
-        sourceObject.forEach(function (value, key) {
-            var resultKeyValuePairObj = {
-                key: _this.convertSingleValue(key, keyTypeInfo, memberName),
-                value: _this.convertSingleValue(value, elementTypeInfo, memberName)
-            };
-            // We are not going to emit entries with undefined keys OR undefined values.
-            if (isValueDefined(resultKeyValuePairObj.key) && isValueDefined(resultKeyValuePairObj.value)) {
-                resultArray.push(resultKeyValuePairObj);
-            }
-        });
-        return resultArray;
-    };
-    /**
-     * Performs the conversion of a typed javascript array to a simple untyped javascript array.
-     * This is needed because typed arrays are otherwise serialized as objects, so we'll end up with something like "{ 0: 0, 1: 1, ... }".
-     *
-     * @param sourceObject
-     * @returns
-     */
-    Serializer.prototype.convertAsTypedArray = function (sourceObject) {
-        return Array.from(sourceObject);
-    };
-    /**
-     * Performs the conversion of a raw ArrayBuffer to a string.
-     */
-    Serializer.prototype.convertAsArrayBuffer = function (buffer) {
-        // ArrayBuffer -> 16-bit character codes -> character array -> joined string.
-        return Array.from(new Uint16Array(buffer)).map(function (charCode) { return String.fromCharCode(charCode); }).join("");
-    };
-    /**
-     * Performs the conversion of DataView, converting its internal ArrayBuffer to a string and returning that string.
-     */
-    Serializer.prototype.convertAsDataView = function (dataView) {
-        return this.convertAsArrayBuffer(dataView.buffer);
-    };
-    return Serializer;
+    return TypedJSON;
 }());
 
 
@@ -1328,294 +1613,12 @@ function jsonMapMember(keyConstructor, valueConstructor, options) {
 }
 
 // CONCATENATED MODULE: ./src/typedjson.ts
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TypedJSON", function() { return typedjson_TypedJSON; });
+/* concated harmony reexport TypedJSON */__webpack_require__.d(__webpack_exports__, "TypedJSON", function() { return parser_TypedJSON; });
 /* concated harmony reexport jsonObject */__webpack_require__.d(__webpack_exports__, "jsonObject", function() { return jsonObject; });
 /* concated harmony reexport jsonMember */__webpack_require__.d(__webpack_exports__, "jsonMember", function() { return jsonMember; });
 /* concated harmony reexport jsonArrayMember */__webpack_require__.d(__webpack_exports__, "jsonArrayMember", function() { return jsonArrayMember; });
 /* concated harmony reexport jsonSetMember */__webpack_require__.d(__webpack_exports__, "jsonSetMember", function() { return jsonSetMember; });
 /* concated harmony reexport jsonMapMember */__webpack_require__.d(__webpack_exports__, "jsonMapMember", function() { return jsonMapMember; });
-var typedjson_assign = (undefined && undefined.__assign) || function () {
-    typedjson_assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return typedjson_assign.apply(this, arguments);
-};
-
-
-
-
-var typedjson_TypedJSON = /** @class */ (function () {
-    /**
-     * Creates a new TypedJSON instance to serialize (stringify) and deserialize (parse) object
-     *     instances of the specified root class type.
-     * @param rootType The constructor of the root class type.
-     * @param settings Additional configuration settings.
-     */
-    function TypedJSON(rootConstructor, settings) {
-        //#endregion
-        this.serializer = new serializer_Serializer();
-        this.deserializer = new deserializer_Deserializer();
-        this.globalKnownTypes = [];
-        this.indent = 0;
-        var rootMetadata = metadata_JsonObjectMetadata.getFromConstructor(rootConstructor);
-        if (!rootMetadata || (!rootMetadata.isExplicitlyMarked && !rootMetadata.isHandledWithoutAnnotation)) {
-            throw new TypeError("The TypedJSON root data type must have the @jsonObject decorator used.");
-        }
-        this.nameResolver = function (ctor) { return nameof(ctor); };
-        this.rootConstructor = rootConstructor;
-        this.errorHandler = function (error) { return logError(error); };
-        if (settings) {
-            this.config(settings);
-        }
-        else if (TypedJSON._globalConfig) {
-            this.config({});
-        }
-    }
-    //#region Static
-    TypedJSON.parse = function (object, rootType, settings) {
-        return new TypedJSON(rootType, settings).parse(object);
-    };
-    TypedJSON.parseAsArray = function (object, elementType, settings, dimensions) {
-        return new TypedJSON(elementType, settings).parseAsArray(object, dimensions);
-    };
-    TypedJSON.parseAsSet = function (object, elementType, settings) {
-        return new TypedJSON(elementType, settings).parseAsSet(object);
-    };
-    TypedJSON.parseAsMap = function (object, keyType, valueType, settings) {
-        return new TypedJSON(valueType, settings).parseAsMap(object, keyType);
-    };
-    TypedJSON.toPlainJson = function (object, rootType, settings) {
-        return new TypedJSON(rootType, settings).toPlainJson(object);
-    };
-    TypedJSON.toPlainArray = function (object, elementType, dimensions, settings) {
-        return new TypedJSON(elementType, settings).toPlainArray(object, dimensions);
-    };
-    TypedJSON.toPlainSet = function (object, elementType, settings) {
-        return new TypedJSON(elementType, settings).stringifyAsSet(object);
-    };
-    TypedJSON.toPlainMap = function (object, keyCtor, valueCtor, settings) {
-        return new TypedJSON(valueCtor, settings).stringifyAsMap(object, keyCtor);
-    };
-    TypedJSON.stringify = function (object, rootType, settings) {
-        return new TypedJSON(rootType, settings).stringify(object);
-    };
-    TypedJSON.stringifyAsArray = function (object, elementType, dimensions, settings) {
-        return new TypedJSON(elementType, settings).stringifyAsArray(object, dimensions);
-    };
-    TypedJSON.stringifyAsSet = function (object, elementType, settings) {
-        return new TypedJSON(elementType, settings).stringifyAsSet(object);
-    };
-    TypedJSON.stringifyAsMap = function (object, keyCtor, valueCtor, settings) {
-        return new TypedJSON(valueCtor, settings).stringifyAsMap(object, keyCtor);
-    };
-    TypedJSON.setGlobalConfig = function (config) {
-        if (this._globalConfig) {
-            Object.assign(this._globalConfig, config);
-        }
-        else {
-            this._globalConfig = config;
-        }
-    };
-    /**
-     * Configures TypedJSON through a settings object.
-     * @param settings The configuration settings object.
-     */
-    TypedJSON.prototype.config = function (settings) {
-        if (TypedJSON._globalConfig) {
-            settings = typedjson_assign({}, TypedJSON._globalConfig, settings);
-            if (settings.knownTypes && TypedJSON._globalConfig.knownTypes) {
-                // Merge known-types (also de-duplicate them, so Array -> Set -> Array).
-                settings.knownTypes = Array.from(new Set(settings.knownTypes.concat(TypedJSON._globalConfig.knownTypes)));
-            }
-        }
-        if (settings.errorHandler) {
-            this.errorHandler = settings.errorHandler;
-            this.deserializer.setErrorHandler(settings.errorHandler);
-            this.serializer.setErrorHandler(settings.errorHandler);
-        }
-        if (settings.replacer)
-            this.replacer = settings.replacer;
-        if (settings.typeResolver)
-            this.deserializer.setTypeResolver(settings.typeResolver);
-        if (settings.typeHintEmitter)
-            this.serializer.setTypeHintEmitter(settings.typeHintEmitter);
-        if (settings.indent)
-            this.indent = settings.indent;
-        if (settings.nameResolver) {
-            this.nameResolver = settings.nameResolver;
-            this.deserializer.setNameResolver(settings.nameResolver);
-            // this.serializer.set
-        }
-        if (settings.knownTypes) {
-            // Type-check knownTypes elements to recognize errors in advance.
-            settings.knownTypes.forEach(function (knownType, i) {
-                // tslint:disable-next-line:no-null-keyword
-                if (typeof knownType === "undefined" || knownType === null) {
-                    logWarning("TypedJSON.config: 'knownTypes' contains an undefined/null value (element " + i + ").");
-                }
-            });
-            this.globalKnownTypes = settings.knownTypes;
-        }
-    };
-    /**
-     * Converts a JSON string to the root class type.
-     * @param object The JSON to parse and convert.
-     * @throws Error if any errors are thrown in the specified errorHandler callback (re-thrown).
-     * @returns Deserialized T or undefined if there were errors.
-     */
-    TypedJSON.prototype.parse = function (object) {
-        var _this = this;
-        var json = parseToJSObject(object, this.rootConstructor);
-        var rootMetadata = metadata_JsonObjectMetadata.getFromConstructor(this.rootConstructor);
-        var result;
-        var knownTypes = new Map();
-        this.globalKnownTypes.filter(function (ktc) { return ktc; }).forEach(function (knownTypeCtor) {
-            knownTypes.set(_this.nameResolver(knownTypeCtor), knownTypeCtor);
-        });
-        if (rootMetadata) {
-            rootMetadata.knownTypes.forEach(function (knownTypeCtor) {
-                knownTypes.set(_this.nameResolver(knownTypeCtor), knownTypeCtor);
-            });
-        }
-        try {
-            result = this.deserializer.convertSingleValue(json, {
-                selfConstructor: this.rootConstructor,
-                knownTypes: knownTypes,
-            });
-        }
-        catch (e) {
-            this.errorHandler(e);
-        }
-        return result;
-    };
-    TypedJSON.prototype.parseAsArray = function (object, dimensions) {
-        if (dimensions === void 0) { dimensions = 1; }
-        var json = parseToJSObject(object, Array);
-        if (json instanceof Array) {
-            return this.deserializer.convertAsArray(json, {
-                selfConstructor: Array,
-                elementConstructor: new Array(dimensions - 1)
-                    .fill(Array)
-                    .concat(this.rootConstructor),
-                knownTypes: this._mapKnownTypes(this.globalKnownTypes),
-            });
-        }
-        else {
-            this.errorHandler(new TypeError("Expected 'json' to define an Array"
-                + (", but got " + typeof json + ".")));
-        }
-        return [];
-    };
-    TypedJSON.prototype.parseAsSet = function (object) {
-        var json = parseToJSObject(object, Set);
-        // A Set<T> is serialized as T[].
-        if (json instanceof Array) {
-            return this.deserializer.convertAsSet(json, {
-                selfConstructor: Array,
-                elementConstructor: [this.rootConstructor],
-                knownTypes: this._mapKnownTypes(this.globalKnownTypes)
-            });
-        }
-        else {
-            this.errorHandler(new TypeError("Expected 'json' to define a Set (using an Array)"
-                + (", but got " + typeof json + ".")));
-        }
-        return new Set();
-    };
-    TypedJSON.prototype.parseAsMap = function (object, keyConstructor) {
-        var json = parseToJSObject(object, Map);
-        // A Set<T> is serialized as T[].
-        if (json instanceof Array) {
-            return this.deserializer.convertAsMap(json, {
-                selfConstructor: Array,
-                elementConstructor: [this.rootConstructor],
-                knownTypes: this._mapKnownTypes(this.globalKnownTypes),
-                keyConstructor: keyConstructor
-            });
-        }
-        else {
-            this.errorHandler(new TypeError("Expected 'json' to define a Set (using an Array)"
-                + (", but got " + typeof json + ".")));
-        }
-        return new Map();
-    };
-    /**
-     * Converts an instance of the specified class type to a plain JSON object.
-     * @param object The instance to convert to a JSON string.
-     * @returns Serialized object or undefined if an error has occured.
-     */
-    TypedJSON.prototype.toPlainJson = function (object) {
-        try {
-            return this.serializer.convertSingleValue(object, {
-                selfType: this.rootConstructor
-            });
-        }
-        catch (e) {
-            this.errorHandler(e);
-        }
-    };
-    TypedJSON.prototype.toPlainArray = function (object, dimensions) {
-        if (dimensions === void 0) { dimensions = 1; }
-        try {
-            var elementConstructorArray = new Array(dimensions - 1).fill(Array).concat(this.rootConstructor);
-            return this.serializer.convertAsArray(object, elementConstructorArray);
-        }
-        catch (e) {
-            this.errorHandler(e);
-        }
-    };
-    TypedJSON.prototype.toPlainSet = function (object) {
-        try {
-            return this.serializer.convertAsSet(object, this.rootConstructor);
-        }
-        catch (e) {
-            this.errorHandler(e);
-        }
-    };
-    TypedJSON.prototype.toPlainMap = function (object, keyConstructor) {
-        try {
-            return this.serializer.convertAsMap(object, keyConstructor, this.rootConstructor);
-        }
-        catch (e) {
-            this.errorHandler(e);
-        }
-    };
-    /**
-     * Converts an instance of the specified class type to a JSON string.
-     * @param object The instance to convert to a JSON string.
-     * @throws Error if any errors are thrown in the specified errorHandler callback (re-thrown).
-     * @returns String with the serialized object or an empty string if an error has occured, but
-     *     the errorHandler did not throw.
-     */
-    TypedJSON.prototype.stringify = function (object) {
-        var result = this.toPlainJson(object);
-        if (result === undefined) {
-            return '';
-        }
-        return JSON.stringify(result, this.replacer, this.indent);
-    };
-    TypedJSON.prototype.stringifyAsArray = function (object, dimensions) {
-        return JSON.stringify(this.toPlainArray(object, dimensions), this.replacer, this.indent);
-    };
-    TypedJSON.prototype.stringifyAsSet = function (object) {
-        return JSON.stringify(this.toPlainSet(object), this.replacer, this.indent);
-    };
-    TypedJSON.prototype.stringifyAsMap = function (object, keyConstructor) {
-        return JSON.stringify(this.toPlainMap(object, keyConstructor), this.replacer, this.indent);
-    };
-    TypedJSON.prototype._mapKnownTypes = function (constructors) {
-        var _this = this;
-        var map = new Map();
-        constructors.filter(function (ctor) { return ctor; }).forEach(function (ctor) { return map.set(_this.nameResolver(ctor), ctor); });
-        return map;
-    };
-    return TypedJSON;
-}());
 
 
 
