@@ -132,6 +132,10 @@ class MyDataClass
 
 This is not needed for `@jsonArrayMember`, `@jsonMapMember`, and `@jsonSetMember`, as those types already know the property type itself, as well as element/key types (although using ReflectDecorators adds runtime-type checking to these decorators, to help you spot errors).
 
+### Using `JSON.stringify`
+
+If you want to use `JSON.stringify` to serialize the objects using TypedJSON you can annotate a class with `@toJson` and it will create `toJSON` function on the class prototype. By default it will throw an error if such function is already defined, but you can override this behavior by setting `overwrite` to `true` in the decorator's options.
+
 ## Limitations
 
 ### Type-definitions

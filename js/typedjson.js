@@ -1612,6 +1612,28 @@ function jsonMapMember(keyConstructor, valueConstructor, options) {
     };
 }
 
+// CONCATENATED MODULE: ./src/typedjson/to-json.ts
+
+function toJson(optionsOrTarget) {
+    if (typeof optionsOrTarget === 'function') {
+        // used directly
+        toJsonDecorator(optionsOrTarget, {});
+        return;
+    }
+    // used as a factory
+    return function (target) {
+        toJsonDecorator(target, optionsOrTarget);
+    };
+}
+function toJsonDecorator(target, options) {
+    if (!options.overwrite && target.prototype.toJSON) {
+        throw new Error(target.name + " already has toJSON defined!");
+    }
+    target.prototype.toJSON = function () {
+        return parser_TypedJSON.toPlainJson(this, Object.getPrototypeOf(this).constructor);
+    };
+}
+
 // CONCATENATED MODULE: ./src/typedjson.ts
 /* concated harmony reexport TypedJSON */__webpack_require__.d(__webpack_exports__, "TypedJSON", function() { return parser_TypedJSON; });
 /* concated harmony reexport jsonObject */__webpack_require__.d(__webpack_exports__, "jsonObject", function() { return jsonObject; });
@@ -1619,6 +1641,8 @@ function jsonMapMember(keyConstructor, valueConstructor, options) {
 /* concated harmony reexport jsonArrayMember */__webpack_require__.d(__webpack_exports__, "jsonArrayMember", function() { return jsonArrayMember; });
 /* concated harmony reexport jsonSetMember */__webpack_require__.d(__webpack_exports__, "jsonSetMember", function() { return jsonSetMember; });
 /* concated harmony reexport jsonMapMember */__webpack_require__.d(__webpack_exports__, "jsonMapMember", function() { return jsonMapMember; });
+/* concated harmony reexport toJson */__webpack_require__.d(__webpack_exports__, "toJson", function() { return toJson; });
+
 
 
 
