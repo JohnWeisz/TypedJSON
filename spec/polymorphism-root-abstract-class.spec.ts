@@ -48,7 +48,7 @@ describe('single class', function () {
             const person = new Bob;
             person.firstName = 'John';
             person.lastName = 'Doe';
-            person.pounds = 30
+            person.pounds = 30;
             // todo fix types so they accept abstract
             expect(TypedJSON.stringify(person, Person as any))
                 .toBe('{"firstName":"John","lastName":"Doe","pounds":30,"__type":"Bob"}');

@@ -188,4 +188,61 @@ describe('basic serialization of', function () {
             });
         });
     });
+
+    describe('getters/setters', function () {
+
+        @jsonObject
+        class SomeClass {
+            private _prop: string = "value";
+            @jsonMember
+            get prop(): string {
+                return this._prop;
+            }
+            set prop(val: string) {
+                this._prop = val;
+            }
+
+            private _getterOnly: string = "getter";
+            @jsonMember
+            get getterOnly(): string {
+                return this._getterOnly;
+            }
+
+            private _setterOnly: string = "setter";
+            @jsonMember
+            set setterOnly(val: string) {
+                this._setterOnly = val;
+            }
+        }
+
+        it('should serialize', function () {
+            const serialized = TypedJSON.stringify(new SomeClass, SomeClass);
+            expect(serialized).toBe('{"prop":"value","getterOnly":"getter"}');
+        });
+
+        it('should deserialize', function () {
+            const deserialized = TypedJSON.parse(
+                '{"prop":"other value","setterOnly":"ok"}',
+                SomeClass,
+            );
+
+            const expected = new SomeClass;
+            expected.prop = "other value";
+            expected.setterOnly = "ok";
+            expect(deserialized).toEqual(expected);
+        });
+
+        it('should deserialize ignoring readonly properties', function () {
+            pending('this is not supported as of now');
+            const deserialized = TypedJSON.parse(
+                '{"prop":"other value","getterOnly":"ignored","setterOnly":"ok"}',
+                SomeClass,
+            );
+
+            const expected = new SomeClass;
+            expected.prop = "other value";
+            expected.setterOnly = "ok";
+            expect(deserialized).toEqual(expected);
+        });
+    });
 });
