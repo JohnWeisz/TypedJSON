@@ -73,3 +73,60 @@ describe('custom array member serializer', function () {
     });
 
 });
+
+describe('custom delegating array member serializer', function () {
+
+    @jsonObject
+    class Inner {
+        @jsonMember
+        prop: string;
+
+        shouldSerialize: boolean;
+
+        constructor();
+        constructor(prop: string, shouldSerialize: boolean);
+        constructor(prop?: string, shouldSerialize?: boolean) {
+            this.prop = prop;
+            this.shouldSerialize = shouldSerialize;
+        }
+    }
+
+    function objArraySerializer(values: Inner[]) {
+        return TypedJSON.toPlainArray(
+            values.filter(value => value.shouldSerialize),
+            Inner,
+        );
+    }
+
+    @jsonObject
+    class Obj {
+        @jsonArrayMember(Inner, { serializer: objArraySerializer })
+        inners: Inner[];
+
+        @jsonMember
+        str: string;
+    }
+
+    beforeAll(function () {
+        this.obj = new Obj();
+        this.obj.inners = [
+            new Inner('valval', false),
+            new Inner('something', true),
+        ];
+        this.obj.str = 'Text';
+        this.json = JSON.parse(TypedJSON.stringify(this.obj, Obj));
+    });
+
+    it('should properly serialize', function () {
+        expect(this.json).toEqual(
+            {
+                inners: [
+                    {
+                        prop: 'something',
+                    },
+                ],
+                str: 'Text',
+            });
+    });
+
+});

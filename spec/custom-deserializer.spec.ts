@@ -78,3 +78,63 @@ describe('custom array member deserializer', function () {
     });
 
 });
+
+describe('custom delegating array member serializer', function () {
+
+    @jsonObject
+    class Inner {
+        @jsonMember
+        prop: string;
+
+        woo(): string {
+            return 'hoo';
+        }
+    }
+
+    function objArrayDeserializer(values: {prop: string, shouldDeserialize: boolean}[]|undefined) {
+        if (values) {
+            return TypedJSON.parseAsArray(
+                values.filter(value => value.shouldDeserialize),
+                Inner,
+            );
+        }
+    }
+
+    @jsonObject
+    class Obj {
+        @jsonArrayMember(Inner, { deserializer: objArrayDeserializer })
+        inners: Inner[];
+
+        @jsonMember
+        str: string;
+    }
+
+    beforeAll(function () {
+        this.obj = TypedJSON.parse(JSON.stringify({
+                inners: [
+                    {
+                        prop: 'something',
+                        shouldDeserialize: false
+                    },
+                    {
+                        prop: 'gogo',
+                        shouldDeserialize: true
+                    },
+                ],
+                str: 'Text',
+            }),
+            Obj);
+    });
+
+    it('should properly serialize', function () {
+        expect(this.obj).toBeDefined();
+        expect(this.obj instanceof Obj).toBeTruthy();
+        expect(this.obj.str).toEqual('Text');
+        expect(this.obj.inners.length).toEqual(1);
+        expect(this.obj.inners[0] instanceof Inner).toBeTruthy();
+        expect(this.obj.inners[0]).not.toHaveProperties(['shouldDeserialize']);
+        expect(this.obj.inners[0]).toHaveProperties({prop: 'gogo'});
+        expect(this.obj.inners[0].woo()).toEqual('hoo');
+    });
+
+});
