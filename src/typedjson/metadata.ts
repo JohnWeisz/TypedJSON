@@ -199,5 +199,8 @@ export function injectMetadataInformation(constructor: IndexedObject, propKey: s
     if (metadata.elementType)
         metadata.elementType.forEach(elemCtor => objectMetadata.knownTypes.add(elemCtor));
 
+    // clear metadata of undefined properties to save memory
+    (Object.keys(metadata) as [keyof JsonMemberMetadata])
+        .forEach((key) => (metadata[key] === undefined) && delete metadata[key]);
     objectMetadata.dataMembers.set(metadata.name, metadata);
 }

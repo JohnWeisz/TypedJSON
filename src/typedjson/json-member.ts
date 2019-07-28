@@ -134,8 +134,8 @@ export function jsonMember<TFunction extends Function>(optionsOrTarget?: IJsonMe
 
             injectMetadataInformation(target, _propKey, {
                 ctor: propCtor,
-                emitDefaultValue: options.emitDefaultValue || false,
-                isRequired: options.isRequired || false,
+                emitDefaultValue: options.emitDefaultValue,
+                isRequired: options.isRequired,
                 key: _propKey.toString(),
                 name: options.name || _propKey.toString(),
                 deserializer: options.deserializer,

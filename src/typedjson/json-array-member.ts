@@ -61,8 +61,8 @@ export function jsonArrayMember(elementConstructor: Function, options: IJsonArra
         injectMetadataInformation(target, propKey, {
             ctor: Array,
             elementType: createArrayElementType(elementConstructor, dimensions),
-            emitDefaultValue: options.emitDefaultValue || false,
-            isRequired: options.isRequired || false,
+            emitDefaultValue: options.emitDefaultValue,
+            isRequired: options.isRequired,
             key: propKey.toString(),
             name: options.name || propKey.toString(),
             deserializer: options.deserializer,

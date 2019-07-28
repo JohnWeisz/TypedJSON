@@ -354,6 +354,9 @@ function injectMetadataInformation(constructor, propKey, metadata) {
         objectMetadata.knownTypes.add(metadata.keyType);
     if (metadata.elementType)
         metadata.elementType.forEach(function (elemCtor) { return objectMetadata.knownTypes.add(elemCtor); });
+    // clear metadata of undefined properties
+    Object.keys(metadata)
+        .forEach(function (key) { return (metadata[key] === undefined) && delete metadata[key]; });
     objectMetadata.dataMembers.set(metadata.name, metadata);
 }
 
@@ -1467,8 +1470,8 @@ function jsonMember(optionsOrTarget, propKey) {
             }
             injectMetadataInformation(target, _propKey, {
                 ctor: propCtor,
-                emitDefaultValue: options.emitDefaultValue || false,
-                isRequired: options.isRequired || false,
+                emitDefaultValue: options.emitDefaultValue,
+                isRequired: options.isRequired,
                 key: _propKey.toString(),
                 name: options.name || _propKey.toString(),
                 deserializer: options.deserializer,
@@ -1525,8 +1528,8 @@ function jsonArrayMember(elementConstructor, options) {
         injectMetadataInformation(target, propKey, {
             ctor: Array,
             elementType: createArrayElementType(elementConstructor, dimensions),
-            emitDefaultValue: options.emitDefaultValue || false,
-            isRequired: options.isRequired || false,
+            emitDefaultValue: options.emitDefaultValue,
+            isRequired: options.isRequired,
             key: propKey.toString(),
             name: options.name || propKey.toString(),
             deserializer: options.deserializer,
@@ -1566,8 +1569,8 @@ function jsonSetMember(elementConstructor, options) {
         injectMetadataInformation(target, propKey, {
             ctor: Set,
             elementType: [elementConstructor],
-            emitDefaultValue: options.emitDefaultValue || false,
-            isRequired: options.isRequired || false,
+            emitDefaultValue: options.emitDefaultValue,
+            isRequired: options.isRequired,
             key: propKey.toString(),
             name: options.name || propKey.toString(),
             deserializer: options.deserializer,
@@ -1607,8 +1610,8 @@ function jsonMapMember(keyConstructor, valueConstructor, options) {
             ctor: Map,
             elementType: [valueConstructor],
             keyType: keyConstructor,
-            emitDefaultValue: options.emitDefaultValue || false,
-            isRequired: options.isRequired || false,
+            emitDefaultValue: options.emitDefaultValue,
+            isRequired: options.isRequired,
             key: propKey.toString(),
             name: options.name || propKey.toString(),
             deserializer: options.deserializer,
