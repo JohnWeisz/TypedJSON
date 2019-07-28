@@ -169,8 +169,8 @@ export class Deserializer<T>
                         throw new TypeError(
                             `Cannot deserialize ${objectName}:`
                             + `'initializer' returned '${nameof(targetObject.constructor)}'`
-                            + `, but '${nameof(sourceObjectMetadata.classType)}' was expected,`
-                            + `and '${nameof(targetObject.constructor)}' is not a subtype of`
+                            + `, but '${nameof(sourceObjectMetadata.classType)}' was expected`
+                            + `, and '${nameof(targetObject.constructor)}' is not a subtype of`
                             + ` '${nameof(sourceObjectMetadata.classType)}'`,
                         );
                     }

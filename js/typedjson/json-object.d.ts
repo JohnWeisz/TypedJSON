@@ -1,4 +1,5 @@
 import { Constructor, ParameterlessConstructor } from "./types";
+export declare type InitializerCallback<T> = (sourceObject: T, rawSourceObject: T) => T;
 export interface IJsonObjectOptionsBase {
     /**
      * An array of known types to recognize when encountering type-hints,
@@ -17,22 +18,25 @@ export interface IJsonObjectOptionsBase {
 }
 export interface IJsonObjectOptionsWithInitializer<T> extends IJsonObjectOptionsBase {
     /**
-     * The name of a static method to call before deserializing and initializing the object, accepting two arguments: (1) sourceObject, an 'Object' instance
-     * with all properties already deserialized, and (2) rawSourceObject, a raw 'Object' instance representation of the current object in the serialized JSON
-     * (i.e. without deserialized properties).
+     * Function to call before deserializing and initializing the object, accepting two arguments:
+     *   (1) sourceObject, an 'Object' instance with all properties already deserialized, and
+     *   (2) rawSourceObject, a raw 'Object' instance representation of the current object in
+     *       the serialized JSON (i.e. without deserialized properties).
      */
-    initializer: (sourceObject: T, rawSourceObject: T) => T;
+    initializer: InitializerCallback<T>;
 }
 export interface IJsonObjectOptions<T> extends IJsonObjectOptionsBase {
     /**
-     * The name of a static method to call before deserializing and initializing the object, accepting two arguments: (1) sourceObject, an 'Object' instance
-     * with all properties already deserialized, and (2) rawSourceObject, a raw 'Object' instance representation of the current object in the serialized JSON
-     * (i.e. without deserialized properties).
+     * Function to call before deserializing and initializing the object, accepting two arguments:
+     *   (1) sourceObject, an 'Object' instance with all properties already deserialized, and
+     *   (2) rawSourceObject, a raw 'Object' instance representation of the current object in
+     *       the serialized JSON (i.e. without deserialized properties).
      */
-    initializer?: (sourceObject: T, rawSourceObject: T) => T;
+    initializer?: InitializerCallback<T>;
 }
 /**
- * Marks that a class with a parameterized constructor is serializable using TypedJSON, with additional settings. The 'initializer' setting must be specified.
+ * Marks that a class with a parameterized constructor is serializable using TypedJSON, with additional
+ * settings. The 'initializer' setting must be specified.
  * @param options Configuration settings.
  */
 export declare function jsonObject<T>(options?: IJsonObjectOptionsWithInitializer<T>): (target: Constructor<T>) => void;
