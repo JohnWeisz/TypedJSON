@@ -1,4 +1,4 @@
-// [typedjson]  Version: 1.3.0 - 2019-03-14  
+// [typedjson]  Version: 1.3.0 - 2019-07-28  
  (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -752,7 +752,12 @@ var deserializer_Deserializer = /** @class */ (function () {
             Object.assign(targetObject, sourceObjectWithDeserializedProperties_1);
             // Call onDeserialized method (if any).
             if (sourceObjectMetadata.onDeserializedMethodName) {
-                if (typeof targetObject.constructor[sourceObjectMetadata.onDeserializedMethodName] === "function") {
+                // check for member first
+                if (typeof targetObject[sourceObjectMetadata.onDeserializedMethodName] === "function") {
+                    targetObject[sourceObjectMetadata.onDeserializedMethodName]();
+                }
+                // check for static
+                else if (typeof targetObject.constructor[sourceObjectMetadata.onDeserializedMethodName] === "function") {
                     targetObject.constructor[sourceObjectMetadata.onDeserializedMethodName]();
                 }
                 else {

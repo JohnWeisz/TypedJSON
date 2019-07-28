@@ -192,7 +192,13 @@ export class Deserializer<T>
             // Call onDeserialized method (if any).
             if (sourceObjectMetadata.onDeserializedMethodName)
             {
-                if (typeof (targetObject.constructor as any)[sourceObjectMetadata.onDeserializedMethodName] === "function")
+                // check for member first
+                if (typeof (targetObject as any)[sourceObjectMetadata.onDeserializedMethodName] === "function")
+                {
+                    (targetObject as any)[sourceObjectMetadata.onDeserializedMethodName]();
+                }
+                // check for static
+                else if (typeof (targetObject.constructor as any)[sourceObjectMetadata.onDeserializedMethodName] === "function")
                 {
                     (targetObject.constructor as any)[sourceObjectMetadata.onDeserializedMethodName]();
                 }
