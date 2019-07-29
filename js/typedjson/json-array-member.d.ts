@@ -1,4 +1,5 @@
-export interface IJsonArrayMemberOptions {
+import { OptionsBase } from "./options-base";
+export interface IJsonArrayMemberOptions extends OptionsBase {
     /** When set, indicates that the member must be present when deserializing. */
     isRequired?: boolean;
     /** When set, an empty array is emitted if the property is undefined/uninitialized. */

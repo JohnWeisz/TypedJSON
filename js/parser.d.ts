@@ -1,6 +1,7 @@
 import { Constructor } from "./typedjson/types";
+import { OptionsBase } from "./typedjson/options-base";
 export declare type JsonTypes = Object | boolean | string | number | null | undefined;
-export interface ITypedJSONSettings {
+export interface ITypedJSONSettings extends OptionsBase {
     /**
      * Sets the handler callback to invoke on errors during serializing and deserializing.
      * Re-throwing errors in this function will halt serialization/deserialization.

@@ -1,4 +1,5 @@
 import { IndexedObject } from "./types";
+import { OptionsBase } from "./options-base";
 export interface JsonMemberMetadata {
     /** If set, a default value will be emitted for uninitialized members. */
     emitDefaultValue?: boolean;
@@ -10,6 +11,7 @@ export interface JsonMemberMetadata {
     ctor?: Function;
     /** If set, indicates that the member must be present when deserializing. */
     isRequired?: boolean;
+    options?: OptionsBase;
     /** If the json member is an array, map or set, sets member options of elements/values. Subsequent values define the types of nested arrays. */
     elementType?: Function[];
     /** If the json member is a map, sets member options of array keys. */
@@ -54,6 +56,7 @@ export declare class JsonObjectMetadata {
     isHandledWithoutAnnotation: boolean;
     /** Name used to encode polymorphic type */
     name?: string;
+    options?: OptionsBase;
     onDeserializedMethodName?: string;
     initializerCallback?: (sourceObject: Object, rawSourceObject: Object) => Object;
 }

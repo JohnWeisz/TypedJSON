@@ -1,5 +1,6 @@
 ﻿import { nameof, logError, METADATA_FIELD_KEY, isDirectlySerializableNativeType, isTypeTypedArray } from "./helpers";
 import { IndexedObject } from "./types";
+import { OptionsBase } from "./options-base";
 
 export interface JsonMemberMetadata
 {
@@ -17,6 +18,8 @@ export interface JsonMemberMetadata
 
     /** If set, indicates that the member must be present when deserializing. */
     isRequired?: boolean;
+
+    options?: OptionsBase;
 
     /** If the json member is an array, map or set, sets member options of elements/values. Subsequent values define the types of nested arrays. */
     elementType?: Function[];
@@ -125,6 +128,8 @@ export class JsonObjectMetadata
 
     /** Name used to encode polymorphic type */
     public name?: string;
+
+    public options?: OptionsBase;
 
     public onDeserializedMethodName?: string;
 

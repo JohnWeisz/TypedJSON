@@ -1,4 +1,5 @@
 import { IndexedObject } from "./types";
+import { OptionsBase } from "./options-base";
 export interface IScopeTypeInfo {
     selfType: Function;
     elementTypes?: Function[];
@@ -26,6 +27,7 @@ export interface IScopeMapTypeInfo extends IScopeTypeInfo {
  * (1) typed object-tree -> (2) simple JS object-tree -> (3) JSON-string
  */
 export declare class Serializer {
+    options?: OptionsBase;
     private _typeHintEmitter;
     private _errorHandler;
     constructor();
@@ -35,42 +37,52 @@ export declare class Serializer {
      * Convert a value of any supported serializable type.
      * The value type will be detected, and the correct serialization method will be called.
      */
-    convertSingleValue(sourceObject: any, typeInfo: IScopeTypeInfo, memberName?: string): any;
+    convertSingleValue(sourceObject: any, typeInfo: IScopeTypeInfo, memberName?: string, memberOptions?: OptionsBase): any;
     /**
-     * Performs the conversion of a typed object (usually a class instance) to a simple javascript object for serialization.
+     * Performs the conversion of a typed object (usually a class instance) to a simple
+     * javascript object for serialization.
      */
-    convertAsObject(sourceObject: IndexedObject, typeInfo: IScopeTypeInfo, memberName?: string): IndexedObject;
+    convertAsObject(sourceObject: IndexedObject, typeInfo: IScopeTypeInfo, memberName?: string, memberOptions?: OptionsBase): IndexedObject;
     /**
      * Performs the conversion of an array of typed objects (or primitive values) to an array of simple javascript objects (or primitive values) for
      * serialization.
      * @param expectedElementType The expected type of elements. If the array is supposed to be multi-dimensional, subsequent elements define lower dimensions.
      * @param memberName Name of the object being serialized, used for debugging purposes.
+     * @param memberOptions If converted as a member, the member options.
      */
-    convertAsArray(sourceObject: any[], expectedElementType: Function[], memberName?: string): any[];
+    convertAsArray(sourceObject: any[], expectedElementType: Function[], memberName?: string, memberOptions?: OptionsBase): any[];
     /**
-     * Performs the conversion of a set of typed objects (or primitive values) into an array of simple javascript objects.
+     * Performs the conversion of a set of typed objects (or primitive values) into an array
+     * of simple javascript objects.
      *
      * @param sourceObject
-     * @param expectedElementType The constructor of the expected Set elements (e.g. `Number` for `Set<number>`, or `MyClass` for `Set<MyClass>`).
+     * @param expectedElementType The constructor of the expected Set elements
+     *        (e.g. `Number` for `Set<number>`, or `MyClass` for `Set<MyClass>`).
      * @param memberName Name of the object being serialized, used for debugging purposes.
+     * @param memberOptions If converted as a member, the member options.
      * @returns
      */
-    convertAsSet(sourceObject: Set<any>, expectedElementType: Function, memberName?: string): any[];
+    convertAsSet(sourceObject: Set<any>, expectedElementType: Function, memberName?: string, memberOptions?: OptionsBase): any[];
     /**
-     * Performs the conversion of a map of typed objects (or primitive values) into an array of simple javascript objects with `key` and `value` properties.
+     * Performs the conversion of a map of typed objects (or primitive values) into an array
+     * of simple javascript objects with `key` and `value` properties.
      *
      * @param sourceObject
-     * @param expectedKeyType The constructor of the expected Map keys (e.g. `Number` for `Map<number, any>`, or `MyClass` for `Map<MyClass, any>`).
-     * @param expectedElementType The constructor of the expected Map values (e.g. `Number` for `Map<any, number>`, or `MyClass` for `Map<any, MyClass>`).
+     * @param expectedKeyType The constructor of the expected Map keys
+     *        (e.g. `Number` for `Map<number, any>`, or `MyClass` for `Map<MyClass, any>`).
+     * @param expectedElementType The constructor of the expected Map values
+     *        (e.g. `Number` for `Map<any, number>`, or `MyClass` for `Map<any, MyClass>`).
      * @param memberName Name of the object being serialized, used for debugging purposes.
+     * @param memberOptions If converted as a member, the member options.
      */
-    convertAsMap(sourceObject: Map<any, any>, expectedKeyType: Function, expectedElementType: Function, memberName?: string): Array<{
+    convertAsMap(sourceObject: Map<any, any>, expectedKeyType: Function, expectedElementType: Function, memberName?: string, memberOptions?: OptionsBase): Array<{
         key: any;
         value: any;
     }>;
     /**
      * Performs the conversion of a typed javascript array to a simple untyped javascript array.
-     * This is needed because typed arrays are otherwise serialized as objects, so we'll end up with something like "{ 0: 0, 1: 1, ... }".
+     * This is needed because typed arrays are otherwise serialized as objects, so we'll end up
+     * with something like "{ 0: 0, 1: 1, ... }".
      *
      * @param sourceObject
      * @returns
@@ -81,7 +93,9 @@ export declare class Serializer {
      */
     convertAsArrayBuffer(buffer: ArrayBuffer): string;
     /**
-     * Performs the conversion of DataView, converting its internal ArrayBuffer to a string and returning that string.
+     * Performs the conversion of DataView, converting its internal ArrayBuffer to a string and
+     * returning that string.
      */
     convertAsDataView(dataView: DataView): string;
+    private retrievePreserveNull;
 }

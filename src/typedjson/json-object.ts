@@ -1,10 +1,11 @@
 ﻿import { Constructor, ParameterlessConstructor } from "./types";
 import { METADATA_FIELD_KEY } from "./helpers";
 import { JsonObjectMetadata } from "./metadata";
+import { extractOptionBase, OptionsBase } from "./options-base";
 
 export type InitializerCallback<T> = (sourceObject: T, rawSourceObject: T) => T;
 
-export interface IJsonObjectOptionsBase
+export interface IJsonObjectOptionsBase extends OptionsBase
 {
     /**
      * An array of known types to recognize when encountering type-hints,
@@ -123,6 +124,11 @@ export function jsonObject<T extends Object>(optionsOrTarget?: IJsonObjectOption
         if (options.name)
         {
             objectMetadata.name = options.name;
+        }
+        const optionsBase = extractOptionBase(options);
+        if (optionsBase)
+        {
+            objectMetadata.options = optionsBase;
         }
 
         // Obtain known-types.

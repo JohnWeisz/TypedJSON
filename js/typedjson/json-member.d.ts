@@ -1,4 +1,5 @@
-export interface IJsonMemberOptions {
+import { OptionsBase } from "./options-base";
+export interface IJsonMemberOptions extends OptionsBase {
     /**
      * Sets the constructor of the property.
      * Optional with ReflectDecorators.

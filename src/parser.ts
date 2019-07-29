@@ -1,12 +1,13 @@
-import { Constructor } from "./typedjson/types";
+import { Constructor, IndexedObject } from "./typedjson/types";
 import { Serializer } from "./typedjson/serializer";
 import { Deserializer } from "./typedjson/deserializer";
 import { JsonObjectMetadata } from "./typedjson/metadata";
 import { logError, logWarning, nameof, parseToJSObject } from "./typedjson/helpers";
+import { extractOptionBase, OptionsBase } from "./typedjson/options-base";
 
 export type JsonTypes = Object|boolean|string|number|null|undefined;
 
-export interface ITypedJSONSettings
+export interface ITypedJSONSettings extends OptionsBase
 {
     /**
      * Sets the handler callback to invoke on errors during serializing and deserializing.
@@ -274,6 +275,10 @@ export class TypedJSON<T>
             }
         }
 
+        const options = extractOptionBase(settings);
+        this.serializer.options = options;
+        this.deserializer.options = options;
+
         if (settings.errorHandler)
         {
             this.errorHandler = settings.errorHandler;
@@ -434,9 +439,10 @@ export class TypedJSON<T>
     {
         try
         {
-            return this.serializer.convertSingleValue(object, {
-                selfType: this.rootConstructor
-            });
+            return this.serializer.convertSingleValue(
+                object,
+        {selfType: this.rootConstructor},
+            );
         }
         catch (e)
         {

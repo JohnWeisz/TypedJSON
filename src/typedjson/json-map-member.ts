@@ -1,12 +1,13 @@
 ﻿import { nameof, logError, isReflectMetadataSupported } from "./helpers";
 import { injectMetadataInformation } from "./metadata";
+import { extractOptionBase, getDefaultOptionOf, OptionsBase } from "./options-base";
 
 declare abstract class Reflect
 {
     public static getMetadata(metadataKey: string, target: any, targetKey: string | symbol): any;
 }
 
-export interface IJsonMapMemberOptions
+export interface IJsonMapMemberOptions extends OptionsBase
 {
     /** When set, indicates that the member must be present when deserializing. */
     isRequired?: boolean;
@@ -62,6 +63,7 @@ export function jsonMapMember(keyConstructor: Function, valueConstructor: Functi
             keyType: keyConstructor,
             emitDefaultValue: options.emitDefaultValue,
             isRequired: options.isRequired,
+            options: extractOptionBase(options),
             key: propKey.toString(),
             name: options.name || propKey.toString(),
             deserializer: options.deserializer,

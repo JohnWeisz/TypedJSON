@@ -1,4 +1,5 @@
 import { IndexedObject } from "./types";
+import { OptionsBase } from "./options-base";
 export interface IScopeTypeInfo {
     selfConstructor: Function;
     elementConstructor?: Function[];
@@ -10,6 +11,7 @@ export interface IScopeTypeInfo {
  * It is used after parsing a JSON-string.
  */
 export declare class Deserializer<T> {
+    options?: OptionsBase;
     private _typeResolver;
     private _nameResolver?;
     private _errorHandler;
@@ -17,11 +19,11 @@ export declare class Deserializer<T> {
     setNameResolver(nameResolverCallback: (ctor: Function) => string): void;
     setTypeResolver(typeResolverCallback: (sourceObject: Object, knownTypes: Map<string, Function>) => Function): void;
     setErrorHandler(errorHandlerCallback: (error: Error) => void): void;
-    convertAsObject(sourceObject: IndexedObject, sourceObjectTypeInfo: IScopeTypeInfo, objectName?: string): {} | undefined;
-    convertSingleValue(sourceObject: any, typeInfo: IScopeTypeInfo, memberName?: string): any;
-    convertAsArray(sourceObject: any, typeInfo: IScopeTypeInfo, memberName?: string): any[];
-    convertAsSet(sourceObject: any, typeInfo: IScopeTypeInfo, memberName?: string): Set<any>;
-    convertAsMap(sourceObject: any, typeInfo: IScopeTypeInfo, memberName?: string): Map<any, any>;
+    convertAsObject(sourceObject: IndexedObject, sourceObjectTypeInfo: IScopeTypeInfo, objectName?: string, memberOptions?: OptionsBase): {} | undefined;
+    convertSingleValue(sourceObject: any, typeInfo: IScopeTypeInfo, memberName?: string, memberOptions?: OptionsBase): any;
+    convertAsArray(sourceObject: any, typeInfo: IScopeTypeInfo, memberName?: string, memberOptions?: OptionsBase): any[];
+    convertAsSet(sourceObject: any, typeInfo: IScopeTypeInfo, memberName?: string, memberOptions?: OptionsBase): Set<any>;
+    convertAsMap(sourceObject: any, typeInfo: IScopeTypeInfo, memberName?: string, memberOptions?: OptionsBase): Map<any, any>;
     private _throwTypeMismatchError;
     private _makeTypeErrorMessage;
     private _instantiateType;
@@ -31,4 +33,5 @@ export declare class Deserializer<T> {
     convertNativeObject(sourceObject: any): any;
     private _stringToArrayBuffer;
     private _stringToDataView;
+    private retrievePreserveNull;
 }

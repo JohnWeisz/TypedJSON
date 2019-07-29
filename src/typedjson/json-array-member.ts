@@ -1,12 +1,13 @@
 ﻿import { nameof, logError, isReflectMetadataSupported } from "./helpers";
 import { injectMetadataInformation } from "./metadata";
+import { extractOptionBase, getDefaultOptionOf, OptionsBase } from "./options-base";
 
 declare abstract class Reflect
 {
     public static getMetadata(metadataKey: string, target: any, targetKey: string | symbol): any;
 }
 
-export interface IJsonArrayMemberOptions
+export interface IJsonArrayMemberOptions extends OptionsBase
 {
     /** When set, indicates that the member must be present when deserializing. */
     isRequired?: boolean;
@@ -63,6 +64,7 @@ export function jsonArrayMember(elementConstructor: Function, options: IJsonArra
             elementType: createArrayElementType(elementConstructor, dimensions),
             emitDefaultValue: options.emitDefaultValue,
             isRequired: options.isRequired,
+            options: extractOptionBase(options),
             key: propKey.toString(),
             name: options.name || propKey.toString(),
             deserializer: options.deserializer,

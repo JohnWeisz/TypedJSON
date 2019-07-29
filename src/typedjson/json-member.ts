@@ -2,13 +2,14 @@
     nameof, logError, isReflectMetadataSupported, isValueDefined, logWarning, isSubtypeOf
 } from "./helpers";
 import { injectMetadataInformation } from "./metadata";
+import { extractOptionBase, OptionsBase } from "./options-base";
 
 declare abstract class Reflect
 {
     public static getMetadata(metadataKey: string, target: any, targetKey: string | symbol): any;
 }
 
-export interface IJsonMemberOptions
+export interface IJsonMemberOptions extends OptionsBase
 {
     /**
      * Sets the constructor of the property.
@@ -136,6 +137,7 @@ export function jsonMember<TFunction extends Function>(optionsOrTarget?: IJsonMe
                 ctor: propCtor,
                 emitDefaultValue: options.emitDefaultValue,
                 isRequired: options.isRequired,
+                options: extractOptionBase(options),
                 key: _propKey.toString(),
                 name: options.name || _propKey.toString(),
                 deserializer: options.deserializer,

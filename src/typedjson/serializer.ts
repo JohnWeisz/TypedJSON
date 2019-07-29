@@ -1,6 +1,7 @@
 ﻿import { nameof, logError, isValueDefined, isInstanceOf, isTypeTypedArray, isDirectlySerializableNativeType } from "./helpers";
 import { IndexedObject } from "./types";
 import { JsonObjectMetadata } from "./metadata";
+import { getOptionValue, mergeOptions, OptionsBase } from "./options-base";
 
 export interface IScopeTypeInfo
 {
@@ -50,6 +51,7 @@ function isMapTypeInfo(typeInfo: IScopeTypeInfo): typeInfo is IScopeMapTypeInfo 
  */
 export class Serializer
 {
+    public options?: OptionsBase;
     private _typeHintEmitter: (targetObject: IndexedObject, sourceObject: IndexedObject, expectedSourceType: Function, sourceTypeMetadata?: JsonObjectMetadata) => void;
     private _errorHandler: (error: Error) => void;
 
@@ -97,8 +99,13 @@ export class Serializer
      * Convert a value of any supported serializable type.
      * The value type will be detected, and the correct serialization method will be called.
      */
-    public convertSingleValue(sourceObject: any, typeInfo: IScopeTypeInfo, memberName: string = "object"): any
-    {
+    public convertSingleValue(
+        sourceObject: any,
+        typeInfo: IScopeTypeInfo,
+        memberName: string = "object",
+        memberOptions?: OptionsBase,
+    ): any {
+        if (this.retrievePreserveNull(memberOptions) && sourceObject === null) return null;
         if (!isValueDefined(sourceObject)) return;
 
         if (!isInstanceOf(sourceObject, typeInfo.selfType))
@@ -106,7 +113,9 @@ export class Serializer
             let expectedName = nameof(typeInfo.selfType);
             let actualName = nameof(sourceObject.constructor);
 
-            this._errorHandler(new TypeError(`Could not serialize '${memberName}': expected '${expectedName}', got '${actualName}'.`));
+            this._errorHandler(new TypeError(
+                `Could not serialize '${memberName}': expected '${expectedName}', got '${actualName}'.`),
+            );
             return;
         }
 
@@ -124,15 +133,15 @@ export class Serializer
         }
         else if (isArrayTypeInfo(typeInfo))
         {
-            return this.convertAsArray(sourceObject, typeInfo.elementTypes, memberName);
+            return this.convertAsArray(sourceObject, typeInfo.elementTypes, memberName, memberOptions);
         }
         else if (isSetTypeInfo(typeInfo))
         {
-            return this.convertAsSet(sourceObject, typeInfo.elementTypes[0], memberName);
+            return this.convertAsSet(sourceObject, typeInfo.elementTypes[0], memberName, memberOptions);
         }
         else if (isMapTypeInfo(typeInfo))
         {
-            return this.convertAsMap(sourceObject, typeInfo.keyType, typeInfo.elementTypes[0], memberName);
+            return this.convertAsMap(sourceObject, typeInfo.keyType, typeInfo.elementTypes[0], memberName, memberOptions);
         }
         else if (isTypeTypedArray(typeInfo.selfType))
         {
@@ -140,15 +149,20 @@ export class Serializer
         }
         else if (typeof sourceObject === "object")
         {
-            return this.convertAsObject(sourceObject, typeInfo, memberName);
+            return this.convertAsObject(sourceObject, typeInfo, memberName, memberOptions);
         }
     }
 
     /**
-     * Performs the conversion of a typed object (usually a class instance) to a simple javascript object for serialization.
+     * Performs the conversion of a typed object (usually a class instance) to a simple
+     * javascript object for serialization.
      */
-    public convertAsObject(sourceObject: IndexedObject, typeInfo: IScopeTypeInfo, memberName?: string)
-    {
+    public convertAsObject(
+        sourceObject: IndexedObject,
+        typeInfo: IScopeTypeInfo,
+        memberName?: string,
+        memberOptions?: OptionsBase,
+    ) {
         let sourceTypeMetadata: JsonObjectMetadata|undefined;
         let targetObject: IndexedObject;
 
@@ -167,17 +181,21 @@ export class Serializer
         {
             const sourceMeta = sourceTypeMetadata;
             // Strong-typed serialization available.
-            // We'll serialize by members that have been marked with @jsonMember (including array/set/map members), and perform recursive conversion on
-            // each of them. The converted objects are put on the 'targetObject', which is what will be put into 'JSON.stringify' finally.
+            // We'll serialize by members that have been marked with @jsonMember (including array/set/map members),
+            // and perform recursive conversion on each of them. The converted objects are put on the 'targetObject',
+            // which is what will be put into 'JSON.stringify' finally.
             targetObject = {};
 
-            sourceTypeMetadata.dataMembers.forEach((memberMetadata) =>
+            const classOptions = mergeOptions(this.options, sourceMeta.options);
+
+            sourceMeta.dataMembers.forEach((memberMetadata) =>
             {
+                const memberOptions = mergeOptions(classOptions, memberMetadata.options);
+                let serialized;
                 if (memberMetadata.serializer) {
-                    targetObject[memberMetadata.name] =
-                        memberMetadata.serializer(sourceObject[memberMetadata.key]);
+                    serialized = memberMetadata.serializer(sourceObject[memberMetadata.key]);
                 } else if (memberMetadata.ctor) {
-                    targetObject[memberMetadata.name] = this.convertSingleValue(
+                    serialized = this.convertSingleValue(
                         sourceObject[memberMetadata.key],
                         {
                             selfType: memberMetadata.ctor,
@@ -185,12 +203,19 @@ export class Serializer
                             keyType: memberMetadata.keyType,
                         },
                         `${nameof(sourceMeta.classType)}.${memberMetadata.key}`,
+                        memberOptions,
                     );
                 } else {
                     throw new TypeError(
                         `Could not serialize ${memberMetadata.name}, there is`
                         + ` no constructor nor serialization function to use.`,
                     );
+                }
+
+                if (isValueDefined(serialized)
+                    || (this.retrievePreserveNull(memberOptions) && serialized === null)
+                ) {
+                    targetObject[memberMetadata.name] = serialized;
                 }
             });
         }
@@ -212,29 +237,38 @@ export class Serializer
      * serialization.
      * @param expectedElementType The expected type of elements. If the array is supposed to be multi-dimensional, subsequent elements define lower dimensions.
      * @param memberName Name of the object being serialized, used for debugging purposes.
+     * @param memberOptions If converted as a member, the member options.
      */
-    public convertAsArray(sourceObject: any[], expectedElementType: Function[], memberName = "object"): any[]
-    {
+    public convertAsArray(
+        sourceObject: any[],
+        expectedElementType: Function[],
+        memberName = "object",
+        memberOptions?: OptionsBase,
+    ): any[] {
         if (expectedElementType.length === 0 || !expectedElementType[0])
            throw new TypeError(`Could not serialize ${memberName} as Array: missing element type definition.`);
 
         // Check the type of each element, individually.
-        // If at least one array element type is incorrect, we return undefined, which results in no value emitted during serialization.
-        // This is so that invalid element types don't unexpectedly alter the ordering of other, valid elements, and that no unexpected undefined values are in
+        // If at least one array element type is incorrect, we return undefined, which results in no
+        // value emitted during serialization. This is so that invalid element types don't unexpectedly
+        // alter the ordering of other, valid elements, and that no unexpected undefined values are in
         // the emitted array.
         sourceObject.forEach((element, i) =>
         {
-            if (!isInstanceOf(element, expectedElementType[0]))
-            {
+            if (!(this.retrievePreserveNull(memberOptions) && element === null)
+                && !isInstanceOf(element, expectedElementType[0])
+            ) {
                 const expectedTypeName = nameof(expectedElementType[0]);
-                const actualTypeName = nameof(element.constructor);
-                throw new TypeError(`Could not serialize ${memberName}[${i}]: expected '${expectedTypeName}', got '${actualTypeName}'.`);
+                const actualTypeName = element && nameof(element.constructor);
+                throw new TypeError(`Could not serialize ${memberName}[${i}]:` +
+                    ` expected '${expectedTypeName}', got '${actualTypeName}'.`);
             }
         });
 
         const typeInfoForElements: IScopeTypeInfo = {
             selfType: expectedElementType[0],
-            elementTypes: expectedElementType.length > 1 ? expectedElementType.slice(1) : [], // For multidimensional arrays.
+            // For multidimensional arrays.
+            elementTypes: expectedElementType.length > 1 ? expectedElementType.slice(1) : [],
         };
 
         if (memberName)
@@ -243,19 +277,30 @@ export class Serializer
             memberName += "[]";
         }
 
-        return sourceObject.map(element => this.convertSingleValue(element, typeInfoForElements, memberName));
+        return sourceObject.map(
+            element => this.convertSingleValue(
+                element, typeInfoForElements, memberName, memberOptions
+            ),
+        );
     }
 
     /**
-     * Performs the conversion of a set of typed objects (or primitive values) into an array of simple javascript objects.
+     * Performs the conversion of a set of typed objects (or primitive values) into an array
+     * of simple javascript objects.
      *
      * @param sourceObject
-     * @param expectedElementType The constructor of the expected Set elements (e.g. `Number` for `Set<number>`, or `MyClass` for `Set<MyClass>`).
+     * @param expectedElementType The constructor of the expected Set elements
+     *        (e.g. `Number` for `Set<number>`, or `MyClass` for `Set<MyClass>`).
      * @param memberName Name of the object being serialized, used for debugging purposes.
+     * @param memberOptions If converted as a member, the member options.
      * @returns
      */
-    public convertAsSet(sourceObject: Set<any>, expectedElementType: Function, memberName = "object"): any[]
-    {
+    public convertAsSet(
+        sourceObject: Set<any>,
+        expectedElementType: Function,
+        memberName = "object",
+        memberOptions?: OptionsBase,
+    ): any[] {
         if (!expectedElementType)
             throw new TypeError(`Could not serialize ${memberName} as Set: missing element type definition.`);
 
@@ -269,13 +314,15 @@ export class Serializer
         let resultArray: any[] = [];
 
         // Convert each element of the set, and put it into an output array.
-        // The output array is the one serialized, as JSON.stringify does not support Set serialization. (TODO: clarification needed)
+        // The output array is the one serialized, as JSON.stringify does not support Set serialization.
+        // (TODO: clarification needed)
         sourceObject.forEach(element =>
         {
-            let resultElement = this.convertSingleValue(element, elementTypeInfo, memberName);
+            let resultElement = this.convertSingleValue(element, elementTypeInfo, memberName, memberOptions);
 
-            // Add to output if the source element was undefined, OR the converted element is defined. This will add intentionally undefined values to output,
-            // but not values that became undefined DURING serializing (usually because of a type-error).
+            // Add to output if the source element was undefined, OR the converted element is defined.
+            // This will add intentionally undefined values to output, but not values that became undefined
+            // DURING serializing (usually because of a type-error).
             if (!isValueDefined(element) || isValueDefined(resultElement))
             {
                 resultArray.push(resultElement);
@@ -286,15 +333,24 @@ export class Serializer
     }
 
     /**
-     * Performs the conversion of a map of typed objects (or primitive values) into an array of simple javascript objects with `key` and `value` properties.
+     * Performs the conversion of a map of typed objects (or primitive values) into an array
+     * of simple javascript objects with `key` and `value` properties.
      *
      * @param sourceObject
-     * @param expectedKeyType The constructor of the expected Map keys (e.g. `Number` for `Map<number, any>`, or `MyClass` for `Map<MyClass, any>`).
-     * @param expectedElementType The constructor of the expected Map values (e.g. `Number` for `Map<any, number>`, or `MyClass` for `Map<any, MyClass>`).
+     * @param expectedKeyType The constructor of the expected Map keys
+     *        (e.g. `Number` for `Map<number, any>`, or `MyClass` for `Map<MyClass, any>`).
+     * @param expectedElementType The constructor of the expected Map values
+     *        (e.g. `Number` for `Map<any, number>`, or `MyClass` for `Map<any, MyClass>`).
      * @param memberName Name of the object being serialized, used for debugging purposes.
+     * @param memberOptions If converted as a member, the member options.
      */
-    public convertAsMap(sourceObject: Map<any, any>, expectedKeyType: Function, expectedElementType: Function, memberName = "object"): Array<{ key: any, value: any }>
-    {
+    public convertAsMap(
+        sourceObject: Map<any, any>,
+        expectedKeyType: Function,
+        expectedElementType: Function,
+        memberName = "object",
+        memberOptions?: OptionsBase,
+    ): Array<{ key: any, value: any }> {
         if (!expectedElementType)
             throw new TypeError(`Could not serialize ${memberName} as Map: missing value type definition.`);
 
@@ -312,18 +368,22 @@ export class Serializer
 
         if (memberName) memberName += "[]";
 
-        let resultArray: Array<{ key: any, value: any }> = [];
+        const resultArray: Array<{ key: any, value: any }> = [];
+        const preserveNull = this.retrievePreserveNull(memberOptions);
 
         // Convert each *entry* in the map to a simple javascript object with key and value properties.
         sourceObject.forEach((value, key) =>
         {
             let resultKeyValuePairObj = {
-                key: this.convertSingleValue(key, keyTypeInfo, memberName),
-                value: this.convertSingleValue(value, elementTypeInfo, memberName)
+                key: this.convertSingleValue(key, keyTypeInfo, memberName, memberOptions),
+                value: this.convertSingleValue(value, elementTypeInfo, memberName, memberOptions),
             };
 
             // We are not going to emit entries with undefined keys OR undefined values.
-            if (isValueDefined(resultKeyValuePairObj.key) && isValueDefined(resultKeyValuePairObj.value))
+            const keyDefined = isValueDefined(resultKeyValuePairObj.key);
+            const valueDefined = isValueDefined(resultKeyValuePairObj.value)
+                || (resultKeyValuePairObj.value === null && preserveNull);
+            if (keyDefined && valueDefined)
             {
                 resultArray.push(resultKeyValuePairObj);
             }
@@ -334,7 +394,8 @@ export class Serializer
 
     /**
      * Performs the conversion of a typed javascript array to a simple untyped javascript array.
-     * This is needed because typed arrays are otherwise serialized as objects, so we'll end up with something like "{ 0: 0, 1: 1, ... }".
+     * This is needed because typed arrays are otherwise serialized as objects, so we'll end up
+     * with something like "{ 0: 0, 1: 1, ... }".
      *
      * @param sourceObject
      * @returns
@@ -354,10 +415,15 @@ export class Serializer
     }
 
     /**
-     * Performs the conversion of DataView, converting its internal ArrayBuffer to a string and returning that string.
+     * Performs the conversion of DataView, converting its internal ArrayBuffer to a string and
+     * returning that string.
      */
     public convertAsDataView(dataView: DataView)
     {
         return this.convertAsArrayBuffer(dataView.buffer);
+    }
+
+    private retrievePreserveNull(memberOptions?: OptionsBase): boolean {
+        return getOptionValue('preserveNull', mergeOptions(this.options, memberOptions));
     }
 }

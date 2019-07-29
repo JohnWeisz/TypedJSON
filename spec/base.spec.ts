@@ -97,7 +97,7 @@ describe('basic serialization of', function () {
 
         @jsonObject
         class WithNullable {
-            // nullable must be optional
+            // nullable should be optional when not using preserve null
             @jsonMember
             nullable?: string|null;
         }

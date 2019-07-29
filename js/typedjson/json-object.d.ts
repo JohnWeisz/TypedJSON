@@ -1,6 +1,7 @@
 import { Constructor, ParameterlessConstructor } from "./types";
+import { OptionsBase } from "./options-base";
 export declare type InitializerCallback<T> = (sourceObject: T, rawSourceObject: T) => T;
-export interface IJsonObjectOptionsBase {
+export interface IJsonObjectOptionsBase extends OptionsBase {
     /**
      * An array of known types to recognize when encountering type-hints,
      * or the name of a static method used for determining known types.

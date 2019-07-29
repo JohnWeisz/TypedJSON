@@ -1,4 +1,4 @@
-// [typedjson]  Version: 1.3.1 - 2019-07-28  
+// [typedjson]  Version: 1.3.1 - 2019-07-30  
  (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -354,10 +354,47 @@ function injectMetadataInformation(constructor, propKey, metadata) {
         objectMetadata.knownTypes.add(metadata.keyType);
     if (metadata.elementType)
         metadata.elementType.forEach(function (elemCtor) { return objectMetadata.knownTypes.add(elemCtor); });
-    // clear metadata of undefined properties
+    // clear metadata of undefined properties to save memory
     Object.keys(metadata)
         .forEach(function (key) { return (metadata[key] === undefined) && delete metadata[key]; });
     objectMetadata.dataMembers.set(metadata.name, metadata);
+}
+
+// CONCATENATED MODULE: ./src/typedjson/options-base.ts
+/**
+ * This options cascade through the annotations. Options set
+ * in the more specific place override the previous option.
+ * Ex. @jsonMember overrides TypedJson options.
+ */
+var kAllOptions = [
+    'preserveNull',
+];
+function extractOptionBase(from) {
+    var options = Object.keys(from)
+        .filter(function (key) { return kAllOptions.includes(key); })
+        .reduce(function (obj, key) {
+        obj[key] = from[key];
+        return obj;
+    }, {});
+    return Object.keys(options).length > 0 ? options : undefined;
+}
+function getDefaultOptionOf(key) {
+    switch (key) {
+        case "preserveNull":
+            return false;
+    }
+    // never reached
+    return null;
+}
+function getOptionValue(key, options) {
+    if (options && options[key] != null)
+        return options[key];
+    return getDefaultOptionOf(key);
+}
+function mergeOptions(existing, moreSpecific) {
+    return !moreSpecific
+        ? existing
+        : Object.assign({}, existing, moreSpecific);
 }
 
 // CONCATENATED MODULE: ./src/typedjson/serializer.ts
@@ -372,6 +409,7 @@ var __assign = (undefined && undefined.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
+
 
 
 function isArrayTypeInfo(typeInfo) {
@@ -423,8 +461,10 @@ var serializer_Serializer = /** @class */ (function () {
      * Convert a value of any supported serializable type.
      * The value type will be detected, and the correct serialization method will be called.
      */
-    Serializer.prototype.convertSingleValue = function (sourceObject, typeInfo, memberName) {
+    Serializer.prototype.convertSingleValue = function (sourceObject, typeInfo, memberName, memberOptions) {
         if (memberName === void 0) { memberName = "object"; }
+        if (this.retrievePreserveNull(memberOptions) && sourceObject === null)
+            return null;
         if (!isValueDefined(sourceObject))
             return;
         if (!isInstanceOf(sourceObject, typeInfo.selfType)) {
@@ -443,25 +483,26 @@ var serializer_Serializer = /** @class */ (function () {
             return this.convertAsDataView(sourceObject);
         }
         else if (isArrayTypeInfo(typeInfo)) {
-            return this.convertAsArray(sourceObject, typeInfo.elementTypes, memberName);
+            return this.convertAsArray(sourceObject, typeInfo.elementTypes, memberName, memberOptions);
         }
         else if (isSetTypeInfo(typeInfo)) {
-            return this.convertAsSet(sourceObject, typeInfo.elementTypes[0], memberName);
+            return this.convertAsSet(sourceObject, typeInfo.elementTypes[0], memberName, memberOptions);
         }
         else if (isMapTypeInfo(typeInfo)) {
-            return this.convertAsMap(sourceObject, typeInfo.keyType, typeInfo.elementTypes[0], memberName);
+            return this.convertAsMap(sourceObject, typeInfo.keyType, typeInfo.elementTypes[0], memberName, memberOptions);
         }
         else if (isTypeTypedArray(typeInfo.selfType)) {
             return this.convertAsTypedArray(sourceObject);
         }
         else if (typeof sourceObject === "object") {
-            return this.convertAsObject(sourceObject, typeInfo, memberName);
+            return this.convertAsObject(sourceObject, typeInfo, memberName, memberOptions);
         }
     };
     /**
-     * Performs the conversion of a typed object (usually a class instance) to a simple javascript object for serialization.
+     * Performs the conversion of a typed object (usually a class instance) to a simple
+     * javascript object for serialization.
      */
-    Serializer.prototype.convertAsObject = function (sourceObject, typeInfo, memberName) {
+    Serializer.prototype.convertAsObject = function (sourceObject, typeInfo, memberName, memberOptions) {
         var _this = this;
         var sourceTypeMetadata;
         var targetObject;
@@ -476,24 +517,31 @@ var serializer_Serializer = /** @class */ (function () {
         if (sourceTypeMetadata) {
             var sourceMeta_1 = sourceTypeMetadata;
             // Strong-typed serialization available.
-            // We'll serialize by members that have been marked with @jsonMember (including array/set/map members), and perform recursive conversion on
-            // each of them. The converted objects are put on the 'targetObject', which is what will be put into 'JSON.stringify' finally.
+            // We'll serialize by members that have been marked with @jsonMember (including array/set/map members),
+            // and perform recursive conversion on each of them. The converted objects are put on the 'targetObject',
+            // which is what will be put into 'JSON.stringify' finally.
             targetObject = {};
-            sourceTypeMetadata.dataMembers.forEach(function (memberMetadata) {
+            var classOptions_1 = mergeOptions(this.options, sourceMeta_1.options);
+            sourceMeta_1.dataMembers.forEach(function (memberMetadata) {
+                var memberOptions = mergeOptions(classOptions_1, memberMetadata.options);
+                var serialized;
                 if (memberMetadata.serializer) {
-                    targetObject[memberMetadata.name] =
-                        memberMetadata.serializer(sourceObject[memberMetadata.key]);
+                    serialized = memberMetadata.serializer(sourceObject[memberMetadata.key]);
                 }
                 else if (memberMetadata.ctor) {
-                    targetObject[memberMetadata.name] = _this.convertSingleValue(sourceObject[memberMetadata.key], {
+                    serialized = _this.convertSingleValue(sourceObject[memberMetadata.key], {
                         selfType: memberMetadata.ctor,
                         elementTypes: memberMetadata.elementType,
                         keyType: memberMetadata.keyType,
-                    }, nameof(sourceMeta_1.classType) + "." + memberMetadata.key);
+                    }, nameof(sourceMeta_1.classType) + "." + memberMetadata.key, memberOptions);
                 }
                 else {
                     throw new TypeError("Could not serialize " + memberMetadata.name + ", there is"
                         + " no constructor nor serialization function to use.");
+                }
+                if (isValueDefined(serialized)
+                    || (_this.retrievePreserveNull(memberOptions) && serialized === null)) {
+                    targetObject[memberMetadata.name] = serialized;
                 }
             });
         }
@@ -511,42 +559,50 @@ var serializer_Serializer = /** @class */ (function () {
      * serialization.
      * @param expectedElementType The expected type of elements. If the array is supposed to be multi-dimensional, subsequent elements define lower dimensions.
      * @param memberName Name of the object being serialized, used for debugging purposes.
+     * @param memberOptions If converted as a member, the member options.
      */
-    Serializer.prototype.convertAsArray = function (sourceObject, expectedElementType, memberName) {
+    Serializer.prototype.convertAsArray = function (sourceObject, expectedElementType, memberName, memberOptions) {
         var _this = this;
         if (memberName === void 0) { memberName = "object"; }
         if (expectedElementType.length === 0 || !expectedElementType[0])
             throw new TypeError("Could not serialize " + memberName + " as Array: missing element type definition.");
         // Check the type of each element, individually.
-        // If at least one array element type is incorrect, we return undefined, which results in no value emitted during serialization.
-        // This is so that invalid element types don't unexpectedly alter the ordering of other, valid elements, and that no unexpected undefined values are in
+        // If at least one array element type is incorrect, we return undefined, which results in no
+        // value emitted during serialization. This is so that invalid element types don't unexpectedly
+        // alter the ordering of other, valid elements, and that no unexpected undefined values are in
         // the emitted array.
         sourceObject.forEach(function (element, i) {
-            if (!isInstanceOf(element, expectedElementType[0])) {
+            if (!(_this.retrievePreserveNull(memberOptions) && element === null)
+                && !isInstanceOf(element, expectedElementType[0])) {
                 var expectedTypeName = nameof(expectedElementType[0]);
-                var actualTypeName = nameof(element.constructor);
-                throw new TypeError("Could not serialize " + memberName + "[" + i + "]: expected '" + expectedTypeName + "', got '" + actualTypeName + "'.");
+                var actualTypeName = element && nameof(element.constructor);
+                throw new TypeError("Could not serialize " + memberName + "[" + i + "]:" +
+                    (" expected '" + expectedTypeName + "', got '" + actualTypeName + "'."));
             }
         });
         var typeInfoForElements = {
             selfType: expectedElementType[0],
+            // For multidimensional arrays.
             elementTypes: expectedElementType.length > 1 ? expectedElementType.slice(1) : [],
         };
         if (memberName) {
             // Just for debugging purposes.
             memberName += "[]";
         }
-        return sourceObject.map(function (element) { return _this.convertSingleValue(element, typeInfoForElements, memberName); });
+        return sourceObject.map(function (element) { return _this.convertSingleValue(element, typeInfoForElements, memberName, memberOptions); });
     };
     /**
-     * Performs the conversion of a set of typed objects (or primitive values) into an array of simple javascript objects.
+     * Performs the conversion of a set of typed objects (or primitive values) into an array
+     * of simple javascript objects.
      *
      * @param sourceObject
-     * @param expectedElementType The constructor of the expected Set elements (e.g. `Number` for `Set<number>`, or `MyClass` for `Set<MyClass>`).
+     * @param expectedElementType The constructor of the expected Set elements
+     *        (e.g. `Number` for `Set<number>`, or `MyClass` for `Set<MyClass>`).
      * @param memberName Name of the object being serialized, used for debugging purposes.
+     * @param memberOptions If converted as a member, the member options.
      * @returns
      */
-    Serializer.prototype.convertAsSet = function (sourceObject, expectedElementType, memberName) {
+    Serializer.prototype.convertAsSet = function (sourceObject, expectedElementType, memberName, memberOptions) {
         var _this = this;
         if (memberName === void 0) { memberName = "object"; }
         if (!expectedElementType)
@@ -559,11 +615,13 @@ var serializer_Serializer = /** @class */ (function () {
             memberName += "[]";
         var resultArray = [];
         // Convert each element of the set, and put it into an output array.
-        // The output array is the one serialized, as JSON.stringify does not support Set serialization. (TODO: clarification needed)
+        // The output array is the one serialized, as JSON.stringify does not support Set serialization.
+        // (TODO: clarification needed)
         sourceObject.forEach(function (element) {
-            var resultElement = _this.convertSingleValue(element, elementTypeInfo, memberName);
-            // Add to output if the source element was undefined, OR the converted element is defined. This will add intentionally undefined values to output,
-            // but not values that became undefined DURING serializing (usually because of a type-error).
+            var resultElement = _this.convertSingleValue(element, elementTypeInfo, memberName, memberOptions);
+            // Add to output if the source element was undefined, OR the converted element is defined.
+            // This will add intentionally undefined values to output, but not values that became undefined
+            // DURING serializing (usually because of a type-error).
             if (!isValueDefined(element) || isValueDefined(resultElement)) {
                 resultArray.push(resultElement);
             }
@@ -571,14 +629,18 @@ var serializer_Serializer = /** @class */ (function () {
         return resultArray;
     };
     /**
-     * Performs the conversion of a map of typed objects (or primitive values) into an array of simple javascript objects with `key` and `value` properties.
+     * Performs the conversion of a map of typed objects (or primitive values) into an array
+     * of simple javascript objects with `key` and `value` properties.
      *
      * @param sourceObject
-     * @param expectedKeyType The constructor of the expected Map keys (e.g. `Number` for `Map<number, any>`, or `MyClass` for `Map<MyClass, any>`).
-     * @param expectedElementType The constructor of the expected Map values (e.g. `Number` for `Map<any, number>`, or `MyClass` for `Map<any, MyClass>`).
+     * @param expectedKeyType The constructor of the expected Map keys
+     *        (e.g. `Number` for `Map<number, any>`, or `MyClass` for `Map<MyClass, any>`).
+     * @param expectedElementType The constructor of the expected Map values
+     *        (e.g. `Number` for `Map<any, number>`, or `MyClass` for `Map<any, MyClass>`).
      * @param memberName Name of the object being serialized, used for debugging purposes.
+     * @param memberOptions If converted as a member, the member options.
      */
-    Serializer.prototype.convertAsMap = function (sourceObject, expectedKeyType, expectedElementType, memberName) {
+    Serializer.prototype.convertAsMap = function (sourceObject, expectedKeyType, expectedElementType, memberName, memberOptions) {
         var _this = this;
         if (memberName === void 0) { memberName = "object"; }
         if (!expectedElementType)
@@ -595,14 +657,18 @@ var serializer_Serializer = /** @class */ (function () {
         if (memberName)
             memberName += "[]";
         var resultArray = [];
+        var preserveNull = this.retrievePreserveNull(memberOptions);
         // Convert each *entry* in the map to a simple javascript object with key and value properties.
         sourceObject.forEach(function (value, key) {
             var resultKeyValuePairObj = {
-                key: _this.convertSingleValue(key, keyTypeInfo, memberName),
-                value: _this.convertSingleValue(value, elementTypeInfo, memberName)
+                key: _this.convertSingleValue(key, keyTypeInfo, memberName, memberOptions),
+                value: _this.convertSingleValue(value, elementTypeInfo, memberName, memberOptions),
             };
             // We are not going to emit entries with undefined keys OR undefined values.
-            if (isValueDefined(resultKeyValuePairObj.key) && isValueDefined(resultKeyValuePairObj.value)) {
+            var keyDefined = isValueDefined(resultKeyValuePairObj.key);
+            var valueDefined = isValueDefined(resultKeyValuePairObj.value)
+                || (resultKeyValuePairObj.value === null && preserveNull);
+            if (keyDefined && valueDefined) {
                 resultArray.push(resultKeyValuePairObj);
             }
         });
@@ -610,7 +676,8 @@ var serializer_Serializer = /** @class */ (function () {
     };
     /**
      * Performs the conversion of a typed javascript array to a simple untyped javascript array.
-     * This is needed because typed arrays are otherwise serialized as objects, so we'll end up with something like "{ 0: 0, 1: 1, ... }".
+     * This is needed because typed arrays are otherwise serialized as objects, so we'll end up
+     * with something like "{ 0: 0, 1: 1, ... }".
      *
      * @param sourceObject
      * @returns
@@ -626,16 +693,21 @@ var serializer_Serializer = /** @class */ (function () {
         return Array.from(new Uint16Array(buffer)).map(function (charCode) { return String.fromCharCode(charCode); }).join("");
     };
     /**
-     * Performs the conversion of DataView, converting its internal ArrayBuffer to a string and returning that string.
+     * Performs the conversion of DataView, converting its internal ArrayBuffer to a string and
+     * returning that string.
      */
     Serializer.prototype.convertAsDataView = function (dataView) {
         return this.convertAsArrayBuffer(dataView.buffer);
+    };
+    Serializer.prototype.retrievePreserveNull = function (memberOptions) {
+        return getOptionValue('preserveNull', mergeOptions(this.options, memberOptions));
     };
     return Serializer;
 }());
 
 
 // CONCATENATED MODULE: ./src/typedjson/deserializer.ts
+
 
 
 /**
@@ -664,7 +736,7 @@ var deserializer_Deserializer = /** @class */ (function () {
         }
         this._errorHandler = errorHandlerCallback;
     };
-    Deserializer.prototype.convertAsObject = function (sourceObject, sourceObjectTypeInfo, objectName) {
+    Deserializer.prototype.convertAsObject = function (sourceObject, sourceObjectTypeInfo, objectName, memberOptions) {
         var _this = this;
         if (objectName === void 0) { objectName = "object"; }
         if (typeof sourceObject !== "object" || sourceObject === null) {
@@ -697,10 +769,12 @@ var deserializer_Deserializer = /** @class */ (function () {
             // Strong-typed deserialization available, get to it.
             // First deserialize properties into a temporary object.
             var sourceObjectWithDeserializedProperties_1 = {};
+            var classOptions_1 = mergeOptions(this.options, sourceMetadata_1.options);
             // Deserialize by expected properties.
             sourceMetadata_1.dataMembers.forEach(function (memberMetadata, propKey) {
                 var memberValue = sourceObject[propKey];
                 var memberNameForDebug = nameof(sourceMetadata_1.classType) + "." + propKey;
+                var memberOptions = mergeOptions(classOptions_1, memberMetadata.options);
                 var revivedValue;
                 if (memberMetadata.deserializer) {
                     revivedValue = memberMetadata.deserializer(memberValue);
@@ -711,13 +785,14 @@ var deserializer_Deserializer = /** @class */ (function () {
                         elementConstructor: memberMetadata.elementType,
                         keyConstructor: memberMetadata.keyType,
                         knownTypes: knownTypeConstructors
-                    }, memberNameForDebug);
+                    }, memberNameForDebug, memberOptions);
                 }
                 else {
                     throw new TypeError("Cannot deserialize " + memberNameForDebug + " thers is"
                         + " no constructor nor deserlization function to use.");
                 }
-                if (isValueDefined(revivedValue)) {
+                if (isValueDefined(revivedValue)
+                    || (_this.retrievePreserveNull(memberOptions) && revivedValue === null)) {
                     sourceObjectWithDeserializedProperties_1[memberMetadata.key] = revivedValue;
                 }
                 else if (memberMetadata.isRequired) {
@@ -783,12 +858,15 @@ var deserializer_Deserializer = /** @class */ (function () {
             return targetObject_1;
         }
     };
-    Deserializer.prototype.convertSingleValue = function (sourceObject, typeInfo, memberName) {
+    Deserializer.prototype.convertSingleValue = function (sourceObject, typeInfo, memberName, memberOptions) {
         if (memberName === void 0) { memberName = "object"; }
         var expectedSelfType = typeInfo.selfConstructor;
         var srcTypeNameForDebug = sourceObject ? nameof(sourceObject.constructor) : "undefined";
-        if (!isValueDefined(sourceObject)) {
-            return sourceObject;
+        if (this.retrievePreserveNull(memberOptions) && sourceObject === null) {
+            return null;
+        }
+        else if (!isValueDefined(sourceObject)) {
+            return;
         }
         else if (this._isDirectlyDeserializableNativeType(expectedSelfType)) {
             if (sourceObject.constructor === expectedSelfType) {
@@ -862,27 +940,27 @@ var deserializer_Deserializer = /** @class */ (function () {
         }
         else if (expectedSelfType === Array) {
             if (sourceObject instanceof Array)
-                return this.convertAsArray(sourceObject, typeInfo, memberName);
+                return this.convertAsArray(sourceObject, typeInfo, memberName, memberOptions);
             else
                 throw new TypeError(this._makeTypeErrorMessage(Array, sourceObject.constructor, memberName));
         }
         else if (expectedSelfType === Set) {
             if (sourceObject instanceof Array)
-                return this.convertAsSet(sourceObject, typeInfo, memberName);
+                return this.convertAsSet(sourceObject, typeInfo, memberName, memberOptions);
             else
                 this._throwTypeMismatchError("Set", "Array", srcTypeNameForDebug, memberName);
         }
         else if (expectedSelfType === Map) {
             if (sourceObject instanceof Array)
-                return this.convertAsMap(sourceObject, typeInfo, memberName);
+                return this.convertAsMap(sourceObject, typeInfo, memberName, memberOptions);
             else
                 this._throwTypeMismatchError("Map", "a source array of key-value-pair objects", srcTypeNameForDebug, memberName);
         }
         else if (sourceObject && typeof sourceObject === "object") {
-            return this.convertAsObject(sourceObject, typeInfo, memberName);
+            return this.convertAsObject(sourceObject, typeInfo, memberName, memberOptions);
         }
     };
-    Deserializer.prototype.convertAsArray = function (sourceObject, typeInfo, memberName) {
+    Deserializer.prototype.convertAsArray = function (sourceObject, typeInfo, memberName, memberOptions) {
         var _this = this;
         if (memberName === void 0) { memberName = "object"; }
         if (!(sourceObject instanceof Array)) {
@@ -902,7 +980,7 @@ var deserializer_Deserializer = /** @class */ (function () {
             // If an array element fails to deserialize, substitute with undefined. This is so that the original ordering is not interrupted by faulty
             // entries, as an Array is ordered.
             try {
-                return _this.convertSingleValue(element, elementTypeInfo);
+                return _this.convertSingleValue(element, elementTypeInfo, memberName + "[]", memberOptions);
             }
             catch (e) {
                 _this._errorHandler(e);
@@ -912,7 +990,7 @@ var deserializer_Deserializer = /** @class */ (function () {
             }
         });
     };
-    Deserializer.prototype.convertAsSet = function (sourceObject, typeInfo, memberName) {
+    Deserializer.prototype.convertAsSet = function (sourceObject, typeInfo, memberName, memberOptions) {
         var _this = this;
         if (memberName === void 0) { memberName = "object"; }
         if (!(sourceObject instanceof Array)) {
@@ -931,16 +1009,17 @@ var deserializer_Deserializer = /** @class */ (function () {
         var resultSet = new Set();
         sourceObject.forEach(function (element, i) {
             try {
-                resultSet.add(_this.convertSingleValue(element, elementTypeInfo, memberName + ("[" + i + "]")));
+                resultSet.add(_this.convertSingleValue(element, elementTypeInfo, memberName + "[" + i + "]", memberOptions));
             }
             catch (e) {
-                // Faulty entries are skipped, because a Set is not ordered, and skipping an entry does not affect others.
+                // Faulty entries are skipped, because a Set is not ordered, and skipping an entry
+                // does not affect others.
                 _this._errorHandler(e);
             }
         });
         return resultSet;
     };
-    Deserializer.prototype.convertAsMap = function (sourceObject, typeInfo, memberName) {
+    Deserializer.prototype.convertAsMap = function (sourceObject, typeInfo, memberName, memberOptions) {
         var _this = this;
         if (memberName === void 0) { memberName = "object"; }
         if (!(sourceObject instanceof Array))
@@ -965,10 +1044,10 @@ var deserializer_Deserializer = /** @class */ (function () {
         var resultMap = new Map();
         sourceObject.forEach(function (element) {
             try {
-                var key = _this.convertSingleValue(element.key, keyTypeInfo);
+                var key = _this.convertSingleValue(element.key, keyTypeInfo, memberName, memberOptions);
                 // Undefined/null keys not supported, skip if so.
                 if (isValueDefined(key)) {
-                    resultMap.set(key, _this.convertSingleValue(element.value, valueTypeInfo, memberName + "[" + key + "]"));
+                    resultMap.set(key, _this.convertSingleValue(element.value, valueTypeInfo, memberName + "[" + key + "]", memberOptions));
                 }
             }
             catch (e) {
@@ -1046,6 +1125,9 @@ var deserializer_Deserializer = /** @class */ (function () {
     Deserializer.prototype._stringToDataView = function (str) {
         return new DataView(this._stringToArrayBuffer(str));
     };
+    Deserializer.prototype.retrievePreserveNull = function (memberOptions) {
+        return getOptionValue('preserveNull', mergeOptions(this.options, memberOptions));
+    };
     return Deserializer;
 }());
 
@@ -1062,6 +1144,7 @@ var parser_assign = (undefined && undefined.__assign) || function () {
     };
     return parser_assign.apply(this, arguments);
 };
+
 
 
 
@@ -1150,6 +1233,9 @@ var parser_TypedJSON = /** @class */ (function () {
                 settings.knownTypes = Array.from(new Set(settings.knownTypes.concat(TypedJSON._globalConfig.knownTypes)));
             }
         }
+        var options = extractOptionBase(settings);
+        this.serializer.options = options;
+        this.deserializer.options = options;
         if (settings.errorHandler) {
             this.errorHandler = settings.errorHandler;
             this.deserializer.setErrorHandler(settings.errorHandler);
@@ -1268,9 +1354,7 @@ var parser_TypedJSON = /** @class */ (function () {
      */
     TypedJSON.prototype.toPlainJson = function (object) {
         try {
-            return this.serializer.convertSingleValue(object, {
-                selfType: this.rootConstructor
-            });
+            return this.serializer.convertSingleValue(object, { selfType: this.rootConstructor });
         }
         catch (e) {
             this.errorHandler(e);
@@ -1338,6 +1422,7 @@ var parser_TypedJSON = /** @class */ (function () {
 // CONCATENATED MODULE: ./src/typedjson/json-object.ts
 
 
+
 function jsonObject(optionsOrTarget) {
     var options;
     if (typeof optionsOrTarget === "function") {
@@ -1384,6 +1469,10 @@ function jsonObject(optionsOrTarget) {
         if (options.name) {
             objectMetadata.name = options.name;
         }
+        var optionsBase = extractOptionBase(options);
+        if (optionsBase) {
+            objectMetadata.options = optionsBase;
+        }
         // Obtain known-types.
         if (typeof options.knownTypes === "string") {
             objectMetadata.knownTypeMethodName = options.knownTypes;
@@ -1405,6 +1494,7 @@ function jsonObject(optionsOrTarget) {
 }
 
 // CONCATENATED MODULE: ./src/typedjson/json-member.ts
+
 
 
 function jsonMember(optionsOrTarget, propKey) {
@@ -1472,6 +1562,7 @@ function jsonMember(optionsOrTarget, propKey) {
                 ctor: propCtor,
                 emitDefaultValue: options.emitDefaultValue,
                 isRequired: options.isRequired,
+                options: extractOptionBase(options),
                 key: _propKey.toString(),
                 name: options.name || _propKey.toString(),
                 deserializer: options.deserializer,
@@ -1502,6 +1593,7 @@ function isSpecialPropertyType(decoratorName, propCtor) {
 // CONCATENATED MODULE: ./src/typedjson/json-array-member.ts
 
 
+
 /**
  * Specifies that a property, of type array, is part of an object when serializing.
  * @param elementConstructor Constructor of array elements (e.g. 'Number' for 'number[]', or 'Date' for 'Date[]').
@@ -1530,6 +1622,7 @@ function jsonArrayMember(elementConstructor, options) {
             elementType: createArrayElementType(elementConstructor, dimensions),
             emitDefaultValue: options.emitDefaultValue,
             isRequired: options.isRequired,
+            options: extractOptionBase(options),
             key: propKey.toString(),
             name: options.name || propKey.toString(),
             deserializer: options.deserializer,
@@ -1571,6 +1664,7 @@ function jsonSetMember(elementConstructor, options) {
             elementType: [elementConstructor],
             emitDefaultValue: options.emitDefaultValue,
             isRequired: options.isRequired,
+            options: extractOptionBase(options),
             key: propKey.toString(),
             name: options.name || propKey.toString(),
             deserializer: options.deserializer,
@@ -1580,6 +1674,7 @@ function jsonSetMember(elementConstructor, options) {
 }
 
 // CONCATENATED MODULE: ./src/typedjson/json-map-member.ts
+
 
 
 /**
@@ -1612,6 +1707,7 @@ function jsonMapMember(keyConstructor, valueConstructor, options) {
             keyType: keyConstructor,
             emitDefaultValue: options.emitDefaultValue,
             isRequired: options.isRequired,
+            options: extractOptionBase(options),
             key: propKey.toString(),
             name: options.name || propKey.toString(),
             deserializer: options.deserializer,

@@ -1,14 +1,13 @@
-﻿import { nameof } from "./helpers";
-import { IJsonMemberOptions } from "./json-member";
-import { JsonMemberMetadata, JsonObjectMetadata, injectMetadataInformation } from "./metadata";
-import * as Helpers from "./helpers";
+﻿import { isReflectMetadataSupported, logError, nameof } from "./helpers";
+import { injectMetadataInformation } from "./metadata";
+import { extractOptionBase, OptionsBase } from "./options-base";
 
 declare abstract class Reflect
 {
     public static getMetadata(metadataKey: string, target: any, targetKey: string | symbol): any;
 }
 
-export interface IJsonSetMemberOptions
+export interface IJsonSetMemberOptions extends OptionsBase
 {
     /** When set, indicates that the member must be present when deserializing. */
     isRequired?: boolean;
@@ -40,14 +39,14 @@ export function jsonSetMember(elementConstructor: Function, options: IJsonSetMem
 
         if (typeof elementConstructor !== "function")
         {
-            Helpers.logError(`${decoratorName}: could not resolve constructor of set elements at runtime.`);
+            logError(`${decoratorName}: could not resolve constructor of set elements at runtime.`);
             return;
         }
 
         // If ReflectDecorators is available, use it to check whether 'jsonSetMember' has been used on a set. Warn if not.
-        if (Helpers.isReflectMetadataSupported && Reflect.getMetadata("design:type", target, propKey) !== Set)
+        if (isReflectMetadataSupported && Reflect.getMetadata("design:type", target, propKey) !== Set)
         {
-            Helpers.logError(`${decoratorName}: property is not a Set.`);
+            logError(`${decoratorName}: property is not a Set.`);
             return;
         }
 
@@ -56,6 +55,7 @@ export function jsonSetMember(elementConstructor: Function, options: IJsonSetMem
             elementType: [elementConstructor],
             emitDefaultValue: options.emitDefaultValue,
             isRequired: options.isRequired,
+            options: extractOptionBase(options),
             key: propKey.toString(),
             name: options.name || propKey.toString(),
             deserializer: options.deserializer,
