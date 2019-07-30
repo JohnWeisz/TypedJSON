@@ -136,6 +136,13 @@ This is not needed for `@jsonArrayMember`, `@jsonMapMember`, and `@jsonSetMember
 
 If you want to use `JSON.stringify` to serialize the objects using TypedJSON you can annotate a class with `@toJson` and it will create `toJSON` function on the class prototype. By default it will throw an error if such function is already defined, but you can override this behavior by setting `overwrite` to `true` in the decorator's options.
 
+### Options
+
+#### preserveNull
+
+By default TypedJSON ignores the properties that are set to null. If you want to override this behavior you can set this option to `true`.<br/>
+You can set it globally or on TypedJSON instance to have everything preserve null values or on class level or member level to only affect the respective thing.
+
 ## Limitations
 
 ### Type-definitions

@@ -5,8 +5,8 @@
  */
 export interface OptionsBase {
     /**
-     * Whether to preserve null in the JSON output. When false
-     * it will not emit the property if its value is null.
+     * Whether to preserve null in the JSON output. When false it
+     * will not emit nor store the property if its value is null.
      * Default: false.
      */
     preserveNull?: boolean;

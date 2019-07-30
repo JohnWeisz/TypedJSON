@@ -71,7 +71,7 @@ describe('preserveNull', function () {
         expect(obj).toEqual(input);
     });
 
-    it('should override when more specific', function() {
+    it('should override parser when more specific', function() {
         @jsonObject
         class Person {
             @jsonMember({preserveNull: false})
@@ -84,6 +84,22 @@ describe('preserveNull', function () {
         expect(json).toEqual({});
 
         const obj = TypedJSON.parse({name: null}, Person, {preserveNull: true});
+        expect(obj).toEqual(new Person);
+    });
+
+    it('should override class when more specific', function() {
+        @jsonObject({preserveNull: true})
+        class Person {
+            @jsonMember({preserveNull: false})
+            name?: string|null;
+        }
+
+        const input = new Person;
+        input.name = null;
+        const json = TypedJSON.toPlainJson(input, Person);
+        expect(json).toEqual({});
+
+        const obj = TypedJSON.parse({name: null}, Person);
         expect(obj).toEqual(new Person);
     });
 
