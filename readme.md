@@ -14,7 +14,7 @@ TypedJSON is available from npm, both for browser (e.g. using webpack) and NodeJ
 npm install typedjson
 ```
 
- - _Optional: install [reflect-metadata](https://github.com/rbuckton/reflect-metadata) for additional type-safety and reduced syntax requirements. `reflect-metadata` must be available globally to work._
+ - _Optional: install [reflect-metadata](https://github.com/rbuckton/reflect-metadata) for additional type-safety and reduced syntax requirements. `reflect-metadata` must be available globally to work. This can usually be done with `import 'reflect-metadata';` in your main bundle/entrypoint/index.js._
 
 ## How to use
 
@@ -26,7 +26,10 @@ TypeScript needs to run with the `experimentalDecorators` and `emitDecoratorMeta
 
 The following example demonstrates how to annotate a basic, non-nested class for serialization, and how to serialize to JSON and back:
 
-```ts
+```typescript
+import 'reflect-metadata';
+import { jsonObject, jsonMember, TypedJSON } from 'typedjson';
+
 @jsonObject
 class MyDataClass
 {
@@ -42,20 +45,20 @@ _Note: this example assumes you are using ReflectDecorators. Without it, `@jsonM
 
 To convert between your typed (and annotated) class instance and JSON, create an instance of `TypedJSON`, with the class as its argument. The class argument specifies the root type of the object-tree represented by the emitted/parsed JSON:
 
-```ts
-let serializer = new TypedJSON(MyDataClass);
-let object = new MyDataClass();
+```typescript
+const serializer = new TypedJSON(MyDataClass);
+const object = new MyDataClass();
 
-let json = serializer.stringify(object);
-let object2 = serializer.parse(json);
+const json = serializer.stringify(object);
+const object2 = serializer.parse(json);
 
 object2 instanceof MyDataClass; // true
 ```
 
 Since TypedJSON does not require special syntax to be present in the source JSON (except when using polymorphic objects), any raw JSON conforming to your object schema can work, so it's not required that the JSON comes from TypedJSON, it can come from anywhere:
 
-```ts
-let object3 = serializer.parse('{ "prop1": 1, "prop2": "2" }');
+```typescript
+const object3 = serializer.parse('{ "prop1": 1, "prop2": "2" }');
 
 object3 instanceof MyDataClass; // true
 ```
@@ -64,7 +67,10 @@ object3 instanceof MyDataClass; // true
 
 Properties which are of type Array, Set, or Map require the special `@jsonArrayMember`, `@jsonSetMember` and `@jsonMapMember` property decorators (respectively), which require a type argument for members (and keys in case of Maps). For primitive types, the type arguments are the corresponding wrapper types, which the following example showcases. Everything else works the same way:
 
-```ts
+```typescript
+import 'reflect-metadata';
+import { jsonObject, jsonArrayMember, jsonSetMember, jsonMapMember, TypedJSON } from 'typedjson';
+
 @jsonObject
 class MyDataClass
 {
@@ -87,7 +93,10 @@ Multidimensional arrays require additional configuration, see Limitations below.
 
 TypedJSON works through your objects recursively, and can consume massively complex, nested object trees (except for some limitations with uncommon, untyped structures, see below in the limitations section).
 
-```ts
+```typescript
+import 'reflect-metadata';
+import { jsonObject, jsonMember, jsonArrayMember, jsonMapMember, TypedJSON } from 'typedjson';
+
 @jsonObject
 class MySecondDataClass
 {
@@ -117,17 +126,20 @@ class MyDataClass
 Without ReflectDecorators, `@jsonMember` requires an additional type argument, because TypeScript cannot infer it automatically:
 
 ```diff
-@jsonObject
-class MyDataClass
-{
--   @jsonMember
-+   @jsonMember({ constructor: Number })
-    public prop1: number;
+- import 'reflect-metadata';
+  import { jsonObject, jsonMember, TypedJSON } from 'typedjson';
 
--   @jsonMember
-+   @jsonMember({ constructor: MySecondDataClass })
-    public prop2: MySecondDataClass;
-}
+  @jsonObject
+  class MyDataClass
+  {
+-     @jsonMember
++     @jsonMember({ constructor: Number })
+      public prop1: number;
+
+-     @jsonMember
++     @jsonMember({ constructor: MySecondDataClass })
+      public prop2: MySecondDataClass;
+  }
 ```
 
 This is not needed for `@jsonArrayMember`, `@jsonMapMember`, and `@jsonSetMember`, as those types already know the property type itself, as well as element/key types (although using ReflectDecorators adds runtime-type checking to these decorators, to help you spot errors).
@@ -149,7 +161,10 @@ You can set it globally or on TypedJSON instance to have everything preserve nul
 
 TypedJSON is primarily for use-cases where object-trees are defined using instantiatible classes, and thus only supports a subset of all type-definitions possible in TypeScript. Interfaces and inline type definitions, for example, are not supported, and the following is not going to work so well:
 
-```ts
+```typescript
+import 'reflect-metadata';
+import { jsonObject, jsonMember, TypedJSON } from 'typedjson';
+
 @jsonObject
 class MyDataClass
 {
@@ -164,7 +179,10 @@ Instead, prefer creating the necessary class-structure for your object tree.
 
 TypedJSON only supports multi-dimensional arrays of a single type (can be polymorphic), and requires specifying the array dimension:
 
-```ts
+```typescript
+import 'reflect-metadata';
+import { jsonObject, jsonArrayMember, TypedJSON } from 'typedjson';
+
 @jsonObject
 class MyDataClass
 {
@@ -181,12 +199,17 @@ class MyDataClass
 When referencing a class in a nested object structure, the referenced class must be declared in advance, e.g.:
 
 ```typescript
+import 'reflect-metadata';
+import { jsonObject, jsonMember, jsonArrayMember, TypedJSON } from 'typedjson';
+
+@jsonObject
 class Employee
 {
     @jsonMember
     public name: string;
 }
 
+@jsonObject
 class Company
 {
     @jsonArrayMember(Employee)
@@ -199,13 +222,16 @@ class Company
 If using ReflectDecorators to infer the constructor (type) of properties, it's always required to manually specify the property type:
 
 ```diff
-@jsonObject
-class MyDataClass
-{
-    @jsonObject
--   public firstName = "john";
-+   public firstName: string = "john";
-}
+  import 'reflect-metadata';
+  import { jsonObject, jsonMember, TypedJSON } from 'typedjson';
+
+  @jsonObject
+  class MyDataClass
+  {
+      @jsonMember
+-     public firstName = "john";
++     public firstName: string = "john";
+  }
 ```
 
 ### No support for wrapped primitives
