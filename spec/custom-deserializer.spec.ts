@@ -1,5 +1,4 @@
-﻿import { jsonObject, jsonMember, TypedJSON } from "../js/typedjson";
-import { jsonArrayMember } from '../src/typedjson/json-array-member';
+﻿import { jsonObject, jsonMember, jsonArrayMember, TypedJSON } from "../js/typedjson";
 
 describe('custom member deserializer', function () {
 
