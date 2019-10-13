@@ -141,8 +141,8 @@ export class TypedJSON<T>
 
     public static toPlainSet<T>(
         object: Set<T>, elementType: Constructor<T>, settings?: ITypedJSONSettings,
-    ): string {
-        return new TypedJSON(elementType, settings).stringifyAsSet(object);
+    ): Object[]|undefined {
+        return new TypedJSON(elementType, settings).toPlainSet(object);
     }
 
     public static toPlainMap<K, V>(
@@ -150,8 +150,8 @@ export class TypedJSON<T>
         keyCtor: Constructor<K>,
         valueCtor: Constructor<V>,
         settings?: ITypedJSONSettings,
-    ): string {
-        return new TypedJSON(valueCtor, settings).stringifyAsMap(object, keyCtor);
+    ): { key: any, value: any }[]|undefined {
+        return new TypedJSON(valueCtor, settings).toPlainMap(object, keyCtor);
     }
 
     public static stringify<T>(

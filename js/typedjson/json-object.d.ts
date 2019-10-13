@@ -13,6 +13,11 @@ export interface IJsonObjectOptionsBase extends OptionsBase {
      */
     onDeserialized?: string;
     /**
+     * The name of a static or instance method to call before the serialization
+     * of the typed object is started.
+     */
+    beforeSerialization?: string;
+    /**
      * The name used to differentiate between different polymorphic types.
      */
     name?: string;

@@ -47,8 +47,11 @@ export declare class TypedJSON<T> {
     static toPlainArray<T>(object: T[][][][], elementType: Constructor<T>, dimensions: 4, settings?: ITypedJSONSettings): Object[][][][];
     static toPlainArray<T>(object: T[][][][][], elementType: Constructor<T>, dimensions: 5, settings?: ITypedJSONSettings): Object[][][][][];
     static toPlainArray<T>(object: any[], elementType: Constructor<T>, dimensions: number, settings?: ITypedJSONSettings): any[];
-    static toPlainSet<T>(object: Set<T>, elementType: Constructor<T>, settings?: ITypedJSONSettings): string;
-    static toPlainMap<K, V>(object: Map<K, V>, keyCtor: Constructor<K>, valueCtor: Constructor<V>, settings?: ITypedJSONSettings): string;
+    static toPlainSet<T>(object: Set<T>, elementType: Constructor<T>, settings?: ITypedJSONSettings): Object[] | undefined;
+    static toPlainMap<K, V>(object: Map<K, V>, keyCtor: Constructor<K>, valueCtor: Constructor<V>, settings?: ITypedJSONSettings): {
+        key: any;
+        value: any;
+    }[] | undefined;
     static stringify<T>(object: T, rootType: Constructor<T>, settings?: ITypedJSONSettings): string;
     static stringifyAsArray<T>(object: T[], elementType: Constructor<T>, dimensions?: 1, settings?: ITypedJSONSettings): string;
     static stringifyAsArray<T>(object: T[][], elementType: Constructor<T>, dimensions: 2, settings?: ITypedJSONSettings): string;

@@ -58,6 +58,7 @@ export declare class JsonObjectMetadata {
     name?: string;
     options?: OptionsBase;
     onDeserializedMethodName?: string;
+    beforeSerializationMethodName?: string;
     initializerCallback?: (sourceObject: Object, rawSourceObject: Object) => Object;
 }
 export declare function injectMetadataInformation(constructor: IndexedObject, propKey: string | symbol, metadata: JsonMemberMetadata): void;

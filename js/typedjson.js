@@ -1,4 +1,4 @@
-// [typedjson]  Version: 1.4.0 - 2019-07-31  
+// [typedjson]  Version: 1.4.0 - 2019-10-13  
  (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -515,6 +515,19 @@ var serializer_Serializer = /** @class */ (function () {
             sourceTypeMetadata = metadata_JsonObjectMetadata.getFromConstructor(typeInfo.selfType);
         }
         if (sourceTypeMetadata) {
+            if (sourceTypeMetadata.beforeSerializationMethodName) {
+                // check for member first
+                if (typeof sourceObject[sourceTypeMetadata.beforeSerializationMethodName] === "function") {
+                    sourceObject[sourceTypeMetadata.beforeSerializationMethodName]();
+                }
+                // check for static
+                else if (typeof sourceObject.constructor[sourceTypeMetadata.beforeSerializationMethodName] === "function") {
+                    sourceObject.constructor[sourceTypeMetadata.beforeSerializationMethodName]();
+                }
+                else {
+                    this._errorHandler(new TypeError("beforeSerialization callback '" + nameof(sourceTypeMetadata.classType) + "." + sourceTypeMetadata.beforeSerializationMethodName + "' is not a method."));
+                }
+            }
             var sourceMeta_1 = sourceTypeMetadata;
             // Strong-typed serialization available.
             // We'll serialize by members that have been marked with @jsonMember (including array/set/map members),
@@ -1196,10 +1209,10 @@ var parser_TypedJSON = /** @class */ (function () {
         return new TypedJSON(elementType, settings).toPlainArray(object, dimensions);
     };
     TypedJSON.toPlainSet = function (object, elementType, settings) {
-        return new TypedJSON(elementType, settings).stringifyAsSet(object);
+        return new TypedJSON(elementType, settings).toPlainSet(object);
     };
     TypedJSON.toPlainMap = function (object, keyCtor, valueCtor, settings) {
-        return new TypedJSON(valueCtor, settings).stringifyAsMap(object, keyCtor);
+        return new TypedJSON(valueCtor, settings).toPlainMap(object, keyCtor);
     };
     TypedJSON.stringify = function (object, rootType, settings) {
         return new TypedJSON(rootType, settings).stringify(object);
@@ -1464,6 +1477,7 @@ function jsonObject(optionsOrTarget) {
         // Fill JsonObjectMetadata.
         objectMetadata.isExplicitlyMarked = true;
         objectMetadata.onDeserializedMethodName = options.onDeserialized;
+        objectMetadata.beforeSerializationMethodName = options.beforeSerialization;
         // T extend Object so it is fine
         objectMetadata.initializerCallback = options.initializer;
         if (options.name) {

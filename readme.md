@@ -148,6 +148,12 @@ This is not needed for `@jsonArrayMember`, `@jsonMapMember`, and `@jsonSetMember
 
 If you want to use `JSON.stringify` to serialize the objects using TypedJSON you can annotate a class with `@toJson` and it will create `toJSON` function on the class prototype. By default it will throw an error if such function is already defined, but you can override this behavior by setting `overwrite` to `true` in the decorator's options.
 
+### Using js objects instead of strings
+
+Sometimes instead of serializing your data to a string you might want to get a normal javascript object. This can be especially useful when working with a framework like angular which does the stringification for you or when you want to stringify using a different library then a builtin `JSON.stringify`.
+
+To do that TypedJSON exposes `toPlainObject` and friends. The return value is the one that is normally passed to stringification. For deserialization all `parse` methods apart from strings also accept javascript objects.
+
 ### Options
 
 #### preserveNull
