@@ -161,6 +161,10 @@ To do that TypedJSON exposes `toPlainObject` and friends. The return value is th
 By default TypedJSON ignores the properties that are set to null. If you want to override this behavior you can set this option to `true`.<br/>
 You can set it globally or on TypedJSON instance to have everything preserve null values or on class level or member level to only affect the respective thing.
 
+#### onDeserialized and beforeSerialization
+
+On `@jsonObject` you can specify name of methods to be called before serializing the object or after it was deserialized. This method can be a static method or instance member. In case you have static and member with the same name - the member method is preferred.
+
 ## Limitations
 
 ### Type-definitions
