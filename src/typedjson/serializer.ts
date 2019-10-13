@@ -179,6 +179,26 @@ export class Serializer
 
         if (sourceTypeMetadata)
         {
+
+            if (sourceTypeMetadata.beforeSerializationMethodName) {
+                // check for member first
+                if (typeof (sourceObject as any)[sourceTypeMetadata.beforeSerializationMethodName] === "function")
+                {
+                    (sourceObject as any)[sourceTypeMetadata.beforeSerializationMethodName]();
+                }
+                // check for static
+                else if (typeof (sourceObject.constructor as any)[sourceTypeMetadata.beforeSerializationMethodName] === "function")
+                {
+                    (sourceObject.constructor as any)[sourceTypeMetadata.beforeSerializationMethodName]();
+                }
+                else 
+                {
+                    this._errorHandler(new TypeError(
+                        `beforeSerialization callback '${nameof(sourceTypeMetadata.classType)}.${sourceTypeMetadata.beforeSerializationMethodName}' is not a method.`
+                    ))
+                }
+            }
+
             const sourceMeta = sourceTypeMetadata;
             // Strong-typed serialization available.
             // We'll serialize by members that have been marked with @jsonMember (including array/set/map members),

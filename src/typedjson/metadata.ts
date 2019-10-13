@@ -133,6 +133,8 @@ export class JsonObjectMetadata
 
     public onDeserializedMethodName?: string;
 
+    public beforeSerializationMethodName?: string;
+
     public initializerCallback?: (sourceObject: Object, rawSourceObject: Object) => Object;
 }
 

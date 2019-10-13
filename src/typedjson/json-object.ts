@@ -20,6 +20,12 @@ export interface IJsonObjectOptionsBase extends OptionsBase
     onDeserialized?: string;
 
     /**
+     * The name of a static or instance method to call before the serialization
+     * of the typed object is started.
+     */
+    beforeSerialization?: string;
+
+    /**
      * The name used to differentiate between different polymorphic types.
      */
     name?: string;
@@ -119,6 +125,8 @@ export function jsonObject<T extends Object>(optionsOrTarget?: IJsonObjectOption
         // Fill JsonObjectMetadata.
         objectMetadata.isExplicitlyMarked = true;
         objectMetadata.onDeserializedMethodName = options.onDeserialized;
+        objectMetadata.beforeSerializationMethodName = options.beforeSerialization;
+        
         // T extend Object so it is fine
         objectMetadata.initializerCallback = options.initializer as any;
         if (options.name)
