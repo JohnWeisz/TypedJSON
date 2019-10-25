@@ -250,7 +250,7 @@ TypedJSON requires type-detection and considers wrapped primitives as their corr
 
 ## Angular 8
 
-With angular 8 there were changes to the default config of tsc and some options that are required are missing (https://github.com/angular/angular/issues/31495). To use TypedJSON you need to modify you tsconfig.json to include both `experimentalDecorators` and `emitDecoratorMetadata`.
+With angular 8 there were changes to the default config of tsc and some options that are required are missing (https://github.com/angular/angular/issues/31495). To use TypedJSON you need to modify your tsconfig.json to include both `experimentalDecorators` and `emitDecoratorMetadata`.
 
 With Angular 8 you also do not need to install `reflect-metadata` as it is already included in `core-js`. However, you still need to instruct ng cli to include it in the build. Add `import 'core-js/proposals/reflect-metadata';` to you polyfills.ts.
 
