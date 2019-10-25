@@ -248,6 +248,14 @@ If using ReflectDecorators to infer the constructor (type) of properties, it's a
 
 TypedJSON requires type-detection and considers wrapped primitives as their corresponding primitive type. For example, `Number` is always treated as `number` (note the case-difference), and no distinction can be made.
 
+## Angular 8
+
+With angular 8 there were changes to the default config of tsc and some options that are required are missing (https://github.com/angular/angular/issues/31495). To use TypedJSON you need to modify you tsconfig.json to include both `experimentalDecorators` and `emitDecoratorMetadata`.
+
+With Angular 8 you also do not need to install `reflect-metadata` as it is already included in `core-js`. However, you still need to instruct ng cli to include it in the build. Add `import 'core-js/proposals/reflect-metadata';` to you polyfills.ts.
+
+You can see all the necessary changes along with an example project here: https://github.com/Neos3452/test-typed-json/commit/5ce6f6bfd3b35dbb3fcfe14c28f0691036969934
+
 ## License
 
 TypedJSON is licensed under the MIT License.
