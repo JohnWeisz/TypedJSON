@@ -168,3 +168,40 @@ describe('multidimensional arrays', function () {
         expect(result).toBe(JSON.stringify(createTestArray(false)));
     });
 });
+
+describe('array of raw objects', function () {
+    @jsonObject
+    class Translations {
+        @jsonArrayMember(Object)
+        localization: any[];
+    }
+
+    function localization() {
+        return [
+            {
+                "language_tag": "en_us",
+                "/actions/main": "My Game Actions",
+                "/actions/driving": "Driving",
+            },
+            {
+                "language_tag": "fr",
+                "/actions/main": "Mes actions de jeux",
+                "/actions/driving": "Conduire",
+            }
+        ];
+    }
+
+    it('should deserialize as is', function () {
+        const translations = TypedJSON.parse({"localization" : localization()}, Translations);
+        expect(translations).toBeDefined();
+        expect(translations instanceof Translations).toBeTruthy();
+        expect(translations.localization).toEqual(localization());
+    });
+
+    it('should serialize as is', function () {
+        const translations = new Translations();
+        translations.localization = localization();
+        const json = TypedJSON.toPlainJson(translations, Translations);
+        expect(json).toEqual({localization: localization()});
+    });
+});
