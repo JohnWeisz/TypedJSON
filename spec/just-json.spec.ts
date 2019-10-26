@@ -1,4 +1,4 @@
-﻿import { jsonArrayMember, jsonMember, jsonObject, TypedJSON } from "../js/typedjson";
+﻿import { jsonArrayMember, jsonMember, jsonObject, TypedJSON } from "../src/typedjson";
 
 describe('json (without automatic stringify)', function () {
     describe('string', function () {

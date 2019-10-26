@@ -1,4 +1,4 @@
-﻿import { jsonObject, jsonMember, TypedJSON, jsonArrayMember } from "../js/typedjson";
+﻿import { jsonObject, jsonMember, TypedJSON, jsonArrayMember } from "../src/typedjson";
 import { Everything } from "./utils/everything";
 
 describe('basic serialization of', function () {

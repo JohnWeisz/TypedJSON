@@ -1,4 +1,4 @@
-import {jsonObject, jsonMember, jsonArrayMember, TypedJSON} from "../js/typedjson";
+import {jsonObject, jsonMember, jsonArrayMember, TypedJSON} from "../src/typedjson";
 import { Everything, IEverything } from "./utils/everything";
 
 describe('array of objects', function () {

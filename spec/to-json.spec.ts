@@ -1,4 +1,4 @@
-import {jsonObject, jsonMember, toJson} from "../js/typedjson";
+import {jsonObject, jsonMember, toJson} from "../src/typedjson";
 
 describe('toJson decorator', function () {
     it('should work with JSON.stringify', function () {

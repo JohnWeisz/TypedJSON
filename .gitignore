@@ -8,6 +8,7 @@ obj
 Properties
 temp
 .idea
+.nyc_output
 *.cs
 *.csproj
 *.csproj.user

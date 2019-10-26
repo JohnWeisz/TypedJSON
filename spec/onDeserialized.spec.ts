@@ -1,4 +1,4 @@
-﻿import { jsonObject, jsonMember, TypedJSON } from "../js/typedjson";
+﻿import { jsonObject, jsonMember, TypedJSON } from "../src/typedjson";
 
 describe('onDeserialized', function () {
 

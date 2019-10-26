@@ -1,4 +1,4 @@
-﻿import { jsonObject, jsonMember, TypedJSON, jsonArrayMember, jsonMapMember } from "../js/typedjson";
+﻿import { jsonObject, jsonMember, TypedJSON, jsonArrayMember, jsonMapMember } from "../src/typedjson";
 
 describe('preserveNull', function () {
 
