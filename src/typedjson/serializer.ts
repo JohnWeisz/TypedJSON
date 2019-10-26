@@ -208,34 +208,34 @@ export class Serializer
 
             const classOptions = mergeOptions(this.options, sourceMeta.options);
 
-            sourceMeta.dataMembers.forEach((memberMetadata) =>
+            sourceMeta.dataMembers.forEach((objMemberMetadata) =>
             {
-                const memberOptions = mergeOptions(classOptions, memberMetadata.options);
+                const objMemberOptions = mergeOptions(classOptions, objMemberMetadata.options);
                 let serialized;
-                if (memberMetadata.serializer) {
-                    serialized = memberMetadata.serializer(sourceObject[memberMetadata.key]);
-                } else if (memberMetadata.ctor) {
+                if (objMemberMetadata.serializer) {
+                    serialized = objMemberMetadata.serializer(sourceObject[objMemberMetadata.key]);
+                } else if (objMemberMetadata.ctor) {
                     serialized = this.convertSingleValue(
-                        sourceObject[memberMetadata.key],
+                        sourceObject[objMemberMetadata.key],
                         {
-                            selfType: memberMetadata.ctor,
-                            elementTypes: memberMetadata.elementType,
-                            keyType: memberMetadata.keyType,
+                            selfType: objMemberMetadata.ctor,
+                            elementTypes: objMemberMetadata.elementType,
+                            keyType: objMemberMetadata.keyType,
                         },
-                        `${nameof(sourceMeta.classType)}.${memberMetadata.key}`,
-                        memberOptions,
+                        `${nameof(sourceMeta.classType)}.${objMemberMetadata.key}`,
+                        objMemberOptions,
                     );
                 } else {
                     throw new TypeError(
-                        `Could not serialize ${memberMetadata.name}, there is`
+                        `Could not serialize ${objMemberMetadata.name}, there is`
                         + ` no constructor nor serialization function to use.`,
                     );
                 }
 
                 if (isValueDefined(serialized)
-                    || (this.retrievePreserveNull(memberOptions) && serialized === null)
+                    || (this.retrievePreserveNull(objMemberOptions) && serialized === null)
                 ) {
-                    targetObject[memberMetadata.name] = serialized;
+                    targetObject[objMemberMetadata.name] = serialized;
                 }
             });
         }

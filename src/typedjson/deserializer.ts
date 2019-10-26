@@ -112,42 +112,42 @@ export class Deserializer<T>
             const classOptions = mergeOptions(this.options, sourceMetadata.options);
 
             // Deserialize by expected properties.
-            sourceMetadata.dataMembers.forEach((memberMetadata, propKey) =>
+            sourceMetadata.dataMembers.forEach((objMemberMetadata, propKey) =>
             {
-                const memberValue = sourceObject[propKey];
-                const memberNameForDebug = `${nameof(sourceMetadata.classType)}.${propKey}`;
-                const memberOptions = mergeOptions(classOptions, memberMetadata.options);
+                const objMemberValue = sourceObject[propKey];
+                const objMemberDebugName = `${nameof(sourceMetadata.classType)}.${propKey}`;
+                const objMemberOptions = mergeOptions(classOptions, objMemberMetadata.options);
 
                 let revivedValue;
-                if (memberMetadata.deserializer) {
-                    revivedValue = memberMetadata.deserializer(memberValue);
-                } else if (memberMetadata.ctor) {
+                if (objMemberMetadata.deserializer) {
+                    revivedValue = objMemberMetadata.deserializer(objMemberValue);
+                } else if (objMemberMetadata.ctor) {
                     revivedValue = this.convertSingleValue(
-                        memberValue,
+                        objMemberValue,
                         {
-                            selfConstructor: memberMetadata.ctor,
-                            elementConstructor: memberMetadata.elementType,
-                            keyConstructor: memberMetadata.keyType,
+                            selfConstructor: objMemberMetadata.ctor,
+                            elementConstructor: objMemberMetadata.elementType,
+                            keyConstructor: objMemberMetadata.keyType,
                             knownTypes: knownTypeConstructors
                         },
-                        memberNameForDebug,
-                        memberOptions,
+                        objMemberDebugName,
+                        objMemberOptions,
                     );
                 } else {
                     throw new TypeError(
-                        `Cannot deserialize ${memberNameForDebug} thers is`
-                        + ` no constructor nor deserlization function to use.`,
+                        `Cannot deserialize ${objMemberDebugName} there is`
+                        + ` no constructor nor deserialization function to use.`,
                     );
                 }
 
                 if (isValueDefined(revivedValue)
-                    || (this.retrievePreserveNull(memberOptions) && revivedValue === null)
+                    || (this.retrievePreserveNull(objMemberOptions) && revivedValue === null)
                 ) {
-                    sourceObjectWithDeserializedProperties[memberMetadata.key] = revivedValue;
+                    sourceObjectWithDeserializedProperties[objMemberMetadata.key] = revivedValue;
                 }
-                else if (memberMetadata.isRequired)
+                else if (objMemberMetadata.isRequired)
                 {
-                    this._errorHandler(new TypeError(`Missing required member '${memberNameForDebug}'.`));
+                    this._errorHandler(new TypeError(`Missing required member '${objMemberDebugName}'.`));
                 }
             });
 
