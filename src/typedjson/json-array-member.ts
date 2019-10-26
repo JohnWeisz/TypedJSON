@@ -1,6 +1,6 @@
 ﻿import { nameof, logError, isReflectMetadataSupported } from "./helpers";
 import { injectMetadataInformation } from "./metadata";
-import { extractOptionBase, getDefaultOptionOf, OptionsBase } from "./options-base";
+import { extractOptionBase, OptionsBase } from "./options-base";
 
 declare abstract class Reflect
 {

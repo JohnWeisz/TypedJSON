@@ -195,7 +195,7 @@ export class Serializer
                 {
                     this._errorHandler(new TypeError(
                         `beforeSerialization callback '${nameof(sourceTypeMetadata.classType)}.${sourceTypeMetadata.beforeSerializationMethodName}' is not a method.`
-                    ))
+                    ));
                 }
             }
 

@@ -1,4 +1,4 @@
-import { Constructor, IndexedObject } from "./typedjson/types";
+import { Constructor } from "./typedjson/types";
 import { Serializer } from "./typedjson/serializer";
 import { Deserializer } from "./typedjson/deserializer";
 import { JsonObjectMetadata } from "./typedjson/metadata";
