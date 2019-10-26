@@ -1,6 +1,9 @@
 import { Constructor } from "./typedjson/types";
+import { TypeHintEmitter } from "./typedjson/serializer";
+import { TypeResolver } from "./typedjson/deserializer";
 import { OptionsBase } from "./typedjson/options-base";
 export declare type JsonTypes = Object | boolean | string | number | null | undefined;
+export { TypeResolver, TypeHintEmitter };
 export interface ITypedJSONSettings extends OptionsBase {
     /**
      * Sets the handler callback to invoke on errors during serializing and deserializing.
@@ -15,14 +18,14 @@ export interface ITypedJSONSettings extends OptionsBase {
      * and look it up in 'knownTypes'.
      * The constructor of the sub-type should be returned.
      */
-    typeResolver?: (sourceObject: Object, knownTypes: Map<string, Function>) => Function;
+    typeResolver?: TypeResolver;
     nameResolver?: (ctor: Function) => string;
     /**
      * Sets a callback that writes type-hints to serialized objects.
      * The default behavior is to write the type-name to the '__type' property, if a derived type
      * is present in place of a base type.
      */
-    typeHintEmitter?: (targetObject: Object, sourceObject: Object, expectedSourceType: Function) => void;
+    typeHintEmitter?: TypeHintEmitter;
     /**
      * Sets the amount of indentation to use in produced JSON strings.
      * Default value is 0, or no indentation.

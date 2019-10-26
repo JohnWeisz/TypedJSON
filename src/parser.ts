@@ -1,11 +1,12 @@
 import { Constructor } from "./typedjson/types";
-import { Serializer } from "./typedjson/serializer";
-import { Deserializer } from "./typedjson/deserializer";
+import { Serializer, TypeHintEmitter } from "./typedjson/serializer";
+import { Deserializer, TypeResolver } from "./typedjson/deserializer";
 import { JsonObjectMetadata } from "./typedjson/metadata";
 import { logError, logWarning, nameof, parseToJSObject } from "./typedjson/helpers";
 import { extractOptionBase, OptionsBase } from "./typedjson/options-base";
 
 export type JsonTypes = Object|boolean|string|number|null|undefined;
+export { TypeResolver, TypeHintEmitter };
 
 export interface ITypedJSONSettings extends OptionsBase
 {
@@ -23,7 +24,7 @@ export interface ITypedJSONSettings extends OptionsBase
      * and look it up in 'knownTypes'.
      * The constructor of the sub-type should be returned.
      */
-    typeResolver?: (sourceObject: Object, knownTypes: Map<string, Function>) => Function;
+    typeResolver?: TypeResolver;
 
     nameResolver?: (ctor: Function) => string;
 
@@ -32,8 +33,7 @@ export interface ITypedJSONSettings extends OptionsBase
      * The default behavior is to write the type-name to the '__type' property, if a derived type
      * is present in place of a base type.
      */
-    typeHintEmitter?:
-        (targetObject: Object, sourceObject: Object, expectedSourceType: Function) => void;
+    typeHintEmitter?: TypeHintEmitter;
 
     /**
      * Sets the amount of indentation to use in produced JSON strings.

@@ -1,4 +1,5 @@
 import { IndexedObject } from "./types";
+import { JsonObjectMetadata } from "./metadata";
 import { OptionsBase } from "./options-base";
 export interface IScopeTypeInfo {
     selfType: Function;
@@ -18,11 +19,14 @@ export interface IScopeMapTypeInfo extends IScopeTypeInfo {
     elementTypes: [Function];
     keyType: Function;
 }
+export declare type TypeHintEmitter = (targetObject: IndexedObject, sourceObject: IndexedObject, expectedSourceType: Function, sourceTypeMetadata?: JsonObjectMetadata) => void;
 /**
- * Utility class, converts a typed object tree (i.e. a tree of class instances, arrays of class instances, and so on) to an untyped javascript object (also
- * called "simple javascript object"), and emits any necessary type hints in the process (for polymorphism).
+ * Utility class, converts a typed object tree (i.e. a tree of class instances, arrays of class
+ * instances, and so on) to an untyped javascript object (also called "simple javascript object"),
+ * and emits any necessary type hints in the process (for polymorphism).
  *
- * The converted object tree is what will be given to `JSON.stringify` to convert to string as the last step, the serialization is basically like:
+ * The converted object tree is what will be given to `JSON.stringify` to convert to string as the
+ * last step, the serialization is basically like:
  *
  * (1) typed object-tree -> (2) simple JS object-tree -> (3) JSON-string
  */
@@ -30,8 +34,7 @@ export declare class Serializer {
     options?: OptionsBase;
     private _typeHintEmitter;
     private _errorHandler;
-    constructor();
-    setTypeHintEmitter(typeEmitterCallback: (targetObject: Object, sourceObject: Object, expectedSourceType: Function) => void): void;
+    setTypeHintEmitter(typeEmitterCallback: TypeHintEmitter): void;
     setErrorHandler(errorHandlerCallback: (error: Error) => void): void;
     /**
      * Convert a value of any supported serializable type.

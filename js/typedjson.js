@@ -421,29 +421,30 @@ function isSetTypeInfo(typeInfo) {
 function isMapTypeInfo(typeInfo) {
     return typeInfo.selfType === Map;
 }
+function defaultTypeEmitter(targetObject, sourceObject, expectedSourceType, sourceTypeMetadata) {
+    // By default, we put a "__type" property on the output object if the actual object is not the
+    // same as the expected one, so that deserialization will know what to deserialize into (given
+    // the required known-types are defined, and the object is a valid subtype of the expected type).
+    if (sourceObject.constructor !== expectedSourceType) {
+        targetObject.__type = sourceTypeMetadata && sourceTypeMetadata.name
+            ? sourceTypeMetadata.name
+            : nameof(sourceObject.constructor);
+    }
+}
 /**
- * Utility class, converts a typed object tree (i.e. a tree of class instances, arrays of class instances, and so on) to an untyped javascript object (also
- * called "simple javascript object"), and emits any necessary type hints in the process (for polymorphism).
+ * Utility class, converts a typed object tree (i.e. a tree of class instances, arrays of class
+ * instances, and so on) to an untyped javascript object (also called "simple javascript object"),
+ * and emits any necessary type hints in the process (for polymorphism).
  *
- * The converted object tree is what will be given to `JSON.stringify` to convert to string as the last step, the serialization is basically like:
+ * The converted object tree is what will be given to `JSON.stringify` to convert to string as the
+ * last step, the serialization is basically like:
  *
  * (1) typed object-tree -> (2) simple JS object-tree -> (3) JSON-string
  */
 var serializer_Serializer = /** @class */ (function () {
     function Serializer() {
-        this._typeHintEmitter = function (targetObject, sourceObject, expectedSourceType, sourceTypeMetadata) {
-            // By default, we put a "__type" property on the output object if the actual object is not the same as the expected one, so that deserialization
-            // will know what to deserialize into (given the required known-types are defined, and the object is a valid subtype of the expected type).
-            if (sourceObject.constructor !== expectedSourceType) {
-                var name_1 = sourceTypeMetadata && sourceTypeMetadata.name
-                    ? sourceTypeMetadata.name
-                    : nameof(sourceObject.constructor);
-                // TODO: Perhaps this can work correctly without string-literal access?
-                // tslint:disable-next-line:no-string-literal
-                targetObject["__type"] = name_1;
-            }
-        };
-        this._errorHandler = function (error) { return logError(error); };
+        this._typeHintEmitter = defaultTypeEmitter;
+        this._errorHandler = logError;
     }
     Serializer.prototype.setTypeHintEmitter = function (typeEmitterCallback) {
         if (typeof typeEmitterCallback !== "function") {
@@ -535,26 +536,26 @@ var serializer_Serializer = /** @class */ (function () {
             // which is what will be put into 'JSON.stringify' finally.
             targetObject = {};
             var classOptions_1 = mergeOptions(this.options, sourceMeta_1.options);
-            sourceMeta_1.dataMembers.forEach(function (memberMetadata) {
-                var memberOptions = mergeOptions(classOptions_1, memberMetadata.options);
+            sourceMeta_1.dataMembers.forEach(function (objMemberMetadata) {
+                var objMemberOptions = mergeOptions(classOptions_1, objMemberMetadata.options);
                 var serialized;
-                if (memberMetadata.serializer) {
-                    serialized = memberMetadata.serializer(sourceObject[memberMetadata.key]);
+                if (objMemberMetadata.serializer) {
+                    serialized = objMemberMetadata.serializer(sourceObject[objMemberMetadata.key]);
                 }
-                else if (memberMetadata.ctor) {
-                    serialized = _this.convertSingleValue(sourceObject[memberMetadata.key], {
-                        selfType: memberMetadata.ctor,
-                        elementTypes: memberMetadata.elementType,
-                        keyType: memberMetadata.keyType,
-                    }, nameof(sourceMeta_1.classType) + "." + memberMetadata.key, memberOptions);
+                else if (objMemberMetadata.ctor) {
+                    serialized = _this.convertSingleValue(sourceObject[objMemberMetadata.key], {
+                        selfType: objMemberMetadata.ctor,
+                        elementTypes: objMemberMetadata.elementType,
+                        keyType: objMemberMetadata.keyType,
+                    }, nameof(sourceMeta_1.classType) + "." + objMemberMetadata.key, objMemberOptions);
                 }
                 else {
-                    throw new TypeError("Could not serialize " + memberMetadata.name + ", there is"
+                    throw new TypeError("Could not serialize " + objMemberMetadata.name + ", there is"
                         + " no constructor nor serialization function to use.");
                 }
                 if (isValueDefined(serialized)
-                    || (_this.retrievePreserveNull(memberOptions) && serialized === null)) {
-                    targetObject[memberMetadata.name] = serialized;
+                    || (_this.retrievePreserveNull(objMemberOptions) && serialized === null)) {
+                    targetObject[objMemberMetadata.name] = serialized;
                 }
             });
         }
@@ -723,24 +724,26 @@ var serializer_Serializer = /** @class */ (function () {
 
 
 
+function defaultTypeResolver(sourceObject, knownTypes) {
+    if (sourceObject.__type)
+        return knownTypes.get(sourceObject.__type);
+}
 /**
  * Utility class, converts a simple/untyped javascript object-tree to a typed object-tree.
  * It is used after parsing a JSON-string.
  */
 var deserializer_Deserializer = /** @class */ (function () {
     function Deserializer() {
-        this._typeResolver = function (sourceObject, knownTypes) {
-            if (sourceObject.__type)
-                return knownTypes.get(sourceObject.__type);
-        };
-        this._errorHandler = function (error) { return logError(error); };
+        this._typeResolver = defaultTypeResolver;
+        this._errorHandler = logError;
     }
     Deserializer.prototype.setNameResolver = function (nameResolverCallback) {
         this._nameResolver = nameResolverCallback;
     };
     Deserializer.prototype.setTypeResolver = function (typeResolverCallback) {
-        if (typeof typeResolverCallback !== "function")
+        if (typeof typeResolverCallback !== "function") {
             throw new TypeError("'typeResolverCallback' is not a function.");
+        }
         this._typeResolver = typeResolverCallback;
     };
     Deserializer.prototype.setErrorHandler = function (errorHandlerCallback) {
@@ -784,32 +787,32 @@ var deserializer_Deserializer = /** @class */ (function () {
             var sourceObjectWithDeserializedProperties_1 = {};
             var classOptions_1 = mergeOptions(this.options, sourceMetadata_1.options);
             // Deserialize by expected properties.
-            sourceMetadata_1.dataMembers.forEach(function (memberMetadata, propKey) {
-                var memberValue = sourceObject[propKey];
-                var memberNameForDebug = nameof(sourceMetadata_1.classType) + "." + propKey;
-                var memberOptions = mergeOptions(classOptions_1, memberMetadata.options);
+            sourceMetadata_1.dataMembers.forEach(function (objMemberMetadata, propKey) {
+                var objMemberValue = sourceObject[propKey];
+                var objMemberDebugName = nameof(sourceMetadata_1.classType) + "." + propKey;
+                var objMemberOptions = mergeOptions(classOptions_1, objMemberMetadata.options);
                 var revivedValue;
-                if (memberMetadata.deserializer) {
-                    revivedValue = memberMetadata.deserializer(memberValue);
+                if (objMemberMetadata.deserializer) {
+                    revivedValue = objMemberMetadata.deserializer(objMemberValue);
                 }
-                else if (memberMetadata.ctor) {
-                    revivedValue = _this.convertSingleValue(memberValue, {
-                        selfConstructor: memberMetadata.ctor,
-                        elementConstructor: memberMetadata.elementType,
-                        keyConstructor: memberMetadata.keyType,
+                else if (objMemberMetadata.ctor) {
+                    revivedValue = _this.convertSingleValue(objMemberValue, {
+                        selfConstructor: objMemberMetadata.ctor,
+                        elementConstructor: objMemberMetadata.elementType,
+                        keyConstructor: objMemberMetadata.keyType,
                         knownTypes: knownTypeConstructors
-                    }, memberNameForDebug, memberOptions);
+                    }, objMemberDebugName, objMemberOptions);
                 }
                 else {
-                    throw new TypeError("Cannot deserialize " + memberNameForDebug + " thers is"
-                        + " no constructor nor deserlization function to use.");
+                    throw new TypeError("Cannot deserialize " + objMemberDebugName + " there is"
+                        + " no constructor nor deserialization function to use.");
                 }
                 if (isValueDefined(revivedValue)
-                    || (_this.retrievePreserveNull(memberOptions) && revivedValue === null)) {
-                    sourceObjectWithDeserializedProperties_1[memberMetadata.key] = revivedValue;
+                    || (_this.retrievePreserveNull(objMemberOptions) && revivedValue === null)) {
+                    sourceObjectWithDeserializedProperties_1[objMemberMetadata.key] = revivedValue;
                 }
-                else if (memberMetadata.isRequired) {
-                    _this._errorHandler(new TypeError("Missing required member '" + memberNameForDebug + "'."));
+                else if (objMemberMetadata.isRequired) {
+                    _this._errorHandler(new TypeError("Missing required member '" + objMemberDebugName + "'."));
                 }
             });
             // Next, instantiate target object.

@@ -6,6 +6,7 @@ export interface IScopeTypeInfo {
     keyConstructor?: Function;
     knownTypes: Map<string, Function>;
 }
+export declare type TypeResolver = (sourceObject: Object, knownTypes: Map<string, Function>) => Function | undefined | null;
 /**
  * Utility class, converts a simple/untyped javascript object-tree to a typed object-tree.
  * It is used after parsing a JSON-string.
@@ -15,9 +16,8 @@ export declare class Deserializer<T> {
     private _typeResolver;
     private _nameResolver?;
     private _errorHandler;
-    constructor();
     setNameResolver(nameResolverCallback: (ctor: Function) => string): void;
-    setTypeResolver(typeResolverCallback: (sourceObject: Object, knownTypes: Map<string, Function>) => Function): void;
+    setTypeResolver(typeResolverCallback: TypeResolver): void;
     setErrorHandler(errorHandlerCallback: (error: Error) => void): void;
     convertAsObject(sourceObject: IndexedObject, sourceObjectTypeInfo: IScopeTypeInfo, objectName?: string, memberOptions?: OptionsBase): {} | undefined;
     convertSingleValue(sourceObject: any, typeInfo: IScopeTypeInfo, memberName?: string, memberOptions?: OptionsBase): any;

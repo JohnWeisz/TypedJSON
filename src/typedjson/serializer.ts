@@ -1,4 +1,11 @@
-﻿import { nameof, logError, isValueDefined, isInstanceOf, isTypeTypedArray, isDirectlySerializableNativeType } from "./helpers";
+﻿import {
+    isDirectlySerializableNativeType,
+    isInstanceOf,
+    isTypeTypedArray,
+    isValueDefined,
+    logError,
+    nameof,
+} from "./helpers";
 import { IndexedObject } from "./types";
 import { JsonObjectMetadata } from "./metadata";
 import { getOptionValue, mergeOptions, OptionsBase } from "./options-base";
@@ -41,41 +48,48 @@ function isMapTypeInfo(typeInfo: IScopeTypeInfo): typeInfo is IScopeMapTypeInfo 
     return typeInfo.selfType === Map;
 }
 
+export type TypeHintEmitter
+    = (
+        targetObject: IndexedObject,
+        sourceObject: IndexedObject,
+        expectedSourceType: Function,
+        sourceTypeMetadata?: JsonObjectMetadata,
+    ) => void;
+
+function defaultTypeEmitter(
+    targetObject: IndexedObject,
+    sourceObject: IndexedObject,
+    expectedSourceType: Function,
+    sourceTypeMetadata?: JsonObjectMetadata,
+) {
+    // By default, we put a "__type" property on the output object if the actual object is not the
+    // same as the expected one, so that deserialization will know what to deserialize into (given
+    // the required known-types are defined, and the object is a valid subtype of the expected type).
+    if (sourceObject.constructor !== expectedSourceType)
+    {
+        targetObject.__type = sourceTypeMetadata && sourceTypeMetadata.name
+            ? sourceTypeMetadata.name
+            : nameof(sourceObject.constructor);
+    }
+}
+
 /**
- * Utility class, converts a typed object tree (i.e. a tree of class instances, arrays of class instances, and so on) to an untyped javascript object (also
- * called "simple javascript object"), and emits any necessary type hints in the process (for polymorphism).
+ * Utility class, converts a typed object tree (i.e. a tree of class instances, arrays of class
+ * instances, and so on) to an untyped javascript object (also called "simple javascript object"),
+ * and emits any necessary type hints in the process (for polymorphism).
  *
- * The converted object tree is what will be given to `JSON.stringify` to convert to string as the last step, the serialization is basically like:
+ * The converted object tree is what will be given to `JSON.stringify` to convert to string as the
+ * last step, the serialization is basically like:
  *
  * (1) typed object-tree -> (2) simple JS object-tree -> (3) JSON-string
  */
 export class Serializer
 {
     public options?: OptionsBase;
-    private _typeHintEmitter: (targetObject: IndexedObject, sourceObject: IndexedObject, expectedSourceType: Function, sourceTypeMetadata?: JsonObjectMetadata) => void;
-    private _errorHandler: (error: Error) => void;
+    private _typeHintEmitter: TypeHintEmitter = defaultTypeEmitter;
+    private _errorHandler: (error: Error) => void = logError;
 
-    constructor()
-    {
-        this._typeHintEmitter = (targetObject, sourceObject, expectedSourceType, sourceTypeMetadata?: JsonObjectMetadata) =>
-        {
-            // By default, we put a "__type" property on the output object if the actual object is not the same as the expected one, so that deserialization
-            // will know what to deserialize into (given the required known-types are defined, and the object is a valid subtype of the expected type).
-            if (sourceObject.constructor !== expectedSourceType)
-            {
-                const name = sourceTypeMetadata && sourceTypeMetadata.name
-                    ? sourceTypeMetadata.name
-                    : nameof(sourceObject.constructor);
-                // TODO: Perhaps this can work correctly without string-literal access?
-                // tslint:disable-next-line:no-string-literal
-                targetObject["__type"] = name;
-            }
-        };
-
-        this._errorHandler = (error) => logError(error);
-    }
-
-    public setTypeHintEmitter(typeEmitterCallback: (targetObject: Object, sourceObject: Object, expectedSourceType: Function) => void)
+    public setTypeHintEmitter(typeEmitterCallback: TypeHintEmitter)
     {
         if (typeof typeEmitterCallback !== "function")
         {

@@ -11,6 +11,12 @@ export interface IScopeTypeInfo
     knownTypes: Map<string, Function>;
 }
 
+export type TypeResolver = (sourceObject: Object, knownTypes: Map<string, Function>) => Function|undefined|null;
+
+function defaultTypeResolver(sourceObject: any, knownTypes: Map<string, Function>): Function|undefined {
+    if (sourceObject.__type) return knownTypes.get(sourceObject.__type);
+}
+
 /**
  * Utility class, converts a simple/untyped javascript object-tree to a typed object-tree.
  * It is used after parsing a JSON-string.
@@ -18,28 +24,22 @@ export interface IScopeTypeInfo
 export class Deserializer<T>
 {
     public options?: OptionsBase;
-    private _typeResolver: (sourceObject: Object, knownTypes: Map<string, Function>) => Function|undefined;
+
+    private _typeResolver: TypeResolver = defaultTypeResolver;
     private _nameResolver?: (ctor: Function) => string;
-    private _errorHandler: (error: Error) => void;
-
-    constructor()
-    {
-        this._typeResolver = (sourceObject: any, knownTypes: Map<string, Function>) =>
-        {
-            if (sourceObject.__type) return knownTypes.get(sourceObject.__type);
-        };
-
-        this._errorHandler = (error) => logError(error);
-    }
+    private _errorHandler: (error: Error) => void = logError;
 
     public setNameResolver(nameResolverCallback: (ctor: Function) => string)
     {
         this._nameResolver = nameResolverCallback;
     }
 
-    public setTypeResolver(typeResolverCallback: (sourceObject: Object, knownTypes: Map<string, Function>) => Function)
+    public setTypeResolver(typeResolverCallback: TypeResolver)
     {
-        if (typeof typeResolverCallback !== "function") throw new TypeError("'typeResolverCallback' is not a function.");
+        if (typeof typeResolverCallback !== "function")
+        {
+            throw new TypeError("'typeResolverCallback' is not a function.");
+        }
 
         this._typeResolver = typeResolverCallback;
     }
@@ -80,7 +80,7 @@ export class Deserializer<T>
         }
 
         // Check if a type-hint is available from the source object.
-        let typeFromTypeHint = this._typeResolver(sourceObject, knownTypeConstructors);
+        const typeFromTypeHint = this._typeResolver(sourceObject, knownTypeConstructors);
 
         if (typeFromTypeHint)
         {
