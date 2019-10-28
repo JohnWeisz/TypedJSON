@@ -364,17 +364,12 @@ function injectMetadataInformation(constructor, propKey, metadata) {
 }
 
 // CONCATENATED MODULE: ./src/typedjson/options-base.ts
-/**
- * This options cascade through the annotations. Options set
- * in the more specific place override the previous option.
- * Ex. @jsonMember overrides TypedJson options.
- */
 var kAllOptions = [
     'preserveNull',
 ];
 function extractOptionBase(from) {
     var options = Object.keys(from)
-        .filter(function (key) { return kAllOptions.includes(key); })
+        .filter(function (key) { return kAllOptions.indexOf(key) > -1; })
         .reduce(function (obj, key) {
         obj[key] = from[key];
         return obj;

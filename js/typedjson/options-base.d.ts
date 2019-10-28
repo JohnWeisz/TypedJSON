@@ -11,7 +11,9 @@ export interface OptionsBase {
      */
     preserveNull?: boolean;
 }
-export declare function extractOptionBase(from: any): OptionsBase | undefined;
+export declare function extractOptionBase(from: {
+    [key: string]: any;
+} & OptionsBase): OptionsBase | undefined;
 export declare function getDefaultOptionOf<K extends keyof OptionsBase>(key: K): Required<OptionsBase>[K];
 export declare function getOptionValue<K extends keyof OptionsBase>(key: K, options?: OptionsBase): Required<OptionsBase>[K];
 export declare function mergeOptions(existing?: OptionsBase, moreSpecific?: OptionsBase): OptionsBase | undefined;

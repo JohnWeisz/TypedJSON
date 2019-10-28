@@ -3,7 +3,6 @@
  * in the more specific place override the previous option.
  * Ex. @jsonMember overrides TypedJson options.
  */
-
 export interface OptionsBase {
     /**
      * Whether to preserve null in the JSON output. When false it
@@ -17,9 +16,9 @@ const kAllOptions: (keyof OptionsBase)[] = [
     'preserveNull',
 ];
 
-export function extractOptionBase(from: any): OptionsBase|undefined {
+export function extractOptionBase(from: {[key: string]: any} & OptionsBase): OptionsBase|undefined {
     const options = Object.keys(from)
-        .filter(key => (kAllOptions as string[]).includes(key))
+        .filter(key => (kAllOptions as string[]).indexOf(key) > -1)
         .reduce((obj, key) => {
             obj[key] = from[key];
             return obj;
