@@ -8,6 +8,7 @@ export declare function getDefaultValue<T>(type: {
  * @param type The constructor of the type (wrapper constructor for primitive types, e.g. `Number` for `number`).
  */
 export declare function isDirectlySerializableNativeType(type: Function): boolean;
+export declare function isDirectlyDeserializableNativeType(type: Function): boolean;
 export declare function isTypeTypedArray(type: Function): boolean;
 export declare function isPrimitiveValue(obj: any): boolean;
 export declare function isObject(value: any): value is Object;

@@ -36,6 +36,11 @@ export function isDirectlySerializableNativeType(type: Function): boolean
     return !!(~[Date, Number, String, Boolean].indexOf(type as any));
 }
 
+export function isDirectlyDeserializableNativeType(type: Function): boolean
+{
+    return !!(~[Number, String, Boolean].indexOf(type as any));
+}
+
 export function isTypeTypedArray(type: Function): boolean
 {
     return !!(~[Float32Array, Float64Array, Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array]
@@ -114,7 +119,8 @@ export function logWarning(message?: any, ...optionalParams: any[])
     if (typeof console === "object" && typeof console.warn === "function")
     {
         console.warn(message, ...optionalParams);
-    } else if (typeof console === "object" && typeof console.log === "function")
+    }
+    else if (typeof console === "object" && typeof console.log === "function")
     {
         console.log(`WARNING: ${message}`, ...optionalParams);
     }
@@ -164,8 +170,5 @@ export function nameof(fn: Function & { name?: string })
     {
         return fn.name;
     }
-    else
-    {
-        return "undefined";
-    }
+    return "undefined";
 }

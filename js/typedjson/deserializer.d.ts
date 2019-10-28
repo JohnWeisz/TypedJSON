@@ -24,12 +24,13 @@ export declare class Deserializer<T> {
     convertAsArray(sourceObject: any, typeInfo: IScopeTypeInfo, memberName?: string, memberOptions?: OptionsBase): any[];
     convertAsSet(sourceObject: any, typeInfo: IScopeTypeInfo, memberName?: string, memberOptions?: OptionsBase): Set<any>;
     convertAsMap(sourceObject: any, typeInfo: IScopeTypeInfo, memberName?: string, memberOptions?: OptionsBase): Map<any, any>;
+    private _convertAsFloatArray;
+    private _convertAsUintArray;
     private _throwTypeMismatchError;
     private _makeTypeErrorMessage;
     private _instantiateType;
     private _mergeKnownTypes;
     private _createKnownTypesMap;
-    private _isDirectlyDeserializableNativeType;
     convertNativeObject(sourceObject: any): any;
     private _stringToArrayBuffer;
     private _stringToDataView;

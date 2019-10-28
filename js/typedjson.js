@@ -1,4 +1,4 @@
-// [typedjson]  Version: 1.5.0 - 2019-10-26  
+// [typedjson]  Version: 1.5.0 - 2019-10-28  
  (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -126,6 +126,9 @@ function getDefaultValue(type) {
 function isDirectlySerializableNativeType(type) {
     return !!(~[Date, Number, String, Boolean].indexOf(type));
 }
+function isDirectlyDeserializableNativeType(type) {
+    return !!(~[Number, String, Boolean].indexOf(type));
+}
 function isTypeTypedArray(type) {
     return !!(~[Float32Array, Float64Array, Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array]
         .indexOf(type));
@@ -229,9 +232,7 @@ function nameof(fn) {
     if (typeof fn.name === "string") {
         return fn.name;
     }
-    else {
-        return "undefined";
-    }
+    return "undefined";
 }
 
 // CONCATENATED MODULE: ./src/typedjson/metadata.ts
@@ -884,7 +885,7 @@ var deserializer_Deserializer = /** @class */ (function () {
         else if (!isValueDefined(sourceObject)) {
             return;
         }
-        else if (this._isDirectlyDeserializableNativeType(expectedSelfType)) {
+        else if (isDirectlyDeserializableNativeType(expectedSelfType)) {
             if (sourceObject.constructor === expectedSelfType) {
                 return sourceObject;
             }
@@ -900,47 +901,16 @@ var deserializer_Deserializer = /** @class */ (function () {
             else
                 this._throwTypeMismatchError("Date", "an ISO-8601 string", srcTypeNameForDebug, memberName);
         }
-        else if (expectedSelfType === Float32Array) {
-            // Deserialize Float32Array from number[].
-            if (sourceObject instanceof Array && sourceObject.every(function (elem) { return !isNaN(elem); }))
-                return new Float32Array(sourceObject);
-            else
-                this._throwTypeMismatchError("Float32Array", "a numeric source array", srcTypeNameForDebug, memberName);
+        else if (expectedSelfType === Float32Array || expectedSelfType === Float64Array) {
+            // Deserialize Float Array from number[].
+            return this._convertAsFloatArray(sourceObject, expectedSelfType, srcTypeNameForDebug, memberName);
         }
-        else if (expectedSelfType === Float64Array) {
-            // Deserialize Float64Array from number[].
-            if (sourceObject instanceof Array && sourceObject.every(function (elem) { return !isNaN(elem); }))
-                return new Float64Array(sourceObject);
-            else
-                this._throwTypeMismatchError("Float64Array", "a numeric source array", srcTypeNameForDebug, memberName);
-        }
-        else if (expectedSelfType === Uint8Array) {
-            // Deserialize Uint8Array from number[].
-            if (sourceObject instanceof Array && sourceObject.every(function (elem) { return !isNaN(elem); }))
-                return new Uint8Array(sourceObject.map(function (value) { return ~~value; }));
-            else
-                this._throwTypeMismatchError("Uint8Array", "a numeric source array", srcTypeNameForDebug, memberName);
-        }
-        else if (expectedSelfType === Uint8ClampedArray) {
-            // Deserialize Uint8Array from number[].
-            if (sourceObject instanceof Array && sourceObject.every(function (elem) { return !isNaN(elem); }))
-                return new Uint8ClampedArray(sourceObject.map(function (value) { return ~~value; }));
-            else
-                this._throwTypeMismatchError("Uint8ClampedArray", "a numeric source array", srcTypeNameForDebug, memberName);
-        }
-        else if (expectedSelfType === Uint16Array) {
-            // Deserialize Uint16Array from number[].
-            if (sourceObject instanceof Array && sourceObject.every(function (elem) { return !isNaN(elem); }))
-                return new Uint16Array(sourceObject.map(function (value) { return ~~value; }));
-            else
-                this._throwTypeMismatchError("Uint16Array", "a numeric source array", srcTypeNameForDebug, memberName);
-        }
-        else if (expectedSelfType === Uint32Array) {
-            // Deserialize Uint32Array from number[].
-            if (sourceObject instanceof Array && sourceObject.every(function (elem) { return !isNaN(elem); }))
-                return new Uint32Array(sourceObject.map(function (value) { return ~~value; }));
-            else
-                this._throwTypeMismatchError("Uint32Array", "a numeric source array", srcTypeNameForDebug, memberName);
+        else if (expectedSelfType === Uint8Array
+            || expectedSelfType === Uint8ClampedArray
+            || expectedSelfType === Uint16Array
+            || expectedSelfType === Uint32Array) {
+            // Deserialize Uint array from number[].
+            return this._convertAsUintArray(sourceObject, expectedSelfType, srcTypeNameForDebug, memberName);
         }
         else if (expectedSelfType === ArrayBuffer) {
             if (typeof sourceObject === "string")
@@ -955,19 +925,19 @@ var deserializer_Deserializer = /** @class */ (function () {
                 this._throwTypeMismatchError("DataView", "a string source", srcTypeNameForDebug, memberName);
         }
         else if (expectedSelfType === Array) {
-            if (sourceObject instanceof Array)
+            if (Array.isArray(sourceObject))
                 return this.convertAsArray(sourceObject, typeInfo, memberName, memberOptions);
             else
                 throw new TypeError(this._makeTypeErrorMessage(Array, sourceObject.constructor, memberName));
         }
         else if (expectedSelfType === Set) {
-            if (sourceObject instanceof Array)
+            if (Array.isArray(sourceObject))
                 return this.convertAsSet(sourceObject, typeInfo, memberName, memberOptions);
             else
                 this._throwTypeMismatchError("Set", "Array", srcTypeNameForDebug, memberName);
         }
         else if (expectedSelfType === Map) {
-            if (sourceObject instanceof Array)
+            if (Array.isArray(sourceObject))
                 return this.convertAsMap(sourceObject, typeInfo, memberName, memberOptions);
             else
                 this._throwTypeMismatchError("Map", "a source array of key-value-pair objects", srcTypeNameForDebug, memberName);
@@ -979,7 +949,7 @@ var deserializer_Deserializer = /** @class */ (function () {
     Deserializer.prototype.convertAsArray = function (sourceObject, typeInfo, memberName, memberOptions) {
         var _this = this;
         if (memberName === void 0) { memberName = "object"; }
-        if (!(sourceObject instanceof Array)) {
+        if (!(Array.isArray(sourceObject))) {
             this._errorHandler(new TypeError(this._makeTypeErrorMessage(Array, sourceObject.constructor, memberName)));
             return [];
         }
@@ -1009,7 +979,7 @@ var deserializer_Deserializer = /** @class */ (function () {
     Deserializer.prototype.convertAsSet = function (sourceObject, typeInfo, memberName, memberOptions) {
         var _this = this;
         if (memberName === void 0) { memberName = "object"; }
-        if (!(sourceObject instanceof Array)) {
+        if (!(Array.isArray(sourceObject))) {
             this._errorHandler(new TypeError(this._makeTypeErrorMessage(Array, sourceObject.constructor, memberName)));
             return new Set();
         }
@@ -1038,7 +1008,7 @@ var deserializer_Deserializer = /** @class */ (function () {
     Deserializer.prototype.convertAsMap = function (sourceObject, typeInfo, memberName, memberOptions) {
         var _this = this;
         if (memberName === void 0) { memberName = "object"; }
-        if (!(sourceObject instanceof Array))
+        if (!(Array.isArray(sourceObject)))
             this._errorHandler(new TypeError(this._makeTypeErrorMessage(Array, sourceObject.constructor, memberName)));
         if (!typeInfo.keyConstructor) {
             this._errorHandler(new TypeError("Could not deserialize " + memberName + " as Map: missing key constructor."));
@@ -1074,13 +1044,21 @@ var deserializer_Deserializer = /** @class */ (function () {
         });
         return resultMap;
     };
+    Deserializer.prototype._convertAsFloatArray = function (sourceObject, arrayType, srcTypeNameForDebug, memberName) {
+        if (Array.isArray(sourceObject) && sourceObject.every(function (elem) { return !isNaN(elem); }))
+            return new arrayType(sourceObject);
+        return this._throwTypeMismatchError(arrayType.name, "a numeric source array", srcTypeNameForDebug, memberName);
+    };
+    Deserializer.prototype._convertAsUintArray = function (sourceObject, arrayType, srcTypeNameForDebug, memberName) {
+        if (Array.isArray(sourceObject) && sourceObject.every(function (elem) { return !isNaN(elem); }))
+            return new arrayType(sourceObject.map(function (value) { return ~~value; }));
+        return this._throwTypeMismatchError(arrayType.name, "a numeric source array", srcTypeNameForDebug, memberName);
+    };
     Deserializer.prototype._throwTypeMismatchError = function (targetType, expectedSourceType, actualSourceType, memberName) {
-        if (memberName === void 0) { memberName = "object"; }
         throw new TypeError("Could not deserialize " + memberName + " as " + targetType + ":"
             + (" expected " + expectedSourceType + ", got " + actualSourceType + "."));
     };
     Deserializer.prototype._makeTypeErrorMessage = function (expectedType, actualType, memberName) {
-        if (memberName === void 0) { memberName = "object"; }
         var expectedTypeName = (typeof expectedType === "function") ? nameof(expectedType) : expectedType;
         var actualTypeName = (typeof actualType === "function") ? nameof(actualType) : actualType;
         return "Could not deserialize " + memberName + ": expected '" + expectedTypeName + "', got '" + actualTypeName + "'.";
@@ -1123,9 +1101,6 @@ var deserializer_Deserializer = /** @class */ (function () {
             }
         });
         return map;
-    };
-    Deserializer.prototype._isDirectlyDeserializableNativeType = function (ctor) {
-        return ~([Number, String, Boolean].indexOf(ctor));
     };
     Deserializer.prototype.convertNativeObject = function (sourceObject) {
         return sourceObject;
