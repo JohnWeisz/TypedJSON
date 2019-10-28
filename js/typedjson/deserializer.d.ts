@@ -31,7 +31,6 @@ export declare class Deserializer<T> {
     private _instantiateType;
     private _mergeKnownTypes;
     private _createKnownTypesMap;
-    convertNativeObject(sourceObject: any): any;
     private _stringToArrayBuffer;
     private _stringToDataView;
     private retrievePreserveNull;

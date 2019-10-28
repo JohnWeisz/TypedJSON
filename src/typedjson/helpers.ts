@@ -5,6 +5,9 @@
 
 export const METADATA_FIELD_KEY = "__typedJsonJsonObjectMetadataInformation__";
 
+export const MISSING_REFLECT_CONF_MSG = 'Are you sure, that you have both "experimentalDecorators"' +
+    ' and "emitDecoratorMetadata" in your tsconfig.json?';
+
 export function getDefaultValue<T>(type: { new (): T }): T|undefined
 {
     switch (type as any)

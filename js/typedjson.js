@@ -1,4 +1,4 @@
-// [typedjson]  Version: 1.5.0 - 2019-10-28  
+// [typedjson]  Version: 1.5.0 - 2019-10-29  
  (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -104,6 +104,8 @@ __webpack_require__.r(__webpack_exports__);
 
 // CONCATENATED MODULE: ./src/typedjson/helpers.ts
 var METADATA_FIELD_KEY = "__typedJsonJsonObjectMetadataInformation__";
+var MISSING_REFLECT_CONF_MSG = 'Are you sure, that you have both "experimentalDecorators"' +
+    ' and "emitDecoratorMetadata" in your tsconfig.json?';
 function getDefaultValue(type) {
     switch (type) {
         case Number:
@@ -1102,9 +1104,6 @@ var deserializer_Deserializer = /** @class */ (function () {
         });
         return map;
     };
-    Deserializer.prototype.convertNativeObject = function (sourceObject) {
-        return sourceObject;
-    };
     Deserializer.prototype._stringToArrayBuffer = function (str) {
         var buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
         var bufView = new Uint16Array(buf);
@@ -1499,7 +1498,7 @@ function jsonMember(optionsOrTarget, propKey) {
         if (isReflectMetadataSupported) {
             var reflectPropCtor = Reflect.getMetadata("design:type", target, propKey);
             if (!reflectPropCtor) {
-                logError(decoratorName + ": could not resolve detected property constructor at runtime.");
+                logError(decoratorName + ": could not resolve detected property constructor at runtime. " + MISSING_REFLECT_CONF_MSG);
                 return;
             }
             if (isSpecialPropertyType(decoratorName, reflectPropCtor)) {
@@ -1606,7 +1605,7 @@ function jsonArrayMember(elementConstructor, options) {
         }
         // If ReflectDecorators is available, use it to check whether 'jsonArrayMember' has been used on an array.
         if (isReflectMetadataSupported && Reflect.getMetadata("design:type", target, propKey) !== Array) {
-            logError(decoratorName + ": property is not an Array.");
+            logError(decoratorName + ": property is not an Array. " + MISSING_REFLECT_CONF_MSG);
             return;
         }
         injectMetadataInformation(target, propKey, {
@@ -1648,7 +1647,7 @@ function jsonSetMember(elementConstructor, options) {
         }
         // If ReflectDecorators is available, use it to check whether 'jsonSetMember' has been used on a set. Warn if not.
         if (isReflectMetadataSupported && Reflect.getMetadata("design:type", target, propKey) !== Set) {
-            logError(decoratorName + ": property is not a Set.");
+            logError(decoratorName + ": property is not a Set. " + MISSING_REFLECT_CONF_MSG);
             return;
         }
         injectMetadataInformation(target, propKey, {
@@ -1690,7 +1689,7 @@ function jsonMapMember(keyConstructor, valueConstructor, options) {
         }
         // If ReflectDecorators is available, use it to check whether 'jsonMapMember' has been used on a map. Warn if not.
         if (isReflectMetadataSupported && Reflect.getMetadata("design:type", target, propKey) !== Map) {
-            logError(decoratorName + ": property is not a Map.");
+            logError(decoratorName + ": property is not a Map. " + MISSING_REFLECT_CONF_MSG);
             return;
         }
         injectMetadataInformation(target, propKey, {

@@ -1,5 +1,5 @@
 ﻿import {
-    nameof, logError, isReflectMetadataSupported, isValueDefined, logWarning, isSubtypeOf
+    nameof, logError, isReflectMetadataSupported, isValueDefined, logWarning, isSubtypeOf, MISSING_REFLECT_CONF_MSG,
 } from "./helpers";
 import { injectMetadataInformation } from "./metadata";
 import { extractOptionBase, OptionsBase } from "./options-base";
@@ -62,7 +62,7 @@ export function jsonMember<TFunction extends Function>(optionsOrTarget?: IJsonMe
 
             if (!reflectPropCtor)
             {
-                logError(`${decoratorName}: could not resolve detected property constructor at runtime.`);
+                logError(`${decoratorName}: could not resolve detected property constructor at runtime. ${MISSING_REFLECT_CONF_MSG}`);
                 return;
             }
 

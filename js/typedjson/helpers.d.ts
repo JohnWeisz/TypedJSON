@@ -1,4 +1,5 @@
 export declare const METADATA_FIELD_KEY = "__typedJsonJsonObjectMetadataInformation__";
+export declare const MISSING_REFLECT_CONF_MSG: string;
 export declare function getDefaultValue<T>(type: {
     new (): T;
 }): T | undefined;

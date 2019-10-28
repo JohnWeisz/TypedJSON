@@ -1,4 +1,4 @@
-﻿import { nameof, logError, isReflectMetadataSupported } from "./helpers";
+﻿import { nameof, logError, isReflectMetadataSupported, MISSING_REFLECT_CONF_MSG } from "./helpers";
 import { injectMetadataInformation } from "./metadata";
 import { extractOptionBase, OptionsBase } from "./options-base";
 
@@ -55,7 +55,7 @@ export function jsonArrayMember(elementConstructor: Function, options: IJsonArra
         // If ReflectDecorators is available, use it to check whether 'jsonArrayMember' has been used on an array.
         if (isReflectMetadataSupported && Reflect.getMetadata("design:type", target, propKey) !== Array)
         {
-            logError(`${decoratorName}: property is not an Array.`);
+            logError(`${decoratorName}: property is not an Array. ${MISSING_REFLECT_CONF_MSG}`);
             return;
         }
 

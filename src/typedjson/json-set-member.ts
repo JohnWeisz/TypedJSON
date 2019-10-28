@@ -1,4 +1,4 @@
-﻿import { isReflectMetadataSupported, logError, nameof } from "./helpers";
+﻿import { isReflectMetadataSupported, logError, MISSING_REFLECT_CONF_MSG, nameof } from "./helpers";
 import { injectMetadataInformation } from "./metadata";
 import { extractOptionBase, OptionsBase } from "./options-base";
 
@@ -46,7 +46,7 @@ export function jsonSetMember(elementConstructor: Function, options: IJsonSetMem
         // If ReflectDecorators is available, use it to check whether 'jsonSetMember' has been used on a set. Warn if not.
         if (isReflectMetadataSupported && Reflect.getMetadata("design:type", target, propKey) !== Set)
         {
-            logError(`${decoratorName}: property is not a Set.`);
+            logError(`${decoratorName}: property is not a Set. ${MISSING_REFLECT_CONF_MSG}`);
             return;
         }
 

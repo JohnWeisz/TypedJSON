@@ -1,4 +1,4 @@
-﻿import { nameof, logError, isReflectMetadataSupported } from "./helpers";
+﻿import { nameof, logError, isReflectMetadataSupported, MISSING_REFLECT_CONF_MSG } from "./helpers";
 import { injectMetadataInformation } from "./metadata";
 import { extractOptionBase, OptionsBase } from "./options-base";
 
@@ -53,7 +53,7 @@ export function jsonMapMember(keyConstructor: Function, valueConstructor: Functi
         // If ReflectDecorators is available, use it to check whether 'jsonMapMember' has been used on a map. Warn if not.
         if (isReflectMetadataSupported && Reflect.getMetadata("design:type", target, propKey) !== Map)
         {
-            logError(`${decoratorName}: property is not a Map.`);
+            logError(`${decoratorName}: property is not a Map. ${MISSING_REFLECT_CONF_MSG}`);
             return;
         }
 
