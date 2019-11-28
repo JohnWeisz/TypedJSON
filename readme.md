@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/Neos3452/TypedJSON.svg?branch=master)](https://travis-ci.com/Neos3452/TypedJSON)
+[![Build Status](https://github.com/JohnWeisz/TypedJSON/workflows/Node%20CI/badge.svg)](https://github.com/JohnWeisz/TypedJSON/actions)
 
 Typed JSON parsing and serializing for TypeScript with [decorators](https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md). Annotate your data-classes with simple-to-use decorators and parse standard JSON into actual class instances. For more type-safety and less syntax, recommended to be used with [reflect-metadata](https://github.com/rbuckton/reflect-metadata), a prototype for an ES7 Reflection API for Decorator Metadata.
 
