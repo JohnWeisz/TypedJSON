@@ -165,6 +165,20 @@ You can set it globally or on TypedJSON instance to have everything preserve nul
 
 On `@jsonObject` you can specify name of methods to be called before serializing the object or after it was deserialized. This method can be a static method or instance member. In case you have static and member with the same name - the member method is preferred.
 
+#### serilizer and deseralizer
+
+On `@jsonMember` decorator family you can provide your own functions to perform custom serialization and deserialization. This could be useful if you want to transform your input/output. For example, if instead of using javascript Date object you want to use moment.js object, you could use code like this:
+
+```typescript
+@jsonObject
+class UsingMoment {
+    @jsonMember({ serializer: value => moment(value), deserializer: timestamp => timestamp.format() })
+    timestamp: Moment;
+}
+```
+
+Note, that with those custom function you get full control over the serialization and deserialization process. This means, you will also receive any undefined (even if a property is not present), and null values. Basically, anything that comes in with an input json.
+
 ## Limitations
 
 ### Type-definitions
