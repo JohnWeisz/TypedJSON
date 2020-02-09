@@ -35,7 +35,7 @@ export function jsonSetMember(elementConstructor: Function, options: IJsonSetMem
 {
     return (target: Object, propKey: string | symbol) =>
     {
-        var decoratorName = `@jsonSetMember on ${nameof(target.constructor)}.${String(propKey)}`; // For error messages.
+        const decoratorName = `@jsonSetMember on ${nameof(target.constructor)}.${String(propKey)}`; // For error messages.
 
         if (typeof elementConstructor !== "function")
         {
