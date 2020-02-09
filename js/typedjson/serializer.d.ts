@@ -90,7 +90,7 @@ export declare class Serializer {
      * @param sourceObject
      * @returns
      */
-    convertAsTypedArray(sourceObject: ArrayBufferView): {}[];
+    convertAsTypedArray(sourceObject: ArrayBufferView): unknown[];
     /**
      * Performs the conversion of a raw ArrayBuffer to a string.
      */

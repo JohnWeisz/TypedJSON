@@ -1,4 +1,4 @@
-// [typedjson]  Version: 1.5.1 - 2019-10-29  
+// [typedjson]  Version: 1.5.1 - 2020-02-09  
  (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -103,6 +103,13 @@ return /******/ (function(modules) { // webpackBootstrap
 __webpack_require__.r(__webpack_exports__);
 
 // CONCATENATED MODULE: ./src/typedjson/helpers.ts
+var __spreadArrays = (undefined && undefined.__spreadArrays) || function () {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+};
 var METADATA_FIELD_KEY = "__typedJsonJsonObjectMetadataInformation__";
 var MISSING_REFLECT_CONF_MSG = 'Are you sure, that you have both "experimentalDecorators"' +
     ' and "emitDecoratorMetadata" in your tsconfig.json?';
@@ -176,10 +183,10 @@ function logError(message) {
         optionalParams[_i - 1] = arguments[_i];
     }
     if (typeof console === "object" && typeof console.error === "function") {
-        console.error.apply(console, [message].concat(optionalParams));
+        console.error.apply(console, __spreadArrays([message], optionalParams));
     }
     else if (typeof console === "object" && typeof console.log === "function") {
-        console.log.apply(console, ["ERROR: " + message].concat(optionalParams));
+        console.log.apply(console, __spreadArrays(["ERROR: " + message], optionalParams));
     }
 }
 function logMessage(message) {
@@ -188,7 +195,7 @@ function logMessage(message) {
         optionalParams[_i - 1] = arguments[_i];
     }
     if (typeof console === "object" && typeof console.log === "function") {
-        console.log.apply(console, [message].concat(optionalParams));
+        console.log.apply(console, __spreadArrays([message], optionalParams));
     }
 }
 function logWarning(message) {
@@ -197,10 +204,10 @@ function logWarning(message) {
         optionalParams[_i - 1] = arguments[_i];
     }
     if (typeof console === "object" && typeof console.warn === "function") {
-        console.warn.apply(console, [message].concat(optionalParams));
+        console.warn.apply(console, __spreadArrays([message], optionalParams));
     }
     else if (typeof console === "object" && typeof console.log === "function") {
-        console.log.apply(console, ["WARNING: " + message].concat(optionalParams));
+        console.log.apply(console, __spreadArrays(["WARNING: " + message], optionalParams));
     }
 }
 /**
@@ -1212,7 +1219,7 @@ var parser_TypedJSON = /** @class */ (function () {
      */
     TypedJSON.prototype.config = function (settings) {
         if (TypedJSON._globalConfig) {
-            settings = parser_assign({}, TypedJSON._globalConfig, settings);
+            settings = parser_assign(parser_assign({}, TypedJSON._globalConfig), settings);
             if (settings.knownTypes && TypedJSON._globalConfig.knownTypes) {
                 // Merge known-types (also de-duplicate them, so Array -> Set -> Array).
                 settings.knownTypes = Array.from(new Set(settings.knownTypes.concat(TypedJSON._globalConfig.knownTypes)));

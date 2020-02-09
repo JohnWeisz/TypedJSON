@@ -41,7 +41,7 @@ describe('onDeserialized', function () {
             age: number;
 
             constructor() {
-                spyOn(this, 'afterDeser');
+                spyOn<Person, 'afterDeser'>(this, 'afterDeser');
             }
 
             public afterDeser() {
@@ -75,7 +75,7 @@ describe('onDeserialized', function () {
             }
 
             constructor() {
-                spyOn(this, 'afterDeser');
+                spyOn<Person, 'afterDeser'>(this, 'afterDeser');
             }
 
             public afterDeser() {

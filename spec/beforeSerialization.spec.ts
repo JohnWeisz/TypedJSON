@@ -74,7 +74,7 @@ describe('beforeSerialization', function () {
             isOld: boolean;
 
             constructor() {
-                spyOn(this, 'beforeSerial');
+                spyOn<Person, 'beforeSerial'>(this, 'beforeSerial');
             }
 
             public beforeSerial() {
