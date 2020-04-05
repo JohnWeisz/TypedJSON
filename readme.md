@@ -172,7 +172,7 @@ On `@jsonMember` decorator family you can provide your own functions to perform 
 ```typescript
 @jsonObject
 class UsingMoment {
-    @jsonMember({ serializer: value => moment(value), deserializer: timestamp => timestamp.format() })
+    @jsonMember({ deserializer: value => moment(value), serializer: timestamp => timestamp.format() })
     timestamp: Moment;
 }
 ```
