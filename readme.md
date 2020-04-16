@@ -179,6 +179,46 @@ class UsingMoment {
 
 Note, that with those custom function you get full control over the serialization and deserialization process. This means, you will also receive any undefined (even if a property is not present), and null values. Basically, anything that comes in with an input json.
 
+#### Different property name in JSON and class
+
+You can provide a name for a property if it differs between a serialized JSON and your class definition.
+
+```typescript
+import 'reflect-metadata';
+import { jsonObject, jsonMember, TypedJSON } from 'typedjson';
+
+@jsonObject
+class MyDataClass {
+    @jsonMember({ name: 'kebab-case' })
+    camelCase: string;
+}
+```
+
+For even more advanced cases, it is possible to provide different names for deserialization and serialization, although it requires more typing. In such a case however, you might want to reconsider your model - maybe you are putting two different things into a single class.
+
+```typescript
+@jsonObject
+class Model {
+    private _prop: any;
+
+    @jsonMember
+    public get outputProp(): any {
+        return this._prop;
+    }
+    public set outputProp(value: any) {
+        // noop
+    }
+
+    @jsonMember
+    public get inputProp(): any {
+        return undefined;
+    }
+    public set inputProp(value: any) {
+        this._prop = value;
+    }
+}
+```
+
 ## Limitations
 
 ### Type-definitions
