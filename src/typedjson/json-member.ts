@@ -3,6 +3,12 @@
 } from "./helpers";
 import { injectMetadataInformation } from "./metadata";
 import { extractOptionBase, OptionsBase } from "./options-base";
+import {
+    ArrayTypeDescriptor,
+    ConcreteTypeDescriptor,
+    ensureTypeDescriptor, MapTypeDescriptor, SetTypeDescriptor,
+    TypeDescriptor,
+} from "./type-descriptor";
 
 declare abstract class Reflect
 {
@@ -15,7 +21,7 @@ export interface IJsonMemberOptions extends OptionsBase
      * Sets the constructor of the property.
      * Optional with ReflectDecorators.
      */
-    constructor?: Function;
+    constructor?: Function|TypeDescriptor;
 
     /** When set, indicates that the member must be present when deserializing. */
     isRequired?: boolean;
@@ -66,13 +72,14 @@ export function jsonMember<TFunction extends Function>(optionsOrTarget?: IJsonMe
                 return;
             }
 
-            if (isSpecialPropertyType(decoratorName, reflectPropCtor))
+            const typeDescriptor = ensureTypeDescriptor(reflectPropCtor);
+            if (isSpecialPropertyType(decoratorName, typeDescriptor))
             {
                 return;
             }
 
             injectMetadataInformation(target, propKey, {
-                ctor: reflectPropCtor,
+                type: typeDescriptor,
                 key: propKey.toString(),
                 name: propKey.toString(),
             });
@@ -89,7 +96,7 @@ export function jsonMember<TFunction extends Function>(optionsOrTarget?: IJsonMe
         return (target: Object, _propKey: string | symbol) =>
         {
             let options: IJsonMemberOptions = optionsOrTarget || {};
-            let propCtor: Function|undefined;
+            let typeDescriptor: TypeDescriptor|undefined;
             let decoratorName = `@jsonMember on ${nameof(target.constructor)}.${String(_propKey)}`; // For error messages.
 
             if (options.hasOwnProperty("constructor"))
@@ -101,25 +108,25 @@ export function jsonMember<TFunction extends Function>(optionsOrTarget?: IJsonMe
                 }
 
                 // Property constructor has been specified. Use ReflectDecorators (if available) to check whether that constructor is correct. Warn if not.
-                if (isReflectMetadataSupported && !isSubtypeOf(options.constructor, Reflect.getMetadata("design:type", target, _propKey)))
+                typeDescriptor = ensureTypeDescriptor(options.constructor);
+                if (isReflectMetadataSupported && !isSubtypeOf(typeDescriptor.ctor, Reflect.getMetadata("design:type", target, _propKey)))
                 {
                     logWarning(`${decoratorName}: detected property type does not match 'constructor' option.`);
                 }
-
-                propCtor = options.constructor;
             }
             else
             {
                 // Use ReflectDecorators to obtain property constructor.
                 if (isReflectMetadataSupported)
                 {
-                    propCtor = Reflect.getMetadata("design:type", target, _propKey) as Function;
+                    const reflectCtor = Reflect.getMetadata("design:type", target, _propKey) as Function;
 
-                    if (!propCtor)
+                    if (!reflectCtor)
                     {
                         logError(`${decoratorName}: cannot resolve detected property constructor at runtime.`);
                         return;
                     }
+                    typeDescriptor = ensureTypeDescriptor(reflectCtor);
                 }
                 else if (!options.deserializer)
                 {
@@ -128,13 +135,13 @@ export function jsonMember<TFunction extends Function>(optionsOrTarget?: IJsonMe
                 }
             }
 
-            if (isSpecialPropertyType(decoratorName, propCtor))
+
+            if (typeDescriptor && isSpecialPropertyType(decoratorName, typeDescriptor))
             {
                 return;
             }
-
             injectMetadataInformation(target, _propKey, {
-                ctor: propCtor,
+                type: typeDescriptor,
                 emitDefaultValue: options.emitDefaultValue,
                 isRequired: options.isRequired,
                 options: extractOptionBase(options),
@@ -147,23 +154,23 @@ export function jsonMember<TFunction extends Function>(optionsOrTarget?: IJsonMe
     }
 }
 
-function isSpecialPropertyType(decoratorName: string, propCtor?: Function)
+function isSpecialPropertyType(decoratorName: string, typeDescriptor: TypeDescriptor)
 {
-    if (propCtor === Array)
+    if (!(typeDescriptor instanceof ArrayTypeDescriptor) && typeDescriptor.ctor === Array)
     {
         logError(`${decoratorName}: property is an Array. Use the jsonArrayMember decorator to`
             + ` serialize this property.`);
         return true;
     }
 
-    if (propCtor === Set)
+    if (!(typeDescriptor instanceof SetTypeDescriptor) && typeDescriptor.ctor === Set)
     {
         logError(`${decoratorName}: property is a Set. Use the jsonSetMember decorator to`
             + ` serialize this property.`);
         return true;
     }
 
-    if (propCtor === Map)
+    if (!(typeDescriptor instanceof MapTypeDescriptor) && typeDescriptor.ctor === Map)
     {
         logError(`${decoratorName}: property is a Map. Use the jsonMapMember decorator to`
             + ` serialize this property.`);

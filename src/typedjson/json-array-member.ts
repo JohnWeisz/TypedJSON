@@ -1,6 +1,12 @@
 ﻿import { nameof, logError, isReflectMetadataSupported, MISSING_REFLECT_CONF_MSG } from "./helpers";
 import { injectMetadataInformation } from "./metadata";
 import { extractOptionBase, OptionsBase } from "./options-base";
+import {
+    ArrayTypeDescriptor,
+    ensureTypeDescriptor,
+    isTypelike,
+    TypeDescriptor,
+} from "./type-descriptor";
 
 declare abstract class Reflect
 {
@@ -33,13 +39,13 @@ export interface IJsonArrayMemberOptions extends OptionsBase
  * @param elementConstructor Constructor of array elements (e.g. 'Number' for 'number[]', or 'Date' for 'Date[]').
  * @param options Additional options.
  */
-export function jsonArrayMember(elementConstructor: Function, options: IJsonArrayMemberOptions = {})
+export function jsonArrayMember(elementConstructor: Function|TypeDescriptor, options: IJsonArrayMemberOptions = {})
 {
     return (target: Object, propKey: string | symbol) =>
     {
-        let decoratorName = `@jsonArrayMember on ${nameof(target.constructor)}.${String(propKey)}`; // For error messages.
+        const decoratorName = `@jsonArrayMember on ${nameof(target.constructor)}.${String(propKey)}`; // For error messages.
 
-        if (typeof elementConstructor !== "function")
+        if (!isTypelike(elementConstructor))
         {
             logError(`${decoratorName}: could not resolve constructor of array elements at runtime.`);
             return;
@@ -60,8 +66,7 @@ export function jsonArrayMember(elementConstructor: Function, options: IJsonArra
         }
 
         injectMetadataInformation(target, propKey, {
-            ctor: Array,
-            elementType: createArrayElementType(elementConstructor, dimensions),
+            type: createArrayType(ensureTypeDescriptor(elementConstructor), dimensions),
             emitDefaultValue: options.emitDefaultValue,
             isRequired: options.isRequired,
             options: extractOptionBase(options),
@@ -73,8 +78,10 @@ export function jsonArrayMember(elementConstructor: Function, options: IJsonArra
     };
 }
 
-function createArrayElementType(elementCtor: Function, dimensions: number) {
-    const elementTypes = new Array(dimensions).fill(Array, 0, -1);
-    elementTypes[dimensions-1] = elementCtor;
-    return elementTypes;
+export function createArrayType(elementType: TypeDescriptor, dimensions: number): ArrayTypeDescriptor {
+    let type = new ArrayTypeDescriptor(elementType);
+    for (let i = 1; i < dimensions; ++i) {
+        type = new ArrayTypeDescriptor(type);
+    }
+    return type;
 }

@@ -5,3 +5,4 @@ export { jsonArrayMember } from "./typedjson/json-array-member";
 export { jsonSetMember } from "./typedjson/json-set-member";
 export { jsonMapMember } from "./typedjson/json-map-member";
 export { toJson } from "./typedjson/to-json";
+export { ArrayT, SetT, MapT } from "./typedjson/type-descriptor";

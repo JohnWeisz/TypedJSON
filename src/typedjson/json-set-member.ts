@@ -1,6 +1,7 @@
 ﻿import { isReflectMetadataSupported, logError, MISSING_REFLECT_CONF_MSG, nameof } from "./helpers";
 import { injectMetadataInformation } from "./metadata";
 import { extractOptionBase, OptionsBase } from "./options-base";
+import { isTypelike, SetT } from "./type-descriptor";
 
 declare abstract class Reflect
 {
@@ -37,7 +38,7 @@ export function jsonSetMember(elementConstructor: Function, options: IJsonSetMem
     {
         const decoratorName = `@jsonSetMember on ${nameof(target.constructor)}.${String(propKey)}`; // For error messages.
 
-        if (typeof elementConstructor !== "function")
+        if (!isTypelike(elementConstructor))
         {
             logError(`${decoratorName}: could not resolve constructor of set elements at runtime.`);
             return;
@@ -51,8 +52,7 @@ export function jsonSetMember(elementConstructor: Function, options: IJsonSetMem
         }
 
         injectMetadataInformation(target, propKey, {
-            ctor: Set,
-            elementType: [elementConstructor],
+            type: SetT(elementConstructor),
             emitDefaultValue: options.emitDefaultValue,
             isRequired: options.isRequired,
             options: extractOptionBase(options),

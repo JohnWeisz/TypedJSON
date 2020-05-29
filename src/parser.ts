@@ -1,9 +1,11 @@
-import { Constructor } from "./typedjson/types";
+import { Constructor, IndexedObject } from "./typedjson/types";
 import { Serializer, TypeHintEmitter } from "./typedjson/serializer";
 import { Deserializer, TypeResolver } from "./typedjson/deserializer";
 import { JsonObjectMetadata } from "./typedjson/metadata";
 import { logError, logWarning, nameof, parseToJSObject } from "./typedjson/helpers";
 import { extractOptionBase, OptionsBase } from "./typedjson/options-base";
+import { createArrayType } from "./typedjson/json-array-member";
+import { ensureTypeDescriptor, MapT, SetT } from './typedjson/type-descriptor';
 
 export type JsonTypes = Object|boolean|string|number|null|undefined;
 export { TypeResolver, TypeHintEmitter };
@@ -150,7 +152,7 @@ export class TypedJSON<T>
         keyCtor: Constructor<K>,
         valueCtor: Constructor<V>,
         settings?: ITypedJSONSettings,
-    ): { key: any, value: any }[]|undefined {
+    ): IndexedObject|{ key: any, value: any }[]|undefined {
         return new TypedJSON(valueCtor, settings).toPlainMap(object, keyCtor);
     }
 
@@ -227,7 +229,7 @@ export class TypedJSON<T>
     /**
      * Creates a new TypedJSON instance to serialize (stringify) and deserialize (parse) object
      *     instances of the specified root class type.
-     * @param rootType The constructor of the root class type.
+     * @param rootConstructor The constructor of the root class type.
      * @param settings Additional configuration settings.
      */
     constructor(rootConstructor: Constructor<T>, settings?: ITypedJSONSettings)
@@ -344,10 +346,11 @@ export class TypedJSON<T>
 
         try
         {
-            result = this.deserializer.convertSingleValue(json, {
-                selfConstructor: this.rootConstructor,
-                knownTypes: knownTypes,
-            }) as T;
+            result = this.deserializer.convertSingleValue(
+                json,
+                ensureTypeDescriptor(this.rootConstructor),
+                knownTypes,
+            ) as T;
         }
         catch (e)
         {
@@ -366,68 +369,29 @@ export class TypedJSON<T>
     public parseAsArray(object: any, dimensions: number = 1): any[]
     {
         const json = parseToJSObject(object, Array);
-        if (json instanceof Array)
-        {
-            return this.deserializer.convertAsArray(json, {
-                selfConstructor: Array,
-                elementConstructor: new Array(dimensions - 1)
-                    .fill(Array)
-                    .concat(this.rootConstructor),
-                knownTypes: this._mapKnownTypes(this.globalKnownTypes),
-            });
-        }
-        else
-        {
-            this.errorHandler(new TypeError(`Expected 'json' to define an Array`
-                + `, but got ${typeof json}.`));
-        }
-
-        return [];
+        return this.deserializer.convertAsArray(json,
+            createArrayType(ensureTypeDescriptor(this.rootConstructor), dimensions),
+            this._mapKnownTypes(this.globalKnownTypes),
+        );
     }
 
     public parseAsSet(object: any): Set<T>
     {
         const json = parseToJSObject(object, Set);
-        // A Set<T> is serialized as T[].
-        if (json instanceof Array)
-        {
-            return this.deserializer.convertAsSet(json, {
-                selfConstructor: Array,
-                elementConstructor: [this.rootConstructor],
-                knownTypes: this._mapKnownTypes(this.globalKnownTypes)
-            });
-        }
-        else
-        {
-            this.errorHandler(new TypeError(`Expected 'json' to define a Set (using an Array)`
-                + `, but got ${typeof json}.`,
-            ));
-        }
-
-        return new Set<T>();
+        return this.deserializer.convertAsSet(json,
+            SetT(this.rootConstructor),
+            this._mapKnownTypes(this.globalKnownTypes)
+        );
     }
 
     public parseAsMap<K>(object: any, keyConstructor: Constructor<K>): Map<K, T>
     {
         const json = parseToJSObject(object, Map);
-        // A Set<T> is serialized as T[].
-        if (json instanceof Array)
-        {
-            return this.deserializer.convertAsMap(json, {
-                selfConstructor: Array,
-                elementConstructor: [this.rootConstructor],
-                knownTypes: this._mapKnownTypes(this.globalKnownTypes),
-                keyConstructor: keyConstructor
-            });
-        }
-        else
-        {
-            this.errorHandler(new TypeError(`Expected 'json' to define a Set (using an Array)`
-                + `, but got ${typeof json}.`,
-            ));
-        }
-
-        return new Map<K, T>();
+        return this.deserializer.convertAsMap(
+            json,
+            MapT(keyConstructor, this.rootConstructor),
+            this._mapKnownTypes(this.globalKnownTypes),
+        );
     }
 
     /**
@@ -441,7 +405,7 @@ export class TypedJSON<T>
         {
             return this.serializer.convertSingleValue(
                 object,
-        {selfType: this.rootConstructor},
+                ensureTypeDescriptor(this.rootConstructor),
             );
         }
         catch (e)
@@ -459,9 +423,8 @@ export class TypedJSON<T>
     {
         try
         {
-            const elementConstructorArray =
-                new Array(dimensions - 1).fill(Array).concat(this.rootConstructor);
-            return this.serializer.convertAsArray(object, elementConstructorArray);
+            return this.serializer.convertAsArray(
+                object, createArrayType(ensureTypeDescriptor(this.rootConstructor), dimensions));
         }
         catch (e)
         {
@@ -473,7 +436,7 @@ export class TypedJSON<T>
     {
         try
         {
-            return this.serializer.convertAsSet(object, this.rootConstructor);
+            return this.serializer.convertAsSet(object, SetT(this.rootConstructor));
         }
         catch (e)
         {
@@ -481,11 +444,11 @@ export class TypedJSON<T>
         }
     }
 
-    public toPlainMap<K>(object: Map<K, T>, keyConstructor: Constructor<K>): { key: any, value: any }[]|undefined
+    public toPlainMap<K>(object: Map<K, T>, keyConstructor: Constructor<K>): IndexedObject|{ key: any, value: any }[]|undefined
     {
         try
         {
-            return this.serializer.convertAsMap(object, keyConstructor, this.rootConstructor);
+            return this.serializer.convertAsMap(object, MapT(keyConstructor, this.rootConstructor));
         }
         catch (e)
         {

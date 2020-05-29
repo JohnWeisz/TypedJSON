@@ -1,13 +1,14 @@
 ﻿import { nameof, logError, isReflectMetadataSupported, MISSING_REFLECT_CONF_MSG } from "./helpers";
 import { injectMetadataInformation } from "./metadata";
 import { extractOptionBase, OptionsBase } from "./options-base";
+import { isTypelike, MapOptions, MapT, TypeDescriptor } from "./type-descriptor";
 
 declare abstract class Reflect
 {
     public static getMetadata(metadataKey: string, target: any, targetKey: string | symbol): any;
 }
 
-export interface IJsonMapMemberOptions extends OptionsBase
+export interface IJsonMapMemberOptions extends OptionsBase, Partial<MapOptions>
 {
     /** When set, indicates that the member must be present when deserializing. */
     isRequired?: boolean;
@@ -32,19 +33,22 @@ export interface IJsonMapMemberOptions extends OptionsBase
  * @param valueConstructor Constructor of map values (e.g. 'Date' for 'Map<number, Date>').
  * @param options Additional options.
  */
-export function jsonMapMember(keyConstructor: Function, valueConstructor: Function, options: IJsonMapMemberOptions = {})
-{
+export function jsonMapMember(
+    keyConstructor: Function|TypeDescriptor,
+    valueConstructor: Function|TypeDescriptor,
+    options: IJsonMapMemberOptions = {},
+) {
     return (target: Object, propKey: string | symbol) =>
     {
-        let decoratorName = `@jsonMapMember on ${nameof(target.constructor)}.${String(propKey)}`; // For error messages.
+        const decoratorName = `@jsonMapMember on ${nameof(target.constructor)}.${String(propKey)}`; // For error messages.
 
-        if (typeof keyConstructor !== "function")
+        if (!isTypelike(keyConstructor))
         {
             logError(`${decoratorName}: could not resolve constructor of map keys at runtime.`);
             return;
         }
 
-        if (typeof valueConstructor !== "function")
+        if (!isTypelike(valueConstructor))
         {
             logError(`${decoratorName}: could not resolve constructor of map values at runtime.`);
             return;
@@ -58,9 +62,7 @@ export function jsonMapMember(keyConstructor: Function, valueConstructor: Functi
         }
 
         injectMetadataInformation(target, propKey, {
-            ctor: Map,
-            elementType: [valueConstructor],
-            keyType: keyConstructor,
+            type: MapT(keyConstructor, valueConstructor, {shape: options.shape}),
             emitDefaultValue: options.emitDefaultValue,
             isRequired: options.isRequired,
             options: extractOptionBase(options),

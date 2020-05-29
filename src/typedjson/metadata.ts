@@ -1,6 +1,7 @@
 ﻿import { nameof, logError, METADATA_FIELD_KEY, isDirectlySerializableNativeType, isTypeTypedArray } from "./helpers";
 import { IndexedObject } from "./types";
 import { OptionsBase } from "./options-base";
+import { TypeDescriptor } from "./type-descriptor";
 
 export interface JsonMemberMetadata
 {
@@ -14,18 +15,12 @@ export interface JsonMemberMetadata
     key: string;
 
     /** Constuctor (type) reference of the member. */
-    ctor?: Function;
+    type?: TypeDescriptor;
 
     /** If set, indicates that the member must be present when deserializing. */
     isRequired?: boolean;
 
     options?: OptionsBase;
-
-    /** If the json member is an array, map or set, sets member options of elements/values. Subsequent values define the types of nested arrays. */
-    elementType?: Function[];
-
-    /** If the json member is a map, sets member options of array keys. */
-    keyType?: Function;
 
     /** Custom deserializer to use. */
     deserializer?: (json: any) => any;
@@ -160,9 +155,9 @@ export function injectMetadataInformation(constructor: IndexedObject, propKey: s
         return;
     }
 
-    if (!metadata || (!metadata.ctor && !metadata.deserializer))
+    if (!metadata || (!metadata.type && !metadata.deserializer))
     {
-        logError(`${decoratorName}: JsonMemberMetadata has unknown ctor.`);
+        logError(`${decoratorName}: JsonMemberMetadata has unknown type.`);
         return;
     }
 
@@ -197,14 +192,8 @@ export function injectMetadataInformation(constructor: IndexedObject, propKey: s
     if (!metadata.deserializer)
     {
         // @ts-ignore above is a check (!deser && !ctor)
-        objectMetadata.knownTypes.add(metadata.ctor);
+        metadata.type.getTypes().forEach(ctor => objectMetadata.knownTypes.add(ctor));
     }
-
-    if (metadata.keyType)
-        objectMetadata.knownTypes.add(metadata.keyType);
-
-    if (metadata.elementType)
-        metadata.elementType.forEach(elemCtor => objectMetadata.knownTypes.add(elemCtor));
 
     // clear metadata of undefined properties to save memory
     (Object.keys(metadata) as [keyof JsonMemberMetadata])
