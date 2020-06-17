@@ -63,12 +63,15 @@ describe('json (without automatic stringify)', function () {
             propNum: number;
             @jsonArrayMember(String)
             propArr: String[];
+            @jsonMember
+            propDate: Date;
         }
 
         const json = Object.freeze({
             propStr: 'dsgs',
             propNum: 653,
             propArr: ['dslfks'],
+            propDate: new Date(1543915254),
         });
 
         it('should deserialize', function () {

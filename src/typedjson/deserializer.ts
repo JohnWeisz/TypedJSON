@@ -274,6 +274,8 @@ export class Deserializer<T>
 
             if (typeof sourceObject === "string" || (typeof sourceObject === "number" && sourceObject > 0))
                 return new Date(sourceObject as any);
+            else if (sourceObject instanceof Date)
+                return sourceObject
             else
                 this._throwTypeMismatchError("Date", "an ISO-8601 string", srcTypeNameForDebug, memberName);
         }
