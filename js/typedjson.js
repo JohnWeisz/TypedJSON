@@ -1,4 +1,4 @@
-// [typedjson]  Version: 1.5.1 - 2020-02-09  
+// [typedjson]  Version: 1.5.2 - 2020-07-12  
  (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -902,6 +902,8 @@ var deserializer_Deserializer = /** @class */ (function () {
             // ISO 8601 spec.: https://www.w3.org/TR/NOTE-datetime
             if (typeof sourceObject === "string" || (typeof sourceObject === "number" && sourceObject > 0))
                 return new Date(sourceObject);
+            else if (sourceObject instanceof Date)
+                return sourceObject;
             else
                 this._throwTypeMismatchError("Date", "an ISO-8601 string", srcTypeNameForDebug, memberName);
         }
