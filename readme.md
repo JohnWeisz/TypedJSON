@@ -4,7 +4,7 @@ Typed JSON parsing and serializing for TypeScript with [decorators](https://gith
 
  - Seamlessly integrate into existing code with [decorators](https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md), ultra-lightweight syntax
  - Parse standard JSON to typed class instances, safely, without requiring any type-information to be specified in the source JSON
-   - _Note: polymorphic object structures require simple type-annotations to be present in JSON, this is configurable to be complatible with other serializers, like [Json.NET](https://www.newtonsoft.com/json)_
+   - _Note: polymorphic object structures require simple type-annotations to be present in JSON, this is configurable to be compatible with other serializers, like [Json.NET](https://www.newtonsoft.com/json)_
  
 ## Installation
 
@@ -165,7 +165,7 @@ You can set it globally or on TypedJSON instance to have everything preserve nul
 
 On `@jsonObject` you can specify name of methods to be called before serializing the object or after it was deserialized. This method can be a static method or instance member. In case you have static and member with the same name - the member method is preferred.
 
-#### serilizer and deseralizer
+#### serializer and deserializer
 
 On `@jsonMember` decorator family you can provide your own functions to perform custom serialization and deserialization. This could be useful if you want to transform your input/output. For example, if instead of using javascript Date object you want to use moment.js object, you could use code like this:
 
