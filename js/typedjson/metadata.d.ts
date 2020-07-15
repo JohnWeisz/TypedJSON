@@ -1,5 +1,6 @@
 import { IndexedObject } from "./types";
 import { OptionsBase } from "./options-base";
+import { TypeDescriptor } from "./type-descriptor";
 export interface JsonMemberMetadata {
     /** If set, a default value will be emitted for uninitialized members. */
     emitDefaultValue?: boolean;
@@ -8,14 +9,10 @@ export interface JsonMemberMetadata {
     /** Property or field key of the json member. */
     key: string;
     /** Constuctor (type) reference of the member. */
-    ctor?: Function;
+    type?: TypeDescriptor;
     /** If set, indicates that the member must be present when deserializing. */
     isRequired?: boolean;
     options?: OptionsBase;
-    /** If the json member is an array, map or set, sets member options of elements/values. Subsequent values define the types of nested arrays. */
-    elementType?: Function[];
-    /** If the json member is a map, sets member options of array keys. */
-    keyType?: Function;
     /** Custom deserializer to use. */
     deserializer?: (json: any) => any;
     /** Custom serializer to use. */

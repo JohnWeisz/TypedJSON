@@ -1,11 +1,6 @@
 import { IndexedObject } from "./types";
 import { OptionsBase } from "./options-base";
-export interface IScopeTypeInfo {
-    selfConstructor: Function;
-    elementConstructor?: Function[];
-    keyConstructor?: Function;
-    knownTypes: Map<string, Function>;
-}
+import { ArrayTypeDescriptor, ConcreteTypeDescriptor, MapTypeDescriptor, SetTypeDescriptor, TypeDescriptor } from "./type-descriptor";
 export declare type TypeResolver = (sourceObject: Object, knownTypes: Map<string, Function>) => Function | undefined | null;
 /**
  * Utility class, converts a simple/untyped javascript object-tree to a typed object-tree.
@@ -19,11 +14,11 @@ export declare class Deserializer<T> {
     setNameResolver(nameResolverCallback: (ctor: Function) => string): void;
     setTypeResolver(typeResolverCallback: TypeResolver): void;
     setErrorHandler(errorHandlerCallback: (error: Error) => void): void;
-    convertAsObject(sourceObject: IndexedObject, sourceObjectTypeInfo: IScopeTypeInfo, objectName?: string, memberOptions?: OptionsBase): {} | undefined;
-    convertSingleValue(sourceObject: any, typeInfo: IScopeTypeInfo, memberName?: string, memberOptions?: OptionsBase): any;
-    convertAsArray(sourceObject: any, typeInfo: IScopeTypeInfo, memberName?: string, memberOptions?: OptionsBase): any[];
-    convertAsSet(sourceObject: any, typeInfo: IScopeTypeInfo, memberName?: string, memberOptions?: OptionsBase): Set<any>;
-    convertAsMap(sourceObject: any, typeInfo: IScopeTypeInfo, memberName?: string, memberOptions?: OptionsBase): Map<any, any>;
+    convertAsObject(sourceObject: IndexedObject, typeDescriptor: ConcreteTypeDescriptor, knownTypes: Map<string, Function>, objectName?: string, memberOptions?: OptionsBase): {} | undefined;
+    convertSingleValue(sourceObject: any, typeDescriptor: TypeDescriptor, knownTypes: Map<string, Function>, memberName?: string, memberOptions?: OptionsBase): any;
+    convertAsArray(sourceObject: any, typeDescriptor: ArrayTypeDescriptor, knownTypes: Map<string, Function>, memberName?: string, memberOptions?: OptionsBase): any[];
+    convertAsSet(sourceObject: any, typeDescriptor: SetTypeDescriptor, knownTypes: Map<string, Function>, memberName?: string, memberOptions?: OptionsBase): Set<any>;
+    convertAsMap(sourceObject: any, typeDescriptor: MapTypeDescriptor, knownTypes: Map<string, Function>, memberName?: string, memberOptions?: OptionsBase): Map<any, any>;
     private _convertAsFloatArray;
     private _convertAsUintArray;
     private _throwTypeMismatchError;
@@ -33,5 +28,6 @@ export declare class Deserializer<T> {
     private _createKnownTypesMap;
     private _stringToArrayBuffer;
     private _stringToDataView;
+    private isExpectedMapShape;
     private retrievePreserveNull;
 }

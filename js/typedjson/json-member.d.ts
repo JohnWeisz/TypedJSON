@@ -1,10 +1,11 @@
 import { OptionsBase } from "./options-base";
+import { TypeDescriptor } from "./type-descriptor";
 export interface IJsonMemberOptions extends OptionsBase {
     /**
      * Sets the constructor of the property.
      * Optional with ReflectDecorators.
      */
-    constructor?: Function;
+    constructor?: Function | TypeDescriptor;
     /** When set, indicates that the member must be present when deserializing. */
     isRequired?: boolean;
     /** When set, a default value is emitted if the property is uninitialized/undefined. */

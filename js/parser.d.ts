@@ -1,4 +1,4 @@
-import { Constructor } from "./typedjson/types";
+import { Constructor, IndexedObject } from "./typedjson/types";
 import { TypeHintEmitter } from "./typedjson/serializer";
 import { TypeResolver } from "./typedjson/deserializer";
 import { OptionsBase } from "./typedjson/options-base";
@@ -51,7 +51,7 @@ export declare class TypedJSON<T> {
     static toPlainArray<T>(object: T[][][][][], elementType: Constructor<T>, dimensions: 5, settings?: ITypedJSONSettings): Object[][][][][];
     static toPlainArray<T>(object: any[], elementType: Constructor<T>, dimensions: number, settings?: ITypedJSONSettings): any[];
     static toPlainSet<T>(object: Set<T>, elementType: Constructor<T>, settings?: ITypedJSONSettings): Object[] | undefined;
-    static toPlainMap<K, V>(object: Map<K, V>, keyCtor: Constructor<K>, valueCtor: Constructor<V>, settings?: ITypedJSONSettings): {
+    static toPlainMap<K, V>(object: Map<K, V>, keyCtor: Constructor<K>, valueCtor: Constructor<V>, settings?: ITypedJSONSettings): IndexedObject | {
         key: any;
         value: any;
     }[] | undefined;
@@ -77,7 +77,7 @@ export declare class TypedJSON<T> {
     /**
      * Creates a new TypedJSON instance to serialize (stringify) and deserialize (parse) object
      *     instances of the specified root class type.
-     * @param rootType The constructor of the root class type.
+     * @param rootConstructor The constructor of the root class type.
      * @param settings Additional configuration settings.
      */
     constructor(rootConstructor: Constructor<T>, settings?: ITypedJSONSettings);
@@ -113,7 +113,7 @@ export declare class TypedJSON<T> {
     toPlainArray(object: T[][][][], dimensions: 4): Object[][][][];
     toPlainArray(object: T[][][][][], dimensions: 5): Object[][][][][];
     toPlainSet(object: Set<T>): Object[] | undefined;
-    toPlainMap<K>(object: Map<K, T>, keyConstructor: Constructor<K>): {
+    toPlainMap<K>(object: Map<K, T>, keyConstructor: Constructor<K>): IndexedObject | {
         key: any;
         value: any;
     }[] | undefined;

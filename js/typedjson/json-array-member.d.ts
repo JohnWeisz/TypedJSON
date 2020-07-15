@@ -1,4 +1,5 @@
 import { OptionsBase } from "./options-base";
+import { ArrayTypeDescriptor, TypeDescriptor } from "./type-descriptor";
 export interface IJsonArrayMemberOptions extends OptionsBase {
     /** When set, indicates that the member must be present when deserializing. */
     isRequired?: boolean;
@@ -18,4 +19,5 @@ export interface IJsonArrayMemberOptions extends OptionsBase {
  * @param elementConstructor Constructor of array elements (e.g. 'Number' for 'number[]', or 'Date' for 'Date[]').
  * @param options Additional options.
  */
-export declare function jsonArrayMember(elementConstructor: Function, options?: IJsonArrayMemberOptions): (target: Object, propKey: string | symbol) => void;
+export declare function jsonArrayMember(elementConstructor: Function | TypeDescriptor, options?: IJsonArrayMemberOptions): (target: Object, propKey: string | symbol) => void;
+export declare function createArrayType(elementType: TypeDescriptor, dimensions: number): ArrayTypeDescriptor;
