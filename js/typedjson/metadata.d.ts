@@ -1,6 +1,9 @@
-import { IndexedObject } from "./types";
+import { IndexedObject, Serializable } from "./types";
 import { OptionsBase } from "./options-base";
 import { TypeDescriptor } from "./type-descriptor";
+export declare const METADATA_FIELD_KEY = "__typedJsonJsonObjectMetadataInformation__";
+export declare type TypeResolver = (sourceObject: IndexedObject, knownTypes: Map<string, Function>) => Function | undefined | null;
+export declare type TypeHintEmitter = (targetObject: IndexedObject, sourceObject: IndexedObject, expectedSourceType: Function, sourceTypeMetadata?: JsonObjectMetadata) => void;
 export interface JsonMemberMetadata {
     /** If set, a default value will be emitted for uninitialized members. */
     emitDefaultValue?: boolean;
@@ -8,7 +11,7 @@ export interface JsonMemberMetadata {
     name: string;
     /** Property or field key of the json member. */
     key: string;
-    /** Constuctor (type) reference of the member. */
+    /** Type descriptor of the member. */
     type?: TypeDescriptor;
     /** If set, indicates that the member must be present when deserializing. */
     isRequired?: boolean;
@@ -28,7 +31,8 @@ export declare class JsonObjectMetadata {
      * Gets jsonObject metadata information from a class.
      * @param ctor The constructor class.
      */
-    static getFromConstructor(ctor: Function): JsonObjectMetadata | undefined;
+    static getFromConstructor<T>(ctor: Serializable<T>): JsonObjectMetadata | undefined;
+    static ensurePresentInPrototype(prototype: IndexedObject): JsonObjectMetadata;
     /**
      * Gets the known type name of a jsonObject class for type hint.
      * @param constructor The constructor class.
@@ -37,8 +41,12 @@ export declare class JsonObjectMetadata {
     private static doesHandleWithoutAnnotation;
     constructor(classType: Function);
     dataMembers: Map<string, JsonMemberMetadata>;
-    knownTypes: Set<Function>;
-    knownTypeMethodName?: string;
+    /** Set of known types used for polymorphic deserialization */
+    knownTypes: Set<Serializable<any>>;
+    /** If present override the global function */
+    typeHintEmitter?: TypeHintEmitter;
+    /** If present override the global function */
+    typeResolver?: TypeResolver;
     /** Gets or sets the constructor function for the jsonObject. */
     classType: Function;
     /**
@@ -58,4 +66,4 @@ export declare class JsonObjectMetadata {
     beforeSerializationMethodName?: string;
     initializerCallback?: (sourceObject: Object, rawSourceObject: Object) => Object;
 }
-export declare function injectMetadataInformation(constructor: IndexedObject, propKey: string | symbol, metadata: JsonMemberMetadata): void;
+export declare function injectMetadataInformation(prototype: IndexedObject, propKey: string | symbol, metadata: JsonMemberMetadata): void;

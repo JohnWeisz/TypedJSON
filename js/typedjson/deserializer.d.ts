@@ -1,33 +1,28 @@
 import { IndexedObject } from "./types";
+import { TypeResolver } from "./metadata";
 import { OptionsBase } from "./options-base";
-import { ArrayTypeDescriptor, ConcreteTypeDescriptor, MapTypeDescriptor, SetTypeDescriptor, TypeDescriptor } from "./type-descriptor";
-export declare type TypeResolver = (sourceObject: Object, knownTypes: Map<string, Function>) => Function | undefined | null;
+import { TypeDescriptor } from "./type-descriptor";
+export declare function defaultTypeResolver(sourceObject: IndexedObject, knownTypes: Map<string, Function>): Function | undefined;
+export declare type DeserializerFn<T, TD extends TypeDescriptor, Raw> = (sourceObject: Raw, typeDescriptor: TypeDescriptor, knownTypes: Map<string, Function>, memberName: string, deserializer: Deserializer<T>, memberOptions?: OptionsBase) => T;
 /**
  * Utility class, converts a simple/untyped javascript object-tree to a typed object-tree.
  * It is used after parsing a JSON-string.
  */
 export declare class Deserializer<T> {
     options?: OptionsBase;
-    private _typeResolver;
-    private _nameResolver?;
-    private _errorHandler;
+    private typeResolver;
+    private nameResolver?;
+    private errorHandler;
+    private deserializationStrategy;
     setNameResolver(nameResolverCallback: (ctor: Function) => string): void;
     setTypeResolver(typeResolverCallback: TypeResolver): void;
+    getTypeResolver(): TypeResolver;
     setErrorHandler(errorHandlerCallback: (error: Error) => void): void;
-    convertAsObject(sourceObject: IndexedObject, typeDescriptor: ConcreteTypeDescriptor, knownTypes: Map<string, Function>, objectName?: string, memberOptions?: OptionsBase): {} | undefined;
+    getErrorHandler(): (error: Error) => void;
     convertSingleValue(sourceObject: any, typeDescriptor: TypeDescriptor, knownTypes: Map<string, Function>, memberName?: string, memberOptions?: OptionsBase): any;
-    convertAsArray(sourceObject: any, typeDescriptor: ArrayTypeDescriptor, knownTypes: Map<string, Function>, memberName?: string, memberOptions?: OptionsBase): any[];
-    convertAsSet(sourceObject: any, typeDescriptor: SetTypeDescriptor, knownTypes: Map<string, Function>, memberName?: string, memberOptions?: OptionsBase): Set<any>;
-    convertAsMap(sourceObject: any, typeDescriptor: MapTypeDescriptor, knownTypes: Map<string, Function>, memberName?: string, memberOptions?: OptionsBase): Map<any, any>;
-    private _convertAsFloatArray;
-    private _convertAsUintArray;
-    private _throwTypeMismatchError;
-    private _makeTypeErrorMessage;
-    private _instantiateType;
-    private _mergeKnownTypes;
-    private _createKnownTypesMap;
-    private _stringToArrayBuffer;
-    private _stringToDataView;
+    instantiateType(ctor: any): any;
+    mergeKnownTypes(...knownTypeMaps: Array<Map<string, Function>>): Map<string, Function>;
+    createKnownTypesMap(knowTypes: Set<Function>): Map<string, Function>;
     private isExpectedMapShape;
-    private retrievePreserveNull;
+    retrievePreserveNull(memberOptions?: OptionsBase): boolean;
 }

@@ -1,5 +1,6 @@
 import { OptionsBase } from "./options-base";
 import { TypeDescriptor } from "./type-descriptor";
+import { IndexedObject } from './types';
 export interface IJsonMemberOptions extends OptionsBase {
     /**
      * Sets the constructor of the property.
@@ -19,12 +20,13 @@ export interface IJsonMemberOptions extends OptionsBase {
 }
 /**
  * Specifies that a property is part of the object when serializing, with additional options.
- * Omitting the 'constructor' option requires ReflectDecorators and that the property type is always explicitly declared.
+ * Omitting the 'constructor' option requires ReflectDecorators and that the property type is always explicitly
+ * declared.
  * @param options Additional options.
  */
-export declare function jsonMember<TFunction extends Function>(options: IJsonMemberOptions): PropertyDecorator;
+export declare function jsonMember(options: IJsonMemberOptions): PropertyDecorator;
 /**
  * Specifies that a property is part of the object when serializing.
  * This call signature requires ReflectDecorators and that the property type is always explicitly declared.
  */
-export declare function jsonMember(target: Object, propertyKey: string | symbol): void;
+export declare function jsonMember<T extends Function>(prototype: IndexedObject, propertyKey: string | symbol): void;
