@@ -369,7 +369,7 @@ export class TypedJSON<T>
     public parseAsArray(object: any, dimensions: number = 1): any[]
     {
         const json = parseToJSObject(object, Array);
-        return this.deserializer.convertAsArray(json,
+        return this.deserializer.convertSingleValue(json,
             createArrayType(ensureTypeDescriptor(this.rootConstructor), dimensions),
             this._mapKnownTypes(this.globalKnownTypes),
         );
@@ -378,7 +378,7 @@ export class TypedJSON<T>
     public parseAsSet(object: any): Set<T>
     {
         const json = parseToJSObject(object, Set);
-        return this.deserializer.convertAsSet(json,
+        return this.deserializer.convertSingleValue(json,
             SetT(this.rootConstructor),
             this._mapKnownTypes(this.globalKnownTypes)
         );
@@ -387,7 +387,7 @@ export class TypedJSON<T>
     public parseAsMap<K>(object: any, keyConstructor: Serializable<K>): Map<K, T>
     {
         const json = parseToJSObject(object, Map);
-        return this.deserializer.convertAsMap(
+        return this.deserializer.convertSingleValue(
             json,
             MapT(keyConstructor, this.rootConstructor),
             this._mapKnownTypes(this.globalKnownTypes),
@@ -423,7 +423,7 @@ export class TypedJSON<T>
     {
         try
         {
-            return this.serializer.convertAsArray(
+            return this.serializer.convertSingleValue(
                 object, createArrayType(ensureTypeDescriptor(this.rootConstructor), dimensions));
         }
         catch (e)
@@ -436,7 +436,7 @@ export class TypedJSON<T>
     {
         try
         {
-            return this.serializer.convertAsSet(object, SetT(this.rootConstructor));
+            return this.serializer.convertSingleValue(object, SetT(this.rootConstructor));
         }
         catch (e)
         {
@@ -449,7 +449,7 @@ export class TypedJSON<T>
     ): IndexedObject | { key: any, value: any }[] | undefined {
         try
         {
-            return this.serializer.convertAsMap(object, MapT(keyConstructor, this.rootConstructor));
+            return this.serializer.convertSingleValue(object, MapT(keyConstructor, this.rootConstructor));
         }
         catch (e)
         {
