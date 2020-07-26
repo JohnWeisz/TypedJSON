@@ -25,12 +25,11 @@ describe('single class', function () {
     }
 
     // todo we need something better
-    jsonObject({ knownTypes: [Bob]})(Person as any);
+    jsonObject({ knownTypes: [Bob]})(Person);
 
     describe('deserialized', function () {
         beforeAll(function () {
-            // todo fix types so they accept abstract
-            this.person = TypedJSON.parse('{ "__type": "Bob", "firstName": "John", "lastName": "Doe", "pounds": 40 }', Person as any);
+            this.person = TypedJSON.parse('{ "__type": "Bob", "firstName": "John", "lastName": "Doe", "pounds": 40 }', Person);
         });
 
         it('should be of proper type', function () {
@@ -50,7 +49,7 @@ describe('single class', function () {
             person.lastName = 'Doe';
             person.pounds = 30;
             // todo fix types so they accept abstract
-            expect(TypedJSON.stringify(person, Person as any))
+            expect(TypedJSON.stringify(person, Person))
                 .toBe('{"firstName":"John","lastName":"Doe","pounds":30,"__type":"Bob"}');
         });
     });

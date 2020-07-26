@@ -1,14 +1,14 @@
-import { Constructor, IndexedObject } from "./typedjson/types";
-import { Serializer, TypeHintEmitter } from "./typedjson/serializer";
-import { Deserializer, TypeResolver } from "./typedjson/deserializer";
-import { JsonObjectMetadata } from "./typedjson/metadata";
+import { Constructor, IndexedObject, Serializable } from "./typedjson/types";
+import { Serializer, defaultTypeEmitter } from "./typedjson/serializer";
+import { Deserializer, defaultTypeResolver } from "./typedjson/deserializer";
+import { JsonObjectMetadata, TypeResolver, TypeHintEmitter } from "./typedjson/metadata";
 import { logError, logWarning, nameof, parseToJSObject } from "./typedjson/helpers";
 import { extractOptionBase, OptionsBase } from "./typedjson/options-base";
 import { createArrayType } from "./typedjson/json-array-member";
 import { ensureTypeDescriptor, MapT, SetT } from './typedjson/type-descriptor';
 
-export type JsonTypes = Object|boolean|string|number|null|undefined;
-export { TypeResolver, TypeHintEmitter };
+export type JsonTypes = Object | boolean | string | number | null | undefined;
+export { defaultTypeResolver, defaultTypeEmitter };
 
 export interface ITypedJSONSettings extends OptionsBase
 {
@@ -52,44 +52,44 @@ export class TypedJSON<T>
 {
     //#region Static
     public static parse<T>(
-        object: any, rootType: Constructor<T>, settings?: ITypedJSONSettings,
+        object: any, rootType: Serializable<T>, settings?: ITypedJSONSettings,
     ): T|undefined {
         return new TypedJSON(rootType, settings).parse(object);
     }
 
     public static parseAsArray<T>(
         object: any,
-        elementType: Constructor<T>,
+        elementType: Serializable<T>,
         settings?: ITypedJSONSettings,
         dimensions?: 1
     ): T[];
     public static parseAsArray<T>(
         object: any,
-        elementType: Constructor<T>,
+        elementType: Serializable<T>,
         settings: ITypedJSONSettings|undefined,
         dimensions: 2
     ): T[][];
     public static parseAsArray<T>(
         object: any,
-        elementType: Constructor<T>,
+        elementType: Serializable<T>,
         settings: ITypedJSONSettings|undefined,
         dimensions: 3
     ): T[][][];
     public static parseAsArray<T>(
         object: any,
-        elementType: Constructor<T>,
+        elementType: Serializable<T>,
         settings: ITypedJSONSettings|undefined,
         dimensions: 4
     ): T[][][][];
     public static parseAsArray<T>(
         object: any,
-        elementType: Constructor<T>,
+        elementType: Serializable<T>,
         settings: ITypedJSONSettings|undefined,
         dimensions: 5
     ): T[][][][][];
     public static parseAsArray<T>(
         object: any,
-        elementType: Constructor<T>,
+        elementType: Serializable<T>,
         settings?: ITypedJSONSettings,
         dimensions?: number
     ): any[] {
@@ -97,105 +97,105 @@ export class TypedJSON<T>
     }
 
     public static parseAsSet<T>(
-        object: any, elementType: Constructor<T>, settings?: ITypedJSONSettings,
+        object: any, elementType: Serializable<T>, settings?: ITypedJSONSettings,
     ): Set<T> {
         return new TypedJSON(elementType, settings).parseAsSet(object);
     }
 
     public static parseAsMap<K, V>(
         object: any,
-        keyType: Constructor<K>,
-        valueType: Constructor<V>,
+        keyType: Serializable<K>,
+        valueType: Serializable<V>,
         settings?: ITypedJSONSettings,
     ): Map<K, V> {
         return new TypedJSON(valueType, settings).parseAsMap(object, keyType);
     }
 
     public static toPlainJson<T>(
-        object: T, rootType: Constructor<T>, settings?: ITypedJSONSettings,
+        object: T, rootType: Serializable<T>, settings?: ITypedJSONSettings,
     ): JsonTypes {
         return new TypedJSON(rootType, settings).toPlainJson(object);
     }
 
     public static toPlainArray<T>(
-        object: T[], elementType: Constructor<T>, dimensions?: 1, settings?: ITypedJSONSettings,
+        object: T[], elementType: Serializable<T>, dimensions?: 1, settings?: ITypedJSONSettings,
     ): Object[];
     public static toPlainArray<T>(
-        object: T[][], elementType: Constructor<T>, dimensions: 2, settings?: ITypedJSONSettings,
+        object: T[][], elementType: Serializable<T>, dimensions: 2, settings?: ITypedJSONSettings,
     ): Object[][];
     public static toPlainArray<T>(
-        object: T[][][], elementType: Constructor<T>, dimensions: 3, settings?: ITypedJSONSettings,
+        object: T[][][], elementType: Serializable<T>, dimensions: 3, settings?: ITypedJSONSettings,
     ): Object[][][];
     public static toPlainArray<T>(
-        object: T[][][][], elementType: Constructor<T>, dimensions: 4, settings?: ITypedJSONSettings,
+        object: T[][][][], elementType: Serializable<T>, dimensions: 4, settings?: ITypedJSONSettings,
     ): Object[][][][];
     public static toPlainArray<T>(
-        object: T[][][][][], elementType: Constructor<T>, dimensions: 5, settings?: ITypedJSONSettings,
+        object: T[][][][][], elementType: Serializable<T>, dimensions: 5, settings?: ITypedJSONSettings,
     ): Object[][][][][];
     public static toPlainArray<T>(
-        object: any[], elementType: Constructor<T>, dimensions: number, settings?: ITypedJSONSettings,
+        object: any[], elementType: Serializable<T>, dimensions: number, settings?: ITypedJSONSettings,
     ): any[];
     public static toPlainArray<T>(
-        object: any[], elementType: Constructor<T>, dimensions?: any, settings?: ITypedJSONSettings,
+        object: any[], elementType: Serializable<T>, dimensions?: any, settings?: ITypedJSONSettings,
     ): any[] {
         return new TypedJSON(elementType, settings).toPlainArray(object, dimensions);
     }
 
     public static toPlainSet<T>(
-        object: Set<T>, elementType: Constructor<T>, settings?: ITypedJSONSettings,
+        object: Set<T>, elementType: Serializable<T>, settings?: ITypedJSONSettings,
     ): Object[]|undefined {
         return new TypedJSON(elementType, settings).toPlainSet(object);
     }
 
     public static toPlainMap<K, V>(
         object: Map<K, V>,
-        keyCtor: Constructor<K>,
-        valueCtor: Constructor<V>,
+        keyCtor: Serializable<K>,
+        valueCtor: Serializable<V>,
         settings?: ITypedJSONSettings,
     ): IndexedObject|{ key: any, value: any }[]|undefined {
         return new TypedJSON(valueCtor, settings).toPlainMap(object, keyCtor);
     }
 
     public static stringify<T>(
-        object: T, rootType: Constructor<T>, settings?: ITypedJSONSettings,
+        object: T, rootType: Serializable<T>, settings?: ITypedJSONSettings,
     ): string {
         return new TypedJSON(rootType, settings).stringify(object);
     }
 
     public static stringifyAsArray<T>(
-        object: T[], elementType: Constructor<T>, dimensions?: 1, settings?: ITypedJSONSettings,
+        object: T[], elementType: Serializable<T>, dimensions?: 1, settings?: ITypedJSONSettings,
     ): string;
     public static stringifyAsArray<T>(
-        object: T[][], elementType: Constructor<T>, dimensions: 2, settings?: ITypedJSONSettings,
+        object: T[][], elementType: Serializable<T>, dimensions: 2, settings?: ITypedJSONSettings,
     ): string;
     public static stringifyAsArray<T>(
-        object: T[][][], elementType: Constructor<T>, dimensions: 3, settings?: ITypedJSONSettings,
+        object: T[][][], elementType: Serializable<T>, dimensions: 3, settings?: ITypedJSONSettings,
     ): string;
     public static stringifyAsArray<T>(
-        object: T[][][][], elementType: Constructor<T>, dimensions: 4, settings?: ITypedJSONSettings,
+        object: T[][][][], elementType: Serializable<T>, dimensions: 4, settings?: ITypedJSONSettings,
     ): string;
     public static stringifyAsArray<T>(
-        object: T[][][][][], elementType: Constructor<T>, dimensions: 5, settings?: ITypedJSONSettings,
+        object: T[][][][][], elementType: Serializable<T>, dimensions: 5, settings?: ITypedJSONSettings,
     ): string;
     public static stringifyAsArray<T>(
-        object: any[], elementType: Constructor<T>, dimensions: number, settings?: ITypedJSONSettings,
+        object: any[], elementType: Serializable<T>, dimensions: number, settings?: ITypedJSONSettings,
     ): string;
     public static stringifyAsArray<T>(
-        object: any[], elementType: Constructor<T>, dimensions?: any, settings?: ITypedJSONSettings,
+        object: any[], elementType: Serializable<T>, dimensions?: any, settings?: ITypedJSONSettings,
     ): string {
         return new TypedJSON(elementType, settings).stringifyAsArray(object, dimensions);
     }
 
     public static stringifyAsSet<T>(
-        object: Set<T>, elementType: Constructor<T>, settings?: ITypedJSONSettings,
+        object: Set<T>, elementType: Serializable<T>, settings?: ITypedJSONSettings,
     ): string {
         return new TypedJSON(elementType, settings).stringifyAsSet(object);
     }
 
     public static stringifyAsMap<K, V>(
         object: Map<K, V>,
-        keyCtor: Constructor<K>,
-        valueCtor: Constructor<V>,
+        keyCtor: Serializable<K>,
+        valueCtor: Serializable<V>,
         settings?: ITypedJSONSettings,
     ): string {
         return new TypedJSON(valueCtor, settings).stringifyAsMap(object, keyCtor);
@@ -221,7 +221,7 @@ export class TypedJSON<T>
     private deserializer: Deserializer<T> = new Deserializer<T>();
     private globalKnownTypes: Array<Constructor<any>> = [];
     private indent: number = 0;
-    private rootConstructor: Constructor<T>;
+    private rootConstructor: Serializable<T>;
     private errorHandler: (e: Error) => void;
     private nameResolver: (ctor: Function) => string;
     private replacer?: (key: string, value: any) => any;
@@ -232,7 +232,7 @@ export class TypedJSON<T>
      * @param rootConstructor The constructor of the root class type.
      * @param settings Additional configuration settings.
      */
-    constructor(rootConstructor: Constructor<T>, settings?: ITypedJSONSettings)
+    constructor(rootConstructor: Serializable<T>, settings?: ITypedJSONSettings)
     {
         let rootMetadata = JsonObjectMetadata.getFromConstructor(rootConstructor);
 
@@ -384,7 +384,7 @@ export class TypedJSON<T>
         );
     }
 
-    public parseAsMap<K>(object: any, keyConstructor: Constructor<K>): Map<K, T>
+    public parseAsMap<K>(object: any, keyConstructor: Serializable<K>): Map<K, T>
     {
         const json = parseToJSObject(object, Map);
         return this.deserializer.convertAsMap(
@@ -444,8 +444,9 @@ export class TypedJSON<T>
         }
     }
 
-    public toPlainMap<K>(object: Map<K, T>, keyConstructor: Constructor<K>): IndexedObject|{ key: any, value: any }[]|undefined
-    {
+    public toPlainMap<K>(
+        object: Map<K, T>, keyConstructor: Serializable<K>,
+    ): IndexedObject | { key: any, value: any }[] | undefined {
         try
         {
             return this.serializer.convertAsMap(object, MapT(keyConstructor, this.rootConstructor));
@@ -487,7 +488,7 @@ export class TypedJSON<T>
         return JSON.stringify(this.toPlainSet(object), this.replacer, this.indent);
     }
 
-    public stringifyAsMap<K>(object: Map<K, T>, keyConstructor: Constructor<K>): string
+    public stringifyAsMap<K>(object: Map<K, T>, keyConstructor: Serializable<K>): string
     {
         return JSON.stringify(this.toPlainMap(object, keyConstructor), this.replacer, this.indent);
     }

@@ -29,7 +29,7 @@
     "source-map-support": "^0.5.16",
     "ts-loader": "^6.2.1",
     "ts-node": "^8.10.2",
-    "typescript": "^3.7.5",
+    "typescript": "^3.9.7",
     "uglifyjs-webpack-plugin": "^2.2.0",
     "webpack": "^4.41.5",
     "webpack-auto-inject-version": "^1.2.2",

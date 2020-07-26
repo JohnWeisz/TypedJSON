@@ -245,4 +245,27 @@ describe('basic serialization of', function () {
             expect(deserialized).toEqual(expected);
         });
     });
+
+    describe('structural inheritance', function () {
+        class JustForOrganizationalPurpose
+        {
+
+        }
+
+        @jsonObject
+        class Child extends JustForOrganizationalPurpose
+        {
+
+        }
+
+        it('should work for unannotated base class', function () {
+            expect(TypedJSON.stringify(new Child, Child)).toEqual('{}');
+            expect(TypedJSON.parse('{}', Child)).toEqual(new Child);
+        });
+
+        it('should throw when using passing base for serialization/deserialization', function () {
+            expect(() => TypedJSON.stringify(new Child, JustForOrganizationalPurpose)).toThrow();
+            expect(() => TypedJSON.parse('{}', JustForOrganizationalPurpose)).toThrow();
+        })
+    });
 });

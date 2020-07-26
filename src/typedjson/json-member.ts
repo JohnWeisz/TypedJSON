@@ -5,10 +5,12 @@ import { injectMetadataInformation } from "./metadata";
 import { extractOptionBase, OptionsBase } from "./options-base";
 import {
     ArrayTypeDescriptor,
-    ConcreteTypeDescriptor,
-    ensureTypeDescriptor, MapTypeDescriptor, SetTypeDescriptor,
+    ensureTypeDescriptor,
+    MapTypeDescriptor,
+    SetTypeDescriptor,
     TypeDescriptor,
 } from "./type-descriptor";
+import { IndexedObject } from './types';
 
 declare abstract class Reflect
 {
@@ -41,30 +43,33 @@ export interface IJsonMemberOptions extends OptionsBase
 
 /**
  * Specifies that a property is part of the object when serializing, with additional options.
- * Omitting the 'constructor' option requires ReflectDecorators and that the property type is always explicitly declared.
+ * Omitting the 'constructor' option requires ReflectDecorators and that the property type is always explicitly
+ * declared.
  * @param options Additional options.
  */
-export function jsonMember<TFunction extends Function>(options: IJsonMemberOptions): PropertyDecorator;
+export function jsonMember(options: IJsonMemberOptions): PropertyDecorator;
 
 /**
  * Specifies that a property is part of the object when serializing.
  * This call signature requires ReflectDecorators and that the property type is always explicitly declared.
  */
-export function jsonMember(target: Object, propertyKey: string | symbol): void;
+export function jsonMember<T extends Function>(prototype: IndexedObject, propertyKey: string | symbol): void;
 
-export function jsonMember<TFunction extends Function>(optionsOrTarget?: IJsonMemberOptions | Object, propKey?: string | symbol): PropertyDecorator | void
-{
-    if (optionsOrTarget instanceof Object && (typeof propKey === "string" || typeof propKey === "symbol"))
+export function jsonMember<T extends Function>(
+    optionsOrPrototype?: IJsonMemberOptions | IndexedObject,
+    propKey?: string | symbol,
+): PropertyDecorator | void {
+    if (propKey && (typeof propKey === "string" || typeof propKey === "symbol"))
     {
-        const target = optionsOrTarget as Object;
+        const prototype = optionsOrPrototype as IndexedObject;
         // For error messages.
-        const decoratorName = `@jsonMember on ${nameof(target.constructor)}.${String(propKey)}`;
+        const decoratorName = `@jsonMember on ${nameof(prototype.constructor)}.${String(propKey)}`;
 
         // jsonMember used directly, no additional information directly available besides target and propKey.
         // Obtain property constructor through ReflectDecorators.
         if (isReflectMetadataSupported)
         {
-            const reflectPropCtor = Reflect.getMetadata("design:type", target, propKey) as Function;
+            const reflectPropCtor = Reflect.getMetadata("design:type", prototype, propKey) as Function;
 
             if (!reflectPropCtor)
             {
@@ -78,7 +83,7 @@ export function jsonMember<TFunction extends Function>(optionsOrTarget?: IJsonMe
                 return;
             }
 
-            injectMetadataInformation(target, propKey, {
+            injectMetadataInformation(prototype, propKey, {
                 type: typeDescriptor,
                 key: propKey.toString(),
                 name: propKey.toString(),
@@ -95,7 +100,7 @@ export function jsonMember<TFunction extends Function>(optionsOrTarget?: IJsonMe
         // jsonMember used as a decorator factory.
         return (target: Object, _propKey: string | symbol) =>
         {
-            let options: IJsonMemberOptions = optionsOrTarget || {};
+            let options: IJsonMemberOptions = optionsOrPrototype as IJsonMemberOptions || {};
             let typeDescriptor: TypeDescriptor|undefined;
             let decoratorName = `@jsonMember on ${nameof(target.constructor)}.${String(_propKey)}`; // For error messages.
 

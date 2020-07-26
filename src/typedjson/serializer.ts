@@ -7,7 +7,7 @@
     nameof,
 } from "./helpers";
 import { IndexedObject } from "./types";
-import { JsonObjectMetadata } from "./metadata";
+import { JsonObjectMetadata, TypeHintEmitter } from "./metadata";
 import { getOptionValue, mergeOptions, OptionsBase } from "./options-base";
 import {
     ArrayTypeDescriptor,
@@ -18,15 +18,7 @@ import {
     TypeDescriptor,
 } from "./type-descriptor";
 
-export type TypeHintEmitter
-    = (
-        targetObject: IndexedObject,
-        sourceObject: IndexedObject,
-        expectedSourceType: Function,
-        sourceTypeMetadata?: JsonObjectMetadata,
-    ) => void;
-
-function defaultTypeEmitter(
+export function defaultTypeEmitter(
     targetObject: IndexedObject,
     sourceObject: IndexedObject,
     expectedSourceType: Function,
@@ -149,6 +141,7 @@ export class Serializer
     ) {
         let sourceTypeMetadata: JsonObjectMetadata|undefined;
         let targetObject: IndexedObject;
+        let typeHintEmitter = this._typeHintEmitter;
 
         if (sourceObject.constructor !== typeDescriptor.ctor && sourceObject instanceof typeDescriptor.ctor)
         {
@@ -191,6 +184,10 @@ export class Serializer
             targetObject = {};
 
             const classOptions = mergeOptions(this.options, sourceMeta.options);
+            if (sourceMeta.typeHintEmitter)
+            {
+                typeHintEmitter = sourceMeta.typeHintEmitter;
+            }
 
             sourceMeta.dataMembers.forEach((objMemberMetadata) =>
             {
@@ -227,7 +224,7 @@ export class Serializer
         }
 
         // Add type-hint.
-        this._typeHintEmitter(targetObject, sourceObject, typeDescriptor.ctor, sourceTypeMetadata);
+        typeHintEmitter(targetObject, sourceObject, typeDescriptor.ctor, sourceTypeMetadata);
 
         return targetObject;
     }
@@ -341,7 +338,7 @@ export class Serializer
         typeDescriptor: MapTypeDescriptor,
         memberName = "object",
         memberOptions?: OptionsBase,
-    ): IndexedObject|Array<{ key: any, value: any }> {
+    ): IndexedObject | { key: any, value: any }[] {
         if (!typeDescriptor.valueType)
         {
             throw new TypeError(`Could not serialize ${memberName} as Map: missing value type definition.`);

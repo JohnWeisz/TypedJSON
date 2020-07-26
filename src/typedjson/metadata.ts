@@ -1,7 +1,18 @@
-﻿import { nameof, logError, METADATA_FIELD_KEY, isDirectlySerializableNativeType, isTypeTypedArray } from "./helpers";
-import { IndexedObject } from "./types";
+﻿import { nameof, logError, isDirectlySerializableNativeType, isTypeTypedArray } from "./helpers";
+import { IndexedObject, Serializable } from "./types";
 import { OptionsBase } from "./options-base";
 import { TypeDescriptor } from "./type-descriptor";
+
+export const METADATA_FIELD_KEY = "__typedJsonJsonObjectMetadataInformation__";
+
+export type TypeResolver = (sourceObject: IndexedObject, knownTypes: Map<string, Function>) => Function|undefined|null;
+export type TypeHintEmitter
+    = (
+        targetObject: IndexedObject,
+        sourceObject: IndexedObject,
+        expectedSourceType: Function,
+        sourceTypeMetadata?: JsonObjectMetadata,
+    ) => void;
 
 export interface JsonMemberMetadata
 {
@@ -14,7 +25,7 @@ export interface JsonMemberMetadata
     /** Property or field key of the json member. */
     key: string;
 
-    /** Constuctor (type) reference of the member. */
+    /** Type descriptor of the member. */
     type?: TypeDescriptor;
 
     /** If set, indicates that the member must be present when deserializing. */
@@ -46,7 +57,7 @@ export class JsonObjectMetadata
      * Gets jsonObject metadata information from a class.
      * @param ctor The constructor class.
      */
-    public static getFromConstructor(ctor: Function): JsonObjectMetadata|undefined
+    public static getFromConstructor<T>(ctor: Serializable<T>): JsonObjectMetadata|undefined
     {
         const prototype = ctor.prototype;
         if (!prototype)
@@ -77,6 +88,36 @@ export class JsonObjectMetadata
         }
     }
 
+    public static ensurePresentInPrototype(prototype: IndexedObject): JsonObjectMetadata
+    {
+        if (prototype.hasOwnProperty(METADATA_FIELD_KEY)) {
+            return prototype[METADATA_FIELD_KEY];
+        }
+            // Target has no JsonObjectMetadata associated with it yet, create it now.
+        const objectMetadata = new JsonObjectMetadata(prototype.constructor);
+
+        // Inherit json members and known types from parent @jsonObject (if any).
+        const parentMetadata: JsonObjectMetadata = prototype[METADATA_FIELD_KEY];
+        if (parentMetadata)
+        {
+            parentMetadata.dataMembers
+                .forEach((memberMetadata, propKey) =>
+                    objectMetadata.dataMembers.set(propKey, memberMetadata));
+            parentMetadata.knownTypes
+                .forEach((knownType) => objectMetadata.knownTypes.add(knownType));
+            objectMetadata.typeResolver = parentMetadata.typeResolver;
+            objectMetadata.typeHintEmitter = parentMetadata.typeHintEmitter;
+        }
+
+        Object.defineProperty(prototype, METADATA_FIELD_KEY, {
+            enumerable: false,
+            configurable: false,
+            writable: false,
+            value: objectMetadata
+        });
+        return objectMetadata;
+    }
+
     /**
      * Gets the known type name of a jsonObject class for type hint.
      * @param constructor The constructor class.
@@ -100,11 +141,14 @@ export class JsonObjectMetadata
         this.classType = classType;
     }
 
-    public dataMembers: Map<string, JsonMemberMetadata> = new Map<string, JsonMemberMetadata>();
+    public dataMembers = new Map<string, JsonMemberMetadata>();
 
-    public knownTypes: Set<Function> = new Set<Function>();
-
-    public knownTypeMethodName?: string;
+    /** Set of known types used for polymorphic deserialization */
+    public knownTypes = new Set<Serializable<any>>();
+    /** If present override the global function */
+    public typeHintEmitter?: TypeHintEmitter;
+    /** If present override the global function */
+    public typeResolver?: TypeResolver;
 
     /** Gets or sets the constructor function for the jsonObject. */
     public classType: Function;
@@ -133,15 +177,14 @@ export class JsonObjectMetadata
     public initializerCallback?: (sourceObject: Object, rawSourceObject: Object) => Object;
 }
 
-export function injectMetadataInformation(constructor: IndexedObject, propKey: string | symbol, metadata: JsonMemberMetadata)
+export function injectMetadataInformation(prototype: IndexedObject, propKey: string | symbol, metadata: JsonMemberMetadata)
 {
-    const decoratorName = `@jsonMember on ${nameof(constructor.constructor)}.${String(propKey)}`; // For error messages.
-    let objectMetadata: JsonObjectMetadata;
+    const decoratorName = `@jsonMember on ${nameof(prototype.constructor)}.${String(propKey)}`; // For error messages.
 
     // When a property decorator is applied to a static member, 'constructor' is a constructor function.
     // See: https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md#property-decorators
     // ... and static members are not supported here, so abort.
-    if (typeof constructor === "function")
+    if (typeof prototype === "function")
     {
         logError(`${decoratorName}: cannot use a static property.`);
         return;
@@ -149,7 +192,7 @@ export function injectMetadataInformation(constructor: IndexedObject, propKey: s
 
     // Methods cannot be serialized.
     // @ts-ignore symbol indexing is not supported by ts
-    if (typeof constructor[propKey] === "function")
+    if (typeof prototype[propKey] === "function")
     {
         logError(`${decoratorName}: cannot use a method property.`);
         return;
@@ -163,31 +206,7 @@ export function injectMetadataInformation(constructor: IndexedObject, propKey: s
 
     // Add jsonObject metadata to 'constructor' if not yet exists ('constructor' is the prototype).
     // NOTE: this will not fire up custom serialization, as 'constructor' must be explicitly marked with '@jsonObject' as well.
-    if (!constructor.hasOwnProperty(METADATA_FIELD_KEY))
-    {
-        // No *own* metadata, create new.
-        objectMetadata = new JsonObjectMetadata(constructor.constructor);
-
-        // Inherit @JsonMembers from parent @jsonObject (if any).
-        const parentMetadata: JsonObjectMetadata = constructor[METADATA_FIELD_KEY];
-        if (parentMetadata) // && !constructor.hasOwnProperty(Helpers.METADATA_FIELD_KEY)
-        {
-            parentMetadata.dataMembers.forEach((_metadata, _propKey) => objectMetadata.dataMembers.set(_propKey, _metadata));
-        }
-
-        // ('constructor' is the prototype of the involved class, metadata information is added to this class prototype).
-        Object.defineProperty(constructor, METADATA_FIELD_KEY, {
-            enumerable: false,
-            configurable: false,
-            writable: false,
-            value: objectMetadata
-        });
-    }
-    else
-    {
-        // JsonObjectMetadata already exists on 'constructor'.
-        objectMetadata = constructor[METADATA_FIELD_KEY];
-    }
+    const objectMetadata = JsonObjectMetadata.ensurePresentInPrototype(prototype);
 
     if (!metadata.deserializer)
     {

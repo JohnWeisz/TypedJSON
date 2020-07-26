@@ -1,6 +1,6 @@
 import { isDirectlyDeserializableNativeType, isSubtypeOf, isValueDefined, logError, nameof } from "./helpers";
 import { Constructor, IndexedObject } from "./types";
-import { JsonObjectMetadata } from "./metadata";
+import { JsonObjectMetadata, TypeResolver } from "./metadata";
 import { getOptionValue, mergeOptions, OptionsBase } from "./options-base";
 import {
     ArrayTypeDescriptor,
@@ -11,9 +11,9 @@ import {
     TypeDescriptor,
 } from "./type-descriptor";
 
-export type TypeResolver = (sourceObject: Object, knownTypes: Map<string, Function>) => Function|undefined|null;
-
-function defaultTypeResolver(sourceObject: any, knownTypes: Map<string, Function>): Function|undefined {
+export function defaultTypeResolver(
+    sourceObject: IndexedObject, knownTypes: Map<string, Function>,
+): Function | undefined {
     if (sourceObject.__type) return knownTypes.get(sourceObject.__type);
 }
 
@@ -70,6 +70,7 @@ export class Deserializer<T>
         let expectedSelfType = typeDescriptor.ctor;
         let sourceObjectMetadata = JsonObjectMetadata.getFromConstructor(expectedSelfType);
         let knownTypeConstructors = knownTypes;
+        let typeResolver = this._typeResolver;
 
         if (sourceObjectMetadata)
         {
@@ -78,10 +79,14 @@ export class Deserializer<T>
                 knownTypeConstructors,
                 this._createKnownTypesMap(sourceObjectMetadata.knownTypes),
             );
+            if (sourceObjectMetadata.typeResolver)
+            {
+                typeResolver = sourceObjectMetadata.typeResolver;
+            }
         }
 
         // Check if a type-hint is available from the source object.
-        const typeFromTypeHint = this._typeResolver(sourceObject, knownTypeConstructors);
+        const typeFromTypeHint = typeResolver(sourceObject, knownTypeConstructors);
 
         if (typeFromTypeHint)
         {

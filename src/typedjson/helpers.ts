@@ -1,33 +1,12 @@
-﻿declare abstract class Reflect
+﻿import { Serializable } from './types';
+
+declare abstract class Reflect
 {
     public static getMetadata(metadataKey: string, target: any, targetKey: string | symbol): any;
 }
 
-export const METADATA_FIELD_KEY = "__typedJsonJsonObjectMetadataInformation__";
-
 export const MISSING_REFLECT_CONF_MSG = 'Are you sure, that you have both "experimentalDecorators"' +
     ' and "emitDecoratorMetadata" in your tsconfig.json?';
-
-export function getDefaultValue<T>(type: { new (): T }): T|undefined
-{
-    switch (type as any)
-    {
-        case Number:
-            return 0 as any;
-
-        case String:
-            return "" as any;
-
-        case Boolean:
-            return false as any;
-
-        case Array:
-            return [] as any;
-
-        default:
-            return undefined;
-    }
-}
 
 /**
  * Determines whether the specified type is a type that can be passed on "as-is" into `JSON.stringify`.
@@ -50,19 +29,6 @@ export function isTypeTypedArray(type: Function): boolean
         .indexOf(type as any));
 }
 
-export function isPrimitiveValue(obj: any): boolean
-{
-    switch (typeof obj)
-    {
-        case "string":
-        case "number":
-        case "boolean":
-            return true;
-        default:
-            return (obj instanceof String || obj instanceof Number || obj instanceof Boolean);
-    }
-}
-
 export function isObject(value: any): value is Object
 {
     return typeof value === "object";
@@ -79,7 +45,7 @@ function shouldOmitParseString(jsonStr: string, expectedType: Function): boolean
     return (expectsTypesSerializedAsStrings && !hasQuotes) || ((!hasQuotes && !isInteger) && expectedType === Date);
 }
 
-export function parseToJSObject(json: any, expectedType: Function): Object {
+export function parseToJSObject<T>(json: any, expectedType: Serializable<T>): Object {
     if (typeof json !== 'string' || shouldOmitParseString(json, expectedType))
     {
       return json;
