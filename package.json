@@ -5,7 +5,7 @@
   "main": "./js/typedjson.js",
   "typings": "./js/typedjson.d.ts",
   "scripts": {
-    "test": "npm run build && nyc ts-node -O '{\"module\": \"commonjs\", \"strict\": false}' node_modules/jasmine/bin/jasmine.js",
+    "test": "npm run build && nyc ts-node --project tsconfig/tsconfig.spec.json node_modules/jasmine/bin/jasmine.js",
     "build": "webpack",
     "preversion": "npm test",
     "version": "npm run build && git add -A js"

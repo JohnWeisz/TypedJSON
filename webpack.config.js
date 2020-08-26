@@ -12,7 +12,12 @@ module.exports = {
     rules: [
       {
         test: /\.[jt]s$/,
-        use: 'ts-loader',
+        use: {
+          loader: 'ts-loader',
+          options: {
+            configFile: 'tsconfig/tsconfig.app.json',
+          },
+        },
         exclude: /node_modules/,
       },
     ],
