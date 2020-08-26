@@ -1,9 +1,11 @@
 import { Serializable } from './types';
 export declare const MISSING_REFLECT_CONF_MSG: string;
 /**
- * Determines whether the specified type is a type that can be passed on "as-is" into `JSON.stringify`.
+ * Determines whether the specified type is a type that can be passed on "as-is" into
+ * `JSON.stringify`.
  * Values of these types don't need special conversion.
- * @param type The constructor of the type (wrapper constructor for primitive types, e.g. `Number` for `number`).
+ * @param type The constructor of the type (wrapper constructor for primitive types, e.g. `Number`
+ * for `number`).
  */
 export declare function isDirectlySerializableNativeType(type: Function): boolean;
 export declare function isDirectlyDeserializableNativeType(type: Function): boolean;

@@ -6,7 +6,9 @@ describe('polymorphism custom type hints', () => {
         let TYPE_MAP: IndexedObject;
 
         @jsonObject({
-            typeHintEmitter: (targetObject, sourceObject) => targetObject.personType = `${sourceObject.constructor.name}Type`,
+            typeHintEmitter: (targetObject, sourceObject) => {
+                return targetObject.personType = `${sourceObject.constructor.name}Type`;
+            },
             typeResolver: sourceObject => TYPE_MAP[sourceObject.personType],
         })
         abstract class Person {
@@ -99,9 +101,19 @@ describe('polymorphism custom type hints', () => {
             const json = TypedJSON.toPlainJson(company, Company);
             expect(json).toEqual({
                 name: 'Json Types',
-                owner: {personType: 'InvestorType', firstName: 'John', lastName: 'White', investAmount: 1700000},
+                owner: {
+                    personType: 'InvestorType',
+                    firstName: 'John',
+                    lastName: 'White',
+                    investAmount: 1700000,
+                },
                 employees: [
-                    {personType: 'EmployeeType', firstName: 'Donn', lastName: 'Worker', salary: 240000},
+                    {
+                        personType: 'EmployeeType',
+                        firstName: 'Donn',
+                        lastName: 'Worker',
+                        salary: 240000,
+                    },
                     {
                         personType: 'PartTimeEmployeeType',
                         firstName: 'Abe',
@@ -109,7 +121,12 @@ describe('polymorphism custom type hints', () => {
                         salary: 160000,
                         workHours: 20,
                     },
-                    {personType: 'EmployeeType', firstName: 'Smith', lastName: 'Elly', salary: 35500},
+                    {
+                        personType: 'EmployeeType',
+                        firstName: 'Smith',
+                        lastName: 'Elly',
+                        salary: 35500,
+                    },
                 ],
             });
         });
@@ -117,9 +134,19 @@ describe('polymorphism custom type hints', () => {
         it('should resolve custom hints', () => {
             const json = {
                 name: 'Json Types',
-                owner: {personType: 'InvestorType', firstName: 'John', lastName: 'White', investAmount: 1700000},
+                owner: {
+                    personType: 'InvestorType',
+                    firstName: 'John',
+                    lastName: 'White',
+                    investAmount: 1700000,
+                },
                 employees: [
-                    {personType: 'EmployeeType', firstName: 'Donn', lastName: 'Worker', salary: 240000},
+                    {
+                        personType: 'EmployeeType',
+                        firstName: 'Donn',
+                        lastName: 'Worker',
+                        salary: 240000,
+                    },
                     {
                         personType: 'PartTimeEmployeeType',
                         firstName: 'Abe',
@@ -127,7 +154,12 @@ describe('polymorphism custom type hints', () => {
                         salary: 160000,
                         workHours: 20,
                     },
-                    {personType: 'EmployeeType', firstName: 'Smith', lastName: 'Elly', salary: 35500},
+                    {
+                        personType: 'EmployeeType',
+                        firstName: 'Smith',
+                        lastName: 'Elly',
+                        salary: 35500,
+                    },
                 ],
             };
 
@@ -155,8 +187,12 @@ describe('polymorphism custom type hints', () => {
         }
 
         @jsonObject({
-            typeHintEmitter: (targetObject, sourceObject) => targetObject.type = (sourceObject.constructor as any).type,
-            typeResolver: sourceObject => sourceObject.type === 'sub-one' ? ConcreteOne : AnotherConcreteOne,
+            typeHintEmitter: (targetObject, sourceObject) => {
+                targetObject.type = (sourceObject.constructor as any).type;
+            },
+            typeResolver: sourceObject => {
+                return sourceObject.type === 'sub-one' ? ConcreteOne : AnotherConcreteOne;
+            },
         })
         abstract class SemanticBaseOne extends StructuralBase {
             @jsonMember
@@ -178,8 +214,12 @@ describe('polymorphism custom type hints', () => {
         }
 
         @jsonObject({
-            typeHintEmitter: (targetObject, sourceObject) => targetObject.hint = sourceObject instanceof ConcreteTwo ? 'first' : 'another',
-            typeResolver: sourceObject => sourceObject.hint === 'first' ? ConcreteTwo : AnotherConcreteTwo,
+            typeHintEmitter: (targetObject, sourceObject) => {
+                targetObject.hint = sourceObject instanceof ConcreteTwo ? 'first' : 'another';
+            },
+            typeResolver: sourceObject => {
+                return sourceObject.hint === 'first' ? ConcreteTwo : AnotherConcreteTwo;
+            },
         })
         abstract class SemanticBaseTwo extends StructuralBase {
             @jsonMember

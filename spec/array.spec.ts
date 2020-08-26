@@ -47,7 +47,8 @@ describe('array of objects', () => {
         expect(result.length).toBe(3, 'Deserialized array is of wrong length');
         result.forEach((obj, index) => {
             expect(obj instanceof Simple).toBeTruthy(`${index} was not of type Simple`);
-            expect(obj).toHaveProperties(expectation[index], '${index} was deserialized incorrectly');
+            expect(obj)
+                .toHaveProperties(expectation[index], '${index} was deserialized incorrectly');
         });
     });
 
@@ -150,7 +151,8 @@ describe('multidimensional arrays', () => {
     }
 
     it('deserializes', () => {
-        const result = TypedJSON.parseAsArray(JSON.stringify(createTestArray(false)), WithArrays, undefined, 2);
+        const testArray = JSON.stringify(createTestArray(false));
+        const result = TypedJSON.parseAsArray(testArray, WithArrays, undefined, 2);
 
         expect(result).toBeOfLength(4);
         expect(result[0]).toBeOfLength(0);

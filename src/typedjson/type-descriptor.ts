@@ -87,8 +87,16 @@ export class MapTypeDescriptor extends GenericTypeDescriptor {
     }
 }
 
-export function MapT(keyType: Typelike, valueType: Typelike, options?: Partial<MapOptions>): MapTypeDescriptor {
-    return new MapTypeDescriptor(ensureTypeDescriptor(keyType), ensureTypeDescriptor(valueType), options);
+export function MapT(
+    keyType: Typelike,
+    valueType: Typelike,
+    options?: Partial<MapOptions>,
+): MapTypeDescriptor {
+    return new MapTypeDescriptor(
+        ensureTypeDescriptor(keyType),
+        ensureTypeDescriptor(valueType),
+        options,
+    );
 }
 
 // TODO support for dictionary types ie. maps that are plain objects

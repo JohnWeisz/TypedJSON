@@ -25,7 +25,10 @@ export interface IJsonArrayMemberOptions extends OptionsBase {
     /** When set, the key on the JSON that should be used instead of the class property name */
     name?: string;
 
-    /** When set, this deserializer will be used to deserialize the member. The callee must assure the correct type. */
+    /**
+     * When set, this deserializer will be used to deserialize the member. The callee must assure
+     * the correct type.
+     */
     deserializer?: (json: any) => any;
 
     /** When set, this serializer will be used to serialize the member. */
@@ -34,15 +37,22 @@ export interface IJsonArrayMemberOptions extends OptionsBase {
 
 /**
  * Specifies that a property, of type array, is part of an object when serializing.
- * @param elementConstructor Constructor of array elements (e.g. 'Number' for 'number[]', or 'Date' for 'Date[]').
+ * @param elementConstructor Constructor of array elements (e.g. 'Number' for 'number[]', or 'Date'
+ * for 'Date[]').
  * @param options Additional options.
  */
-export function jsonArrayMember(elementConstructor: Function | TypeDescriptor, options: IJsonArrayMemberOptions = {}) {
+export function jsonArrayMember(
+    elementConstructor: Function | TypeDescriptor,
+    options: IJsonArrayMemberOptions = {},
+) {
     return (target: Object, propKey: string | symbol) => {
-        const decoratorName = `@jsonArrayMember on ${nameof(target.constructor)}.${String(propKey)}`; // For error messages.
+        const decoratorName =
+            `@jsonArrayMember on ${nameof(target.constructor)}.${String(propKey)}`;
 
         if (!isTypelike(elementConstructor)) {
-            logError(`${decoratorName}: could not resolve constructor of array elements at runtime.`);
+            logError(
+                `${decoratorName}: could not resolve constructor of array elements at runtime.`,
+            );
             return;
         }
 
@@ -52,8 +62,10 @@ export function jsonArrayMember(elementConstructor: Function | TypeDescriptor, o
             return;
         }
 
-        // If ReflectDecorators is available, use it to check whether 'jsonArrayMember' has been used on an array.
-        if (isReflectMetadataSupported && Reflect.getMetadata('design:type', target, propKey) !== Array) {
+        // If ReflectDecorators is available, use it to check whether 'jsonArrayMember' has been
+        // used on an array.
+        if (isReflectMetadataSupported
+            && Reflect.getMetadata('design:type', target, propKey) !== Array) {
             logError(`${decoratorName}: property is not an Array. ${MISSING_REFLECT_CONF_MSG}`);
             return;
         }
@@ -71,7 +83,10 @@ export function jsonArrayMember(elementConstructor: Function | TypeDescriptor, o
     };
 }
 
-export function createArrayType(elementType: TypeDescriptor, dimensions: number): ArrayTypeDescriptor {
+export function createArrayType(
+    elementType: TypeDescriptor,
+    dimensions: number,
+): ArrayTypeDescriptor {
     let type = new ArrayTypeDescriptor(elementType);
     for (let i = 1; i < dimensions; ++i) {
         type = new ArrayTypeDescriptor(type);

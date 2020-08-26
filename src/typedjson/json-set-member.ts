@@ -17,7 +17,10 @@ export interface IJsonSetMemberOptions extends OptionsBase {
     /** When set, the key on the JSON that should be used instead of the class property name */
     name?: string;
 
-    /** When set, this deserializer will be used to deserialize the member. The callee must assure the correct type. */
+    /**
+     * When set, this deserializer will be used to deserialize the member. The callee must assure
+     * the correct type.
+     */
     deserializer?: (json: any) => any;
 
     /** When set, this serializer will be used to serialize the member. */
@@ -27,20 +30,24 @@ export interface IJsonSetMemberOptions extends OptionsBase {
 /**
  * Specifies that the property is part of the object when serializing.
  * Use this decorator on properties of type Set<T>.
- * @param elementConstructor Constructor of set elements (e.g. 'Number' for Set<number> or 'Date' for Set<Date>).
+ * @param elementConstructor Constructor of set elements (e.g. 'Number' for Set<number> or 'Date'
+ * for Set<Date>).
  * @param options Additional options.
  */
 export function jsonSetMember(elementConstructor: Function, options: IJsonSetMemberOptions = {}) {
     return (target: Object, propKey: string | symbol) => {
-        const decoratorName = `@jsonSetMember on ${nameof(target.constructor)}.${String(propKey)}`; // For error messages.
+        // For error messages
+        const decoratorName = `@jsonSetMember on ${nameof(target.constructor)}.${String(propKey)}`;
 
         if (!isTypelike(elementConstructor)) {
             logError(`${decoratorName}: could not resolve constructor of set elements at runtime.`);
             return;
         }
 
-        // If ReflectDecorators is available, use it to check whether 'jsonSetMember' has been used on a set. Warn if not.
-        if (isReflectMetadataSupported && Reflect.getMetadata('design:type', target, propKey) !== Set) {
+        // If ReflectDecorators is available, use it to check whether 'jsonSetMember' has been used
+        // on a set. Warn if not.
+        if (isReflectMetadataSupported
+            && Reflect.getMetadata('design:type', target, propKey) !== Set) {
             logError(`${decoratorName}: property is not a Set. ${MISSING_REFLECT_CONF_MSG}`);
             return;
         }

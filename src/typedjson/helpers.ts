@@ -8,9 +8,11 @@ export const MISSING_REFLECT_CONF_MSG = 'Are you sure, that you have both "exper
     + ' and "emitDecoratorMetadata" in your tsconfig.json?';
 
 /**
- * Determines whether the specified type is a type that can be passed on "as-is" into `JSON.stringify`.
+ * Determines whether the specified type is a type that can be passed on "as-is" into
+ * `JSON.stringify`.
  * Values of these types don't need special conversion.
- * @param type The constructor of the type (wrapper constructor for primitive types, e.g. `Number` for `number`).
+ * @param type The constructor of the type (wrapper constructor for primitive types, e.g. `Number`
+ * for `number`).
  */
 export function isDirectlySerializableNativeType(type: Function): boolean {
     return Boolean(~[Date, Number, String, Boolean].indexOf(type as any));
@@ -21,8 +23,17 @@ export function isDirectlyDeserializableNativeType(type: Function): boolean {
 }
 
 export function isTypeTypedArray(type: Function): boolean {
-    return Boolean(~[Float32Array, Float64Array, Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array]
-        .indexOf(type as any));
+    return Boolean(~[
+        Float32Array,
+        Float64Array,
+        Int8Array,
+        Uint8Array,
+        Uint8ClampedArray,
+        Int16Array,
+        Uint16Array,
+        Int32Array,
+        Uint32Array,
+    ].indexOf(type as any));
 }
 
 export function isObject(value: any): value is Object {
@@ -34,10 +45,13 @@ function shouldOmitParseString(jsonStr: string, expectedType: Function): boolean
         || expectedType === ArrayBuffer
         || expectedType === DataView;
 
-    const hasQuotes = jsonStr.length >= 2 && jsonStr[0] === '"' && jsonStr[jsonStr.length - 1] === '"';
+    const hasQuotes = jsonStr.length >= 2
+        && jsonStr[0] === '"'
+        && jsonStr[jsonStr.length - 1] === '"';
     const isInteger = /^\d+$/.test(jsonStr.trim());
 
-    return (expectsTypesSerializedAsStrings && !hasQuotes) || ((!hasQuotes && !isInteger) && expectedType === Date);
+    return (expectsTypesSerializedAsStrings && !hasQuotes)
+        || ((!hasQuotes && !isInteger) && expectedType === Date);
 }
 
 export function parseToJSObject<T>(json: any, expectedType: Serializable<T>): Object {

@@ -5,7 +5,10 @@ export function isEqual<T>(a: any, b: any): boolean {
     if (typeof a === 'object') {
         if (Object.keys(a).length !== Object.keys(b).length) {
             // 'b' has a different number of properties, and thus can no longer be considered equal.
-            console.warn(`Property count mismatch (a: ${Object.keys(a).length} keys, b: ${Object.keys(b).length} keys) on:`);
+            console.warn(
+                `Property count mismatch (a: ${Object.keys(a).length} keys,`
+                + ` b: ${Object.keys(b).length} keys) on:`,
+            );
             console.warn(a);
             console.warn(b);
             return false;
@@ -22,7 +25,9 @@ export function isEqual<T>(a: any, b: any): boolean {
     } else if (a instanceof Array && b instanceof Array) {
         if (a.length !== b.length) {
             // 'b' has a different number of elements, not equal.
-            console.warn(`Array length mismatch (a: ${a.length} elements, b: ${b.length} elements) on:`);
+            console.warn(
+                `Array length mismatch (a: ${a.length} elements, b: ${b.length} elements) on:`,
+            );
             console.warn(a);
             console.warn(b);
             return false;

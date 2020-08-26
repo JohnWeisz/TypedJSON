@@ -23,7 +23,9 @@ export function toJson<T extends Object>(target: Function): void;
  * @param options for configuring the toJSON creation.
  */
 export function toJson<T extends Object>(options: IToJsonOptions): ((target: Function) => void);
-export function toJson<T extends Object>(optionsOrTarget: IToJsonOptions | Function): ((target: Function) => void) | void {
+export function toJson<T extends Object>(
+    optionsOrTarget: IToJsonOptions | Function,
+): ((target: Function) => void) | void {
     if (typeof optionsOrTarget === 'function') {
         // used directly
         toJsonDecorator(optionsOrTarget, {});

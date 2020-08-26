@@ -16,7 +16,9 @@ const kAllOptions: Array<keyof OptionsBase> = [
     'preserveNull',
 ];
 
-export function extractOptionBase(from: {[key: string]: any} & OptionsBase): OptionsBase | undefined {
+export function extractOptionBase(
+    from: {[key: string]: any} & OptionsBase,
+): OptionsBase | undefined {
     const options = Object.keys(from)
         .filter(key => (kAllOptions as Array<string>).indexOf(key) > -1)
         .reduce((obj, key) => {

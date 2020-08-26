@@ -11,10 +11,13 @@ import {
 } from './type-descriptor';
 import {Constructor, IndexedObject, Serializable} from './types';
 
-export function defaultTypeResolver(sourceObject: IndexedObject, knownTypes: Map<string, Function>): Function | undefined {
+export function defaultTypeResolver(
+    sourceObject: IndexedObject,
+    knownTypes: Map<string, Function>,
+): Function | undefined {
     if (sourceObject.__type) {
-return knownTypes.get(sourceObject.__type);
-}
+        return knownTypes.get(sourceObject.__type);
+    }
 }
 
 export type DeserializerFn<T, TD extends TypeDescriptor, Raw> = (
@@ -36,7 +39,10 @@ export class Deserializer<T> {
     private typeResolver: TypeResolver = defaultTypeResolver;
     private nameResolver?: (ctor: Function) => string;
     private errorHandler: (error: Error) => void = logError;
-    private deserializationStrategy = new Map<Serializable<any>, DeserializerFn<any, TypeDescriptor, any>>([
+    private deserializationStrategy = new Map<
+        Serializable<any>,
+        DeserializerFn<any, TypeDescriptor, any>
+    >([
         // primitives
         [Number, deserializeDirectly],
         [String, deserializeDirectly],
@@ -102,7 +108,14 @@ export class Deserializer<T> {
 
         const deserializer = this.deserializationStrategy.get(typeDescriptor.ctor);
         if (deserializer) {
-            return deserializer(sourceObject, typeDescriptor, knownTypes, memberName, this, memberOptions);
+            return deserializer(
+                sourceObject,
+                typeDescriptor,
+                knownTypes,
+                memberName,
+                this,
+                memberOptions,
+            );
         }
 
         if (typeof sourceObject === 'object') {
@@ -173,11 +186,18 @@ function throwTypeMismatchError(
     );
 }
 
-function makeTypeErrorMessage(expectedType: Function | string, actualType: Function | string, memberName: string) {
-    const expectedTypeName = typeof expectedType === 'function' ? nameof(expectedType) : expectedType;
+function makeTypeErrorMessage(
+    expectedType: Function | string,
+    actualType: Function | string,
+    memberName: string,
+) {
+    const expectedTypeName = typeof expectedType === 'function'
+        ? nameof(expectedType)
+        : expectedType;
     const actualTypeName = typeof actualType === 'function' ? nameof(actualType) : actualType;
 
-    return `Could not deserialize ${memberName}: expected '${expectedTypeName}', got '${actualTypeName}'.`;
+    return `Could not deserialize ${memberName}: expected '${expectedTypeName}',`
+        + ` got '${actualTypeName}'.`;
 }
 
 function srcTypeNameForDebug(sourceObject: any) {
@@ -191,7 +211,11 @@ function deserializeDirectly<T extends string | number | boolean>(
     objectName: string,
 ): T {
     if (sourceObject.constructor !== typeDescriptor.ctor) {
-        throw new TypeError(makeTypeErrorMessage(nameof(typeDescriptor.ctor), sourceObject.constructor, objectName));
+        throw new TypeError(makeTypeErrorMessage(
+            nameof(typeDescriptor.ctor),
+            sourceObject.constructor,
+            objectName,
+        ));
     }
     return sourceObject;
 }
@@ -204,9 +228,9 @@ function convertAsObject<T>(
     deserializer: Deserializer<any>,
 ): IndexedObject | T | undefined {
     if (typeof sourceObject !== 'object' || sourceObject === null) {
-        deserializer.getErrorHandler()(
-            new TypeError(`Cannot deserialize ${memberName}: 'sourceObject' must be a defined object.`),
-        );
+        deserializer.getErrorHandler()(new TypeError(
+            `Cannot deserialize ${memberName}: 'sourceObject' must be a defined object.`,
+        ));
         return undefined;
     }
 
@@ -283,7 +307,9 @@ function convertAsObject<T>(
             ) {
                 sourceObjectWithDeserializedProperties[objMemberMetadata.key] = revivedValue;
             } else if (objMemberMetadata.isRequired) {
-                deserializer.getErrorHandler()(new TypeError(`Missing required member '${objMemberDebugName}'.`));
+                deserializer.getErrorHandler()(new TypeError(
+                    `Missing required member '${objMemberDebugName}'.`,
+                ));
             }
         });
 
@@ -325,17 +351,18 @@ function convertAsObject<T>(
         Object.assign(targetObject, sourceObjectWithDeserializedProperties);
 
         // Call onDeserialized method (if any).
-        if (sourceObjectMetadata.onDeserializedMethodName) {
-            // check for member first
-            if (typeof (targetObject as any)[sourceObjectMetadata.onDeserializedMethodName] === 'function') {
-                (targetObject as any)[sourceObjectMetadata.onDeserializedMethodName]();
-            }
-            // check for static
-            else if (typeof (targetObject.constructor as any)[sourceObjectMetadata.onDeserializedMethodName] === 'function') {
-                (targetObject.constructor as any)[sourceObjectMetadata.onDeserializedMethodName]();
+        const methodName = sourceObjectMetadata.onDeserializedMethodName;
+        if (methodName) {
+            if (typeof (targetObject as any)[methodName] === 'function') {
+                // check for member first
+                (targetObject as any)[methodName]();
+            } else if (typeof (targetObject.constructor as any)[methodName] === 'function') {
+                // check for static
+                (targetObject.constructor as any)[methodName]();
             } else {
                 deserializer.getErrorHandler()(new TypeError(
-                    `onDeserialized callback '${nameof(sourceObjectMetadata.classType)}.${sourceObjectMetadata.onDeserializedMethodName}' is not a method.`,
+                    `onDeserialized callback`
+                    + `'${nameof(sourceObjectMetadata.classType)}.${methodName}' is not a method.`,
                 ));
             }
         }
@@ -367,8 +394,10 @@ function convertAsArray(
     memberOptions?: OptionsBase,
 ): Array<any> {
     if (!(typeDescriptor instanceof ArrayTypeDescriptor)) {
-        throw new TypeError(`Could not deserialize ${memberName} as Array: incorrect TypeDescriptor detected, please use`
-            + ' proper annotation or function for this type');
+        throw new TypeError(
+            `Could not deserialize ${memberName} as Array: incorrect TypeDescriptor detected,`
+            + ' please use proper annotation or function for this type',
+        );
     }
     if (!Array.isArray(sourceObject)) {
         deserializer.getErrorHandler()(
@@ -379,13 +408,17 @@ function convertAsArray(
 
     if (!typeDescriptor.elementType) {
         deserializer.getErrorHandler()(
-            new TypeError(`Could not deserialize ${memberName} as Array: missing constructor reference of Array elements.`),
+            new TypeError(
+                `Could not deserialize ${memberName} as Array: missing constructor reference of`
+                + ` Array elements.`,
+            ),
         );
         return [];
     }
 
     return sourceObject.map(element => {
-        // If an array element fails to deserialize, substitute with undefined. This is so that the original ordering is not interrupted by faulty
+        // If an array element fails to deserialize, substitute with undefined. This is so that the
+        // original ordering is not interrupted by faulty
         // entries, as an Array is ordered.
         try {
             return deserializer.convertSingleValue(
@@ -414,17 +447,26 @@ function convertAsSet(
     memberOptions?: OptionsBase,
 ): Set<any> {
     if (!(typeDescriptor instanceof SetTypeDescriptor)) {
-        throw new TypeError(`Could not deserialize ${memberName} as Set: incorrect TypeDescriptor detected, please use`
-            + ' proper annotation or function for this type');
+        throw new TypeError(
+            `Could not deserialize ${memberName} as Set: incorrect TypeDescriptor detected,`
+            + ` please use proper annotation or function for this type`,
+        );
     }
     if (!Array.isArray(sourceObject)) {
-        deserializer.getErrorHandler()(new TypeError(makeTypeErrorMessage(Array, sourceObject.constructor, memberName)));
+        deserializer.getErrorHandler()(new TypeError(makeTypeErrorMessage(
+            Array,
+            sourceObject.constructor,
+            memberName,
+        )));
         return new Set<any>();
     }
 
     if (!typeDescriptor.elementType) {
         deserializer.getErrorHandler()(
-            new TypeError(`Could not deserialize ${memberName} as Set: missing constructor reference of Set elements.`),
+            new TypeError(
+                `Could not deserialize ${memberName} as Set: missing constructor reference of`
+                + ` Set elements.`,
+            ),
         );
         return new Set<any>();
     }
@@ -464,8 +506,10 @@ function convertAsMap(
     memberOptions?: OptionsBase,
 ): Map<any, any> {
     if (!(typeDescriptor instanceof MapTypeDescriptor)) {
-        throw new TypeError(`Could not deserialize ${memberName} as Map: incorrect TypeDescriptor detected, please use`
-            + ' proper annotation or function for this type');
+        throw new TypeError(
+            `Could not deserialize ${memberName} as Map: incorrect TypeDescriptor detected,`
+            + 'please use proper annotation or function for this type',
+        );
     }
     const expectedShape = typeDescriptor.getCompleteOptions().shape;
     if (!isExpectedMapShape(sourceObject, expectedShape)) {
@@ -561,15 +605,22 @@ function deserializeDate(
     knownTypes: Map<string, Function>,
     memberName: string,
 ): Date {
-    // Support for Date with ISO 8601 format, or with numeric timestamp (milliseconds elapsed since the Epoch).
+    // Support for Date with ISO 8601 format, or with numeric timestamp (milliseconds elapsed since
+    // the Epoch).
     // ISO 8601 spec.: https://www.w3.org/TR/NOTE-datetime
 
-    if (typeof sourceObject === 'string' || (typeof sourceObject === 'number' && sourceObject > 0)) {
+    if (typeof sourceObject === 'string'
+        || (typeof sourceObject === 'number' && sourceObject > 0)) {
         return new Date(sourceObject as any);
     } else if (sourceObject instanceof Date) {
         return sourceObject;
     } else {
-        throwTypeMismatchError('Date', 'an ISO-8601 string', srcTypeNameForDebug(sourceObject), memberName);
+        throwTypeMismatchError(
+            'Date',
+            'an ISO-8601 string',
+            srcTypeNameForDebug(sourceObject),
+            memberName,
+        );
     }
 }
 
@@ -580,7 +631,12 @@ function stringToArrayBuffer(
     memberName: string,
 ) {
     if (typeof sourceObject !== 'string') {
-        throwTypeMismatchError('ArrayBuffer', 'a string source', srcTypeNameForDebug(sourceObject), memberName);
+        throwTypeMismatchError(
+            'ArrayBuffer',
+            'a string source',
+            srcTypeNameForDebug(sourceObject),
+            memberName,
+        );
     }
     return createArrayBufferFromString(sourceObject);
 }
@@ -592,7 +648,12 @@ function stringToDataView(
     memberName: string,
 ) {
     if (typeof sourceObject !== 'string') {
-        throwTypeMismatchError('DataView', 'a string source', srcTypeNameForDebug(sourceObject), memberName);
+        throwTypeMismatchError(
+            'DataView',
+            'a string source',
+            srcTypeNameForDebug(sourceObject),
+            memberName,
+        );
     }
     return new DataView(createArrayBufferFromString(sourceObject));
 }

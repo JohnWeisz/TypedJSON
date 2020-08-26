@@ -5,7 +5,8 @@ import { IndexedObject } from './types';
 export declare function defaultTypeEmitter(targetObject: IndexedObject, sourceObject: IndexedObject, expectedSourceType: Function, sourceTypeMetadata?: JsonObjectMetadata): void;
 /**
  * @param sourceObject The original object that should be serialized.
- * @param typeDescriptor Instance of TypeDescriptor containing information about expected serialization.
+ * @param typeDescriptor Instance of TypeDescriptor containing information about expected
+ * serialization.
  * @param memberName Name of the object being serialized, used for debugging purposes.
  * @param serializer Serializer instance, aiding with recursive serialization.
  * @param memberOptions If converted as a member, the member options.

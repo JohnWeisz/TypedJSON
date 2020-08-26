@@ -33,14 +33,17 @@ describe('custom member deserializer', () => {
     });
 
     it('should not affect serialization', function () {
-        expect(TypedJSON.stringify(this.person, Person)).toBe('{"firstName":"John","lastName":"Doe"}');
+        expect(TypedJSON.stringify(this.person, Person))
+            .toBe('{"firstName":"John","lastName":"Doe"}');
     });
 });
 
 describe('custom array member deserializer', () => {
     @jsonObject
     class Obj {
-        @jsonArrayMember(Number, {deserializer: (json: any) => json.split(',').map((v) => parseInt(v, 10))})
+        @jsonArrayMember(Number, {
+            deserializer: (json: any) => json.split(',').map((v) => parseInt(v, 10)),
+        })
         nums: Array<number>;
 
         @jsonMember
@@ -85,7 +88,9 @@ describe('custom delegating array member serializer', () => {
         }
     }
 
-    function objArrayDeserializer(values: Array<{prop: string; shouldDeserialize: boolean}> | undefined) {
+    function objArrayDeserializer(
+        values: Array<{prop: string; shouldDeserialize: boolean}> | undefined,
+    ) {
         if (values) {
             return TypedJSON.parseAsArray(
                 values.filter(value => value.shouldDeserialize),

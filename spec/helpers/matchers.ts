@@ -1,11 +1,17 @@
 beforeEach(() => {
     jasmine.addMatchers({
         toHaveProperties(util, customEqualityMatchers): jasmine.CustomMatcher {
-            function equalOnPropNames<T extends Object>(actual: T, expected: Array<keyof T>): boolean {
+            function equalOnPropNames<T extends Object>(
+                actual: T,
+                expected: Array<keyof T>,
+            ): boolean {
                 return expected.every(prop => prop in actual);
             }
 
-            function equalOnPropValues<T extends {[k: string]: any}>(actual: T, expected: Partial<T>): boolean {
+            function equalOnPropValues<T extends {[k: string]: any}>(
+                actual: T,
+                expected: Partial<T>,
+            ): boolean {
                 return Object.keys(expected)
                     .every(
                         key => key in actual
@@ -31,7 +37,13 @@ beforeEach(() => {
 
                     return {
                         pass,
-                        message: util.buildFailureMessage(name, pass, actual, expected, ...customMsgs),
+                        message: util.buildFailureMessage(
+                            name,
+                            pass,
+                            actual,
+                            expected,
+                            ...customMsgs,
+                        ),
                     };
                 },
             };
@@ -46,7 +58,13 @@ beforeEach(() => {
                     const pass = actual instanceof expected;
                     return {
                         pass,
-                        message: util.buildFailureMessage('To be instance of', pass, actual, expected, ...customMsgs),
+                        message: util.buildFailureMessage(
+                            'To be instance of',
+                            pass,
+                            actual,
+                            expected,
+                            ...customMsgs,
+                        ),
                     };
                 },
             };
@@ -61,7 +79,13 @@ beforeEach(() => {
                     const pass = actual && actual.length === expected;
                     return {
                         pass,
-                        message: util.buildFailureMessage('To be of length', pass, actual, expected, ...customMsgs),
+                        message: util.buildFailureMessage(
+                            'To be of length',
+                            pass,
+                            actual,
+                            expected,
+                            ...customMsgs,
+                        ),
                     };
                 },
             };
@@ -93,7 +117,10 @@ function tryAsInt8Array(obj: any): Int8Array | undefined {
 declare namespace jasmine {
     /* eslint-disable @typescript-eslint/method-signature-style */
     interface Matchers<T> {
-        toHaveProperties(expectation: Partial<T> | Array<keyof T>, ...expectationFailOutput: Array<any>): boolean;
+        toHaveProperties(
+            expectation: Partial<T> | Array<keyof T>,
+            ...expectationFailOutput: Array<any>,
+        ): boolean;
         toBeInstanceOf(expectation: Function, ...expectationFailOutput: Array<any>): boolean;
     }
     interface ArrayLikeMatchers<T> extends Matchers<ArrayLike<T>> {
