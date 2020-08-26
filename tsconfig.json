@@ -1,17 +1,18 @@
-{
-  "compilerOptions": {
-    "target": "ES5",                       /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', or 'ESNEXT'. */
-    "lib": ["es7", "dom"],
-    "module": "es2015",                    /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', or 'ESNext'. */
-    "declaration": true,                   /* Generates corresponding '.d.ts' file. */
-    "sourceMap": true,                     /* Generates corresponding '.map' file. */
-    "strict": true,
-    "experimentalDecorators": true,        /* Enables experimental support for ES7 decorators. */
-    "emitDecoratorMetadata": true,         /* Enables experimental support for emitting type metadata for decorators. */
+/*
+  This is a "Solution Style" tsconfig.json file, and is used by editors and TypeScript’s language
+  server to improve development experience. It is not intended to be used to perform a compilation.
 
-    "outDir": "js"
-  },
-  "files": [
-    "src/typedjson.ts"
+  To learn more about this file see:
+  https://devblogs.microsoft.com/typescript/announcing-typescript-3-9/#solution-style-tsconfig.
+*/
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig/tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig/tsconfig.spec.json"
+    }
   ]
 }
