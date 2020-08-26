@@ -1,0 +1,53 @@
+---
+
+env:
+  es6: true
+  node: true
+
+overrides:
+  -
+    files:
+      - '*.js'
+    extends:
+      - '@matthiaskunnen/eslint-config-base'
+
+  -
+    env:
+      jasmine: true
+    files:
+      - 'spec/**/*.ts'
+    extends:
+      - '@matthiaskunnen/eslint-config-typescript'
+
+    parser: '@typescript-eslint/parser'
+
+    parserOptions:
+      project:
+        - tsconfig/tsconfig.lint.json
+      sourceType: module
+    rules:
+      '@typescript-eslint/no-use-before-define': off
+      func-names: off
+
+  -
+    files:
+      - 'src/**/*.ts'
+    extends:
+      - '@matthiaskunnen/eslint-config-typescript'
+
+    parser: '@typescript-eslint/parser'
+
+    parserOptions:
+      project:
+        - tsconfig/tsconfig.lint.json
+      sourceType: module
+    rules:
+      '@typescript-eslint/no-use-before-define':
+        - error
+        -
+          classes: true
+          enums: true
+          functions: false
+          variables: true
+          typedefs: true
+      no-prototype-builtins: off # @todo check if this should remain off
