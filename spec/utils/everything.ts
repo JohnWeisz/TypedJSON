@@ -1,4 +1,4 @@
-import { jsonObject, jsonMember } from "../../src/typedjson";
+import {jsonMember, jsonObject} from '../../src/typedjson';
 
 export enum JustEnum {
     One,
@@ -46,7 +46,7 @@ export interface IEverything {
     // nullable is not supported, use optional instead
     // nullable: {}|null;
     optional?: {};
-    undefinable: {}|undefined;
+    undefinable: {} | undefined;
     enum: JustEnum;
     constEnum: ConstEnum;
     strEnum: StrEnum;
@@ -104,7 +104,7 @@ export class Everything implements IEverything {
     @jsonMember
     optional?: {};
     @jsonMember
-    undefinable: {}|undefined;
+    undefinable: {} | undefined;
     @jsonMember
     enum: JustEnum;
     @jsonMember

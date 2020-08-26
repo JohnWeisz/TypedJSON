@@ -1,10 +1,9 @@
-﻿import { jsonObject, jsonMember, TypedJSON } from "../src/typedjson";
+import {jsonMember, jsonObject, TypedJSON} from '../src/typedjson';
 
-describe('beforeSerialization', function () {
-
-    it('should call the static method', function () {
+describe('beforeSerialization', () => {
+    it('should call the static method', () => {
         @jsonObject({
-            beforeSerialization: 'beforeSerial'
+            beforeSerialization: 'beforeSerial',
         })
         class Person {
             @jsonMember
@@ -13,14 +12,14 @@ describe('beforeSerialization', function () {
             @jsonMember
             isOld: boolean;
 
-            public static beforeSerial() {
+            static beforeSerial() {
                 // to have been called
             }
         }
 
         spyOn(Person, 'beforeSerial');
 
-        const youngPerson = TypedJSON.parse({ age: 10 }, Person);
+        const youngPerson = TypedJSON.parse({age: 10}, Person);
         expect(youngPerson instanceof Person).toBeTruthy();
         expect(youngPerson.isOld).toBeUndefined();
         TypedJSON.stringify(youngPerson, Person);
@@ -28,9 +27,9 @@ describe('beforeSerialization', function () {
         expect(Person.beforeSerial).toHaveBeenCalled();
     });
 
-    it('should call the member method', function () {
+    it('should call the member method', () => {
         @jsonObject({
-            beforeSerialization: 'beforeSerial'
+            beforeSerialization: 'beforeSerial',
         })
         class Person {
             @jsonMember
@@ -39,7 +38,7 @@ describe('beforeSerialization', function () {
             @jsonMember
             isOld: boolean;
 
-            public beforeSerial() {
+            beforeSerial() {
                 if (this.age < 20) {
                     this.isOld = false;
                 } else {
@@ -48,8 +47,8 @@ describe('beforeSerialization', function () {
             }
         }
 
-        const youngPerson = TypedJSON.parse({ age: 10 }, Person);
-        const oldPerson = TypedJSON.parse({ age: 50 }, Person);
+        const youngPerson = TypedJSON.parse({age: 10}, Person);
+        const oldPerson = TypedJSON.parse({age: 50}, Person);
         expect(youngPerson instanceof Person).toBeTruthy();
         expect(oldPerson instanceof Person).toBeTruthy();
 
@@ -62,9 +61,9 @@ describe('beforeSerialization', function () {
         expect(oldPersonUntyped['isOld']).toBeTruthy();
     });
 
-    it('should prefer the member method when there are both', function () {
+    it('should prefer the member method when there are both', () => {
         @jsonObject({
-            beforeSerialization: 'beforeSerial'
+            beforeSerialization: 'beforeSerial',
         })
         class Person {
             @jsonMember
@@ -77,18 +76,18 @@ describe('beforeSerialization', function () {
                 spyOn<Person, 'beforeSerial'>(this, 'beforeSerial');
             }
 
-            public beforeSerial() {
+            beforeSerial() {
                 // should call
             }
 
-            public static beforeSerial() {
+            static beforeSerial() {
                 // should NOT call
             }
         }
 
         spyOn(Person, 'beforeSerial');
 
-        const youngPerson = TypedJSON.parse({ age: 10 }, Person);
+        const youngPerson = TypedJSON.parse({age: 10}, Person);
         expect(youngPerson instanceof Person).toBeTruthy();
         expect(youngPerson.isOld).toBeUndefined();
 

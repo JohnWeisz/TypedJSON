@@ -1,5 +1,5 @@
-import { OptionsBase } from "./options-base";
-import { TypeDescriptor } from "./type-descriptor";
+import { OptionsBase } from './options-base';
+import { TypeDescriptor } from './type-descriptor';
 import { IndexedObject } from './types';
 export interface IJsonMemberOptions extends OptionsBase {
     /**

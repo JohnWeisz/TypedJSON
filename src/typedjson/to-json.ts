@@ -1,4 +1,4 @@
-import { TypedJSON } from "../parser";
+import {TypedJSON} from '../parser';
 
 /**
  * Options for the @toJson decorator.
@@ -23,8 +23,7 @@ export function toJson<T extends Object>(target: Function): void;
  * @param options for configuring the toJSON creation.
  */
 export function toJson<T extends Object>(options: IToJsonOptions): ((target: Function) => void);
-export function toJson<T extends Object>(optionsOrTarget: IToJsonOptions | Function
-): ((target: Function) => void) | void {
+export function toJson<T extends Object>(optionsOrTarget: IToJsonOptions | Function): ((target: Function) => void) | void {
     if (typeof optionsOrTarget === 'function') {
         // used directly
         toJsonDecorator(optionsOrTarget, {});
@@ -33,7 +32,7 @@ export function toJson<T extends Object>(optionsOrTarget: IToJsonOptions | Funct
     // used as a factory
     return (target: Function) => {
         toJsonDecorator(target, optionsOrTarget);
-    }
+    };
 }
 
 function toJsonDecorator<T extends Object>(target: Function, options: IToJsonOptions): void {
@@ -42,5 +41,5 @@ function toJsonDecorator<T extends Object>(target: Function, options: IToJsonOpt
     }
     target.prototype.toJSON = function () {
         return TypedJSON.toPlainJson(this, Object.getPrototypeOf(this).constructor);
-    }
+    };
 }

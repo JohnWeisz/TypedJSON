@@ -1,7 +1,7 @@
-import {jsonObject, jsonMember, jsonArrayMember, TypedJSON} from "../src/typedjson";
-import { Everything, IEverything } from "./utils/everything";
+import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src/typedjson';
+import {Everything, IEverything} from './utils/everything';
 
-describe('array of objects', function () {
+describe('array of objects', () => {
     @jsonObject
     class Simple {
         @jsonMember
@@ -10,36 +10,36 @@ describe('array of objects', function () {
         @jsonMember
         numProp: number;
 
-        constructor(init: {strProp: string, numProp: number})
+        constructor(init: {strProp: string; numProp: number})
         constructor()
-        constructor(init?: {strProp: string, numProp: number}) {
+        constructor(init?: {strProp: string; numProp: number}) {
             if (init) {
                 this.strProp = init.strProp;
                 this.numProp = init.numProp;
             }
         }
 
-        public foo() {
+        foo() {
             return `${this.strProp}-${this.numProp}`;
         }
     }
 
-    it('deserializes empty array', function () {
+    it('deserializes empty array', () => {
         const result = TypedJSON.parseAsArray('[]', Simple);
         expect(result).toBeDefined();
         expect(result.length).toBe(0);
     });
 
-    it('serialized empty array', function () {
+    it('serialized empty array', () => {
         const result = TypedJSON.stringifyAsArray([], Simple);
         expect(result).toBe('[]');
     });
 
-    it('deserialized should be of proper type', function () {
+    it('deserialized should be of proper type', () => {
         const expectation = [
-            { strProp: 'delta', numProp: 4 },
-            { strProp: 'bravo', numProp: 2 },
-            { strProp: 'gamma', numProp: 0 },
+            {strProp: 'delta', numProp: 4},
+            {strProp: 'bravo', numProp: 2},
+            {strProp: 'gamma', numProp: 0},
         ];
 
         const result = TypedJSON.parseAsArray(JSON.stringify(expectation), Simple);
@@ -51,11 +51,11 @@ describe('array of objects', function () {
         });
     });
 
-    it('serialized should contain all elements', function () {
+    it('serialized should contain all elements', () => {
         const expectation = [
-            { strProp: 'delta', numProp: 4 },
-            { strProp: 'bravo', numProp: 2 },
-            { strProp: 'gamma', numProp: 0 },
+            {strProp: 'delta', numProp: 4},
+            {strProp: 'bravo', numProp: 2},
+            {strProp: 'gamma', numProp: 0},
         ];
 
         const result = TypedJSON.stringifyAsArray(expectation.map(obj => new Simple(obj)), Simple);
@@ -64,27 +64,27 @@ describe('array of objects', function () {
     });
 });
 
-describe('multidimensional arrays', function () {
+describe('multidimensional arrays', () => {
     interface IWithArrays {
-        one: IEverything[];
-        two: IEverything[][];
-        deep: IEverything[][][][][][];
-        arrayWithArray?: IWithArrays[][];
+        one: Array<IEverything>;
+        two: Array<Array<IEverything>>;
+        deep: Array<Array<Array<Array<Array<Array<IEverything>>>>>>;
+        arrayWithArray?: Array<Array<IWithArrays>>;
     }
 
     @jsonObject
     class WithArrays implements IWithArrays {
         @jsonArrayMember(Everything)
-        one: Everything[];
+        one: Array<Everything>;
 
         @jsonArrayMember(Everything, {dimensions: 2})
-        two: Everything[][];
+        two: Array<Array<Everything>>;
 
         @jsonArrayMember(Everything, {dimensions: 6})
-        deep: Everything[][][][][][];
+        deep: Array<Array<Array<Array<Array<Array<Everything>>>>>>;
 
         @jsonArrayMember(WithArrays, {dimensions: 2})
-        arrayWithArray?: WithArrays[][];
+        arrayWithArray?: Array<Array<WithArrays>>;
 
         constructor(init: IWithArrays)
         constructor()
@@ -117,14 +117,14 @@ describe('multidimensional arrays', function () {
                 expected ? Everything.expected() : Everything.create(),
             ],
             two: [
-                [ expected ? Everything.expected() : Everything.create() ],
-                [ expected ? Everything.expected() : Everything.create() ],
+                [expected ? Everything.expected() : Everything.create()],
+                [expected ? Everything.expected() : Everything.create()],
                 [],
                 [],
             ],
             deep: [[[[
                 [],
-                [[ expected ? Everything.expected() : Everything.create() ]],
+                [[expected ? Everything.expected() : Everything.create()]],
             ]]]],
             arrayWithArray: [
                 [],
@@ -135,7 +135,7 @@ describe('multidimensional arrays', function () {
         return expected ? new WithArrays(result) : result;
     }
 
-    function createTestArray(expected: boolean): IWithArrays[][] {
+    function createTestArray(expected: boolean): Array<Array<IWithArrays>> {
         return [
             [],
             [
@@ -146,10 +146,10 @@ describe('multidimensional arrays', function () {
             [
                 createTestObject(expected),
             ],
-        ]
+        ];
     }
 
-    it('deserializes', function () {
+    it('deserializes', () => {
         const result = TypedJSON.parseAsArray(JSON.stringify(createTestArray(false)), WithArrays, undefined, 2);
 
         expect(result).toBeOfLength(4);
@@ -162,43 +162,43 @@ describe('multidimensional arrays', function () {
         expect(result[3][0]).toEqual(createTestObject(true));
     });
 
-    it('serializes', function () {
+    it('serializes', () => {
         const result = TypedJSON.stringifyAsArray(createTestArray(true), WithArrays, 2);
 
         expect(result).toBe(JSON.stringify(createTestArray(false)));
     });
 });
 
-describe('array of raw objects', function () {
+describe('array of raw objects', () => {
     @jsonObject
     class Translations {
         @jsonArrayMember(Object)
-        localization: any[];
+        localization: Array<any>;
     }
 
     function localization() {
         return [
             {
-                "language_tag": "en_us",
-                "/actions/main": "My Game Actions",
-                "/actions/driving": "Driving",
+                language_tag: 'en_us',
+                '/actions/main': 'My Game Actions',
+                '/actions/driving': 'Driving',
             },
             {
-                "language_tag": "fr",
-                "/actions/main": "Mes actions de jeux",
-                "/actions/driving": "Conduire",
-            }
+                language_tag: 'fr',
+                '/actions/main': 'Mes actions de jeux',
+                '/actions/driving': 'Conduire',
+            },
         ];
     }
 
-    it('should deserialize as is', function () {
-        const translations = TypedJSON.parse({"localization" : localization()}, Translations);
+    it('should deserialize as is', () => {
+        const translations = TypedJSON.parse({localization: localization()}, Translations);
         expect(translations).toBeDefined();
         expect(translations instanceof Translations).toBeTruthy();
         expect(translations.localization).toEqual(localization());
     });
 
-    it('should serialize as is', function () {
+    it('should serialize as is', () => {
         const translations = new Translations();
         translations.localization = localization();
         const json = TypedJSON.toPlainJson(translations, Translations);

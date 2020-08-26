@@ -1,7 +1,7 @@
-import { parseToJSObject } from '../src/typedjson/helpers';
+import {parseToJSObject} from '../src/typedjson/helpers';
 
-describe("parse To Object", function () {
-    it("should passthrough objects", function () {
+describe('parse To Object', () => {
+    it('should passthrough objects', () => {
         const obj = {
             a: 1,
             b: 2,
@@ -11,7 +11,7 @@ describe("parse To Object", function () {
         expect(obj2).toBe(obj);
     });
 
-    it("should passthrough arrays", function () {
+    it('should passthrough arrays', () => {
         const arr = [{
             a: 1,
             b: 2,
@@ -21,7 +21,7 @@ describe("parse To Object", function () {
         expect(arr2).toBe(arr);
     });
 
-    it("should parse object string", function () {
+    it('should parse object string', () => {
         const arr = {
             a: 1,
             b: 2,
@@ -31,12 +31,12 @@ describe("parse To Object", function () {
         expect(arr2).toEqual(arr);
     });
 
-    it("should passthrough primitives", function () {
+    it('should passthrough primitives', () => {
         expect(parseToJSObject(1, Number)).toBe(1);
         expect(parseToJSObject(false, Boolean)).toBe(false);
     });
 
-    it("should parse strings with quotes, but passthrough other", function () {
+    it('should parse strings with quotes, but passthrough other', () => {
         // string is obvious
         expect(parseToJSObject('"I am a string"', String)).toEqual('I am a string');
         expect(parseToJSObject('just a string', String)).toBe('just a string');
@@ -49,8 +49,8 @@ describe("parse To Object", function () {
         expect(parseToJSObject('畤慰', DataView)).toBe('畤慰');
     });
 
-    it("should passthrough builtins", function () {
-      const date = new Date;
+    it('should passthrough builtins', () => {
+      const date = new Date();
       expect(parseToJSObject(date, Date)).toBe(date);
       const buffer = new ArrayBuffer(3);
       expect(parseToJSObject(buffer, ArrayBuffer)).toBe(buffer);

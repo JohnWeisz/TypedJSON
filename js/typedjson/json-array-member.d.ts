@@ -1,5 +1,5 @@
-import { OptionsBase } from "./options-base";
-import { ArrayTypeDescriptor, TypeDescriptor } from "./type-descriptor";
+import { OptionsBase } from './options-base';
+import { ArrayTypeDescriptor, TypeDescriptor } from './type-descriptor';
 export interface IJsonArrayMemberOptions extends OptionsBase {
     /** When set, indicates that the member must be present when deserializing. */
     isRequired?: boolean;

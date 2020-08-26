@@ -16,9 +16,9 @@ export declare function parseToJSObject<T>(json: any, expectedType: Serializable
  * @param B The supposed base type.
  */
 export declare function isSubtypeOf(A: Function, B: Function): boolean;
-export declare function logError(message?: any, ...optionalParams: any[]): void;
-export declare function logMessage(message?: any, ...optionalParams: any[]): void;
-export declare function logWarning(message?: any, ...optionalParams: any[]): void;
+export declare function logError(message?: any, ...optionalParams: Array<any>): void;
+export declare function logMessage(message?: any, ...optionalParams: Array<any>): void;
+export declare function logWarning(message?: any, ...optionalParams: Array<any>): void;
 /**
  * Checks if the value is considered defined (not undefined and not null).
  * @param value

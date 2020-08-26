@@ -1,7 +1,7 @@
-import {jsonObject, jsonMember, toJson} from "../src/typedjson";
+import {jsonMember, jsonObject, toJson} from '../src/typedjson';
 
-describe('toJson decorator', function () {
-    it('should work with JSON.stringify', function () {
+describe('toJson decorator', () => {
+    it('should work with JSON.stringify', () => {
         @toJson
         @jsonObject
         class Person {
@@ -10,18 +10,18 @@ describe('toJson decorator', function () {
             @jsonMember({name: 'surname'})
             lastName?: string;
 
-            public getFullName() {
-                return this.firstName + " " + this.lastName;
+            getFullName() {
+                return `${this.firstName} ${this.lastName}`;
             }
         }
 
-        const person = new Person;
+        const person = new Person();
         person.firstName = 'John';
         person.lastName = 'Doe';
         expect(JSON.stringify(person)).toBe('{"surname":"Doe"}');
     });
 
-    it('should work on the abstract class', function () {
+    it('should work on the abstract class', () => {
         @toJson
         abstract class Base {
             @jsonMember({name: 'renamed'})
@@ -41,20 +41,19 @@ describe('toJson decorator', function () {
             ignored?: string;
         }
 
-
-        const sub = new Sub;
+        const sub = new Sub();
         sub.prop = 'value';
         sub.num = 20;
         expect(JSON.stringify(sub)).toBe('{"renamed":"value","numeric":20}');
 
-        const otherSub = new OtherSub;
+        const otherSub = new OtherSub();
         otherSub.prop = 'value';
         otherSub.decimal = 123;
         otherSub.ignored = 'assigned';
         expect(JSON.stringify(otherSub)).toBe('{"renamed":"value","decimal":123}');
     });
 
-    it("should throw an error when toJSON already exists", function () {
+    it('should throw an error when toJSON already exists', () => {
         try {
             @toJson
             @jsonObject
@@ -67,7 +66,7 @@ describe('toJson decorator', function () {
                 }
             }
 
-            const some = new Some;
+            const some = new Some();
             some.prop = 'value';
             expect(JSON.stringify(some)).toBe('{}');
 
@@ -77,8 +76,7 @@ describe('toJson decorator', function () {
         }
     });
 
-
-    it("should overwrite toJSON when overwrite is true", function () {
+    it('should overwrite toJSON when overwrite is true', () => {
         @toJson({overwrite: true})
         @jsonObject
         class Some {
@@ -90,7 +88,7 @@ describe('toJson decorator', function () {
             }
         }
 
-        const some = new Some;
+        const some = new Some();
         some.prop = 'value';
         expect(JSON.stringify(some)).toBe('{"prop":"value"}');
     });

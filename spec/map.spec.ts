@@ -1,10 +1,10 @@
-import { jsonObject } from '../src/typedjson/json-object';
-import { jsonMember } from '../src/typedjson/json-member';
-import { TypedJSON } from '../src/parser';
-import { ArrayT, jsonMapMember } from '../src/typedjson';
-import { MapShape } from '../src/typedjson/type-descriptor';
+import {TypedJSON} from '../src/parser';
+import {ArrayT, jsonMapMember} from '../src/typedjson';
+import {jsonMember} from '../src/typedjson/json-member';
+import {jsonObject} from '../src/typedjson/json-object';
+import {MapShape} from '../src/typedjson/type-descriptor';
 
-describe('map dictionary shape', function () {
+describe('map dictionary shape', () => {
     @jsonObject
     class Simple {
         @jsonMember
@@ -13,39 +13,42 @@ describe('map dictionary shape', function () {
         @jsonMember
         numProp: number;
 
-        constructor(init: { strProp: string, numProp: number })
+        constructor(init: { strProp: string; numProp: number })
         constructor()
-        constructor(init?: { strProp: string, numProp: number }) {
+        constructor(init?: { strProp: string; numProp: number }) {
             if (init) {
                 this.strProp = init.strProp;
                 this.numProp = init.numProp;
             }
         }
 
-        public foo() {
+        foo() {
             return `${this.strProp}-${this.numProp}`;
         }
     }
 
     @jsonObject
     class DictMap {
-        @jsonMapMember(String, Simple, { shape: MapShape.OBJECT})
+        @jsonMapMember(String, Simple, {shape: MapShape.OBJECT})
         prop: Map<String, Simple>;
 
-        public getSetSize() {
+        getSetSize() {
             return this.prop.size;
         }
     }
 
-    it('deserializes', function () {
-        const result = TypedJSON.parse(JSON.stringify(
-            {
-                prop: {
-                    one: {strProp: 'delta', numProp: 4},
-                    two: {strProp: 'gamma', numProp: 7},
-                }
-            }),
-            DictMap);
+    it('deserializes', () => {
+        const result = TypedJSON.parse(
+            JSON.stringify(
+                {
+                    prop: {
+                        one: {strProp: 'delta', numProp: 4},
+                        two: {strProp: 'gamma', numProp: 7},
+                    },
+                },
+            ),
+            DictMap,
+        );
 
         expect(result).toBeInstanceOf(DictMap);
         expect(result.prop).toBeDefined();
@@ -56,7 +59,7 @@ describe('map dictionary shape', function () {
         expect(result.prop.get('two').strProp).toBe('gamma');
     });
 
-    it('serializes', function () {
+    it('serializes', () => {
         const object = new DictMap();
         object.prop = new Map<string, Simple>([
             ['one', new Simple({strProp: 'delta', numProp: 4})],
@@ -68,12 +71,12 @@ describe('map dictionary shape', function () {
             prop: {
                 one: {strProp: 'delta', numProp: 4},
                 two: {strProp: 'gamma', numProp: 7},
-            }
+            },
         }));
     });
 });
 
-describe('map of array dictionary shape', function () {
+describe('map of array dictionary shape', () => {
     @jsonObject
     class Simple {
         @jsonMember
@@ -82,39 +85,42 @@ describe('map of array dictionary shape', function () {
         @jsonMember
         numProp: number;
 
-        constructor(init: { strProp: string, numProp: number })
+        constructor(init: { strProp: string; numProp: number })
         constructor()
-        constructor(init?: { strProp: string, numProp: number }) {
+        constructor(init?: { strProp: string; numProp: number }) {
             if (init) {
                 this.strProp = init.strProp;
                 this.numProp = init.numProp;
             }
         }
 
-        public foo() {
+        foo() {
             return `${this.strProp}-${this.numProp}`;
         }
     }
 
     @jsonObject
     class DictArrayMap {
-        @jsonMapMember(String, ArrayT(Simple), { shape: MapShape.OBJECT})
-        prop: Map<String, Simple[]>;
+        @jsonMapMember(String, ArrayT(Simple), {shape: MapShape.OBJECT})
+        prop: Map<String, Array<Simple>>;
 
-        public getSetSize() {
+        getSetSize() {
             return this.prop.size;
         }
     }
 
-    it('deserializes', function () {
-        const result = TypedJSON.parse(JSON.stringify(
-            {
-                prop: {
-                    one: [{strProp: 'delta', numProp: 4}],
-                    two: [{strProp: 'gamma', numProp: 7}, {strProp: 'alpha', numProp: 2}],
-                }
-            }),
-            DictArrayMap);
+    it('deserializes', () => {
+        const result = TypedJSON.parse(
+            JSON.stringify(
+                {
+                    prop: {
+                        one: [{strProp: 'delta', numProp: 4}],
+                        two: [{strProp: 'gamma', numProp: 7}, {strProp: 'alpha', numProp: 2}],
+                    },
+                },
+            ),
+            DictArrayMap,
+        );
 
         expect(result).toBeInstanceOf(DictArrayMap);
         expect(result.prop).toBeDefined();
@@ -128,9 +134,9 @@ describe('map of array dictionary shape', function () {
         expect(result.prop.get('two')[1].foo()).toBe('alpha-2');
     });
 
-    it('serializes', function () {
+    it('serializes', () => {
         const object = new DictArrayMap();
-        object.prop = new Map<string, Simple[]>([
+        object.prop = new Map<string, Array<Simple>>([
             ['one', [new Simple({strProp: 'delta', numProp: 4})]],
             ['two', [new Simple({strProp: 'gamma', numProp: 7}), new Simple({strProp: 'alpha', numProp: 2})]],
         ]);
@@ -140,7 +146,7 @@ describe('map of array dictionary shape', function () {
             prop: {
                 one: [{strProp: 'delta', numProp: 4}],
                 two: [{strProp: 'gamma', numProp: 7}, {strProp: 'alpha', numProp: 2}],
-            }
+            },
         }));
     });
 });

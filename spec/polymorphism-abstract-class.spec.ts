@@ -1,7 +1,7 @@
-﻿import {isEqual} from "./utils/object-compare";
-import {TypedJSON, jsonObject, jsonMember, jsonArrayMember} from "../src/typedjson";
+import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src/typedjson';
+import {isEqual} from './utils/object-compare';
 
-describe('polymorphic abstract classes', function() {
+describe('polymorphic abstract classes', () => {
     abstract class Node {
         @jsonMember
         name: string;
@@ -19,10 +19,10 @@ describe('polymorphic abstract classes', function() {
     @jsonObject
     class BigNode extends Node {
         @jsonArrayMember(String)
-        inputs: string[];
+        inputs: Array<string>;
 
         @jsonArrayMember(String)
-        outputs: string[];
+        outputs: Array<string>;
 
         constructor() {
             super();
@@ -32,11 +32,11 @@ describe('polymorphic abstract classes', function() {
     }
 
     @jsonObject({
-        knownTypes: [BigNode, SmallNode]
+        knownTypes: [BigNode, SmallNode],
     })
     class Graph {
         @jsonArrayMember(Node)
-        nodes: Node[];
+        nodes: Array<Node>;
 
         @jsonMember
         root: Node;
@@ -47,39 +47,39 @@ describe('polymorphic abstract classes', function() {
     }
 
     function randPortType() {
-        var types = [
-            "string",
-            "integer",
-            "float",
-            "boolean",
-            "void"
+        const types = [
+            'string',
+            'integer',
+            'float',
+            'boolean',
+            'void',
         ];
 
         return types[Math.floor(Math.random() * types.length)];
     }
 
     function test(log: boolean) {
-        var graph = new Graph();
+        const graph = new Graph();
 
-        for (var i = 0; i < 20; i++) {
+        for (let i = 0; i < 20; i++) {
             let node: Node;
 
             if (Math.random() < 0.25) {
-                let bigNode = new BigNode();
+                const bigNode = new BigNode();
 
                 bigNode.inputs = [
                     randPortType(),
                     randPortType(),
-                    randPortType()
+                    randPortType(),
                 ];
                 bigNode.outputs = [
                     randPortType(),
-                    randPortType()
+                    randPortType(),
                 ];
 
                 node = bigNode;
             } else {
-                let smallNode = new SmallNode();
+                const smallNode = new SmallNode();
 
                 smallNode.inputType = randPortType();
                 smallNode.outputType = randPortType();
@@ -96,21 +96,21 @@ describe('polymorphic abstract classes', function() {
             }
         }
 
-        var json = TypedJSON.stringify(graph, Graph);
-        var clone = TypedJSON.parse(json, Graph);
+        const json = TypedJSON.stringify(graph, Graph);
+        const clone = TypedJSON.parse(json, Graph);
 
         if (log) {
-            console.log("Test: polymorphism with abstract property types...");
+            console.log('Test: polymorphism with abstract property types...');
             console.log(graph);
             console.log(JSON.parse(json));
             console.log(clone);
-            console.log("Test finished.");
+            console.log('Test finished.');
         }
 
         return isEqual(graph, clone);
     }
 
-    it('should work', function () {
+    it('should work', () => {
         expect(test(false)).toBeTruthy();
     });
 });

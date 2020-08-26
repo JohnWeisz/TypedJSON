@@ -1,12 +1,12 @@
 export abstract class TypeDescriptor {
-    protected constructor(public readonly ctor: Function) {}
+    protected constructor(readonly ctor: Function) {}
 
-    getTypes(): Function[] {
+    getTypes(): Array<Function> {
         return [this.ctor];
     }
 }
 
-export type Typelike = TypeDescriptor|Function;
+export type Typelike = TypeDescriptor | Function;
 
 export class ConcreteTypeDescriptor extends TypeDescriptor {
     constructor(ctor: Function) {
@@ -21,11 +21,11 @@ export abstract class GenericTypeDescriptor extends TypeDescriptor {
 }
 
 export class ArrayTypeDescriptor extends GenericTypeDescriptor {
-    constructor(public readonly elementType: TypeDescriptor) {
+    constructor(readonly elementType: TypeDescriptor) {
         super(Array);
     }
 
-    getTypes(): Function[] {
+    getTypes(): Array<Function> {
         return super.getTypes().concat(this.elementType.getTypes());
     }
 }
@@ -35,11 +35,11 @@ export function ArrayT(elementType: Typelike): ArrayTypeDescriptor {
 }
 
 export class SetTypeDescriptor extends GenericTypeDescriptor {
-    constructor(public readonly elementType: TypeDescriptor) {
+    constructor(readonly elementType: TypeDescriptor) {
         super(Set);
     }
 
-    getTypes(): Function[] {
+    getTypes(): Array<Function> {
         return super.getTypes().concat(this.elementType.getTypes());
     }
 }
@@ -69,14 +69,14 @@ export interface MapOptions {
 
 export class MapTypeDescriptor extends GenericTypeDescriptor {
     constructor(
-        public readonly keyType: TypeDescriptor,
-        public readonly valueType: TypeDescriptor,
-        public readonly options?: Partial<MapOptions>,
+        readonly keyType: TypeDescriptor,
+        readonly valueType: TypeDescriptor,
+        readonly options?: Partial<MapOptions>,
     ) {
         super(Map);
     }
 
-    getTypes(): Function[] {
+    getTypes(): Array<Function> {
         return super.getTypes().concat(this.keyType.getTypes(), this.valueType.getTypes());
     }
 
@@ -107,7 +107,7 @@ export function MapT(keyType: Typelike, valueType: Typelike, options?: Partial<M
 // }
 
 export function isTypelike(type: any): type is Typelike {
-    return type && (typeof type === "function" || type instanceof TypeDescriptor);
+    return type && (typeof type === 'function' || type instanceof TypeDescriptor);
 }
 
 export function ensureTypeDescriptor(type: Typelike): TypeDescriptor {

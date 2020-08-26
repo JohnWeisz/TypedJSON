@@ -1,6 +1,6 @@
-import { IndexedObject, Serializable } from "./types";
-import { OptionsBase } from "./options-base";
-import { TypeDescriptor } from "./type-descriptor";
+import { OptionsBase } from './options-base';
+import { TypeDescriptor } from './type-descriptor';
+import { IndexedObject, Serializable } from './types';
 export declare const METADATA_FIELD_KEY = "__typedJsonJsonObjectMetadataInformation__";
 export declare type TypeResolver = (sourceObject: IndexedObject, knownTypes: Map<string, Function>) => Function | undefined | null;
 export declare type TypeHintEmitter = (targetObject: IndexedObject, sourceObject: IndexedObject, expectedSourceType: Function, sourceTypeMetadata?: JsonObjectMetadata) => void;
