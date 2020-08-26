@@ -113,9 +113,11 @@ var __spreadArrays = (undefined && undefined.__spreadArrays) || function () {
 var MISSING_REFLECT_CONF_MSG = 'Are you sure, that you have both "experimentalDecorators"'
     + ' and "emitDecoratorMetadata" in your tsconfig.json?';
 /**
- * Determines whether the specified type is a type that can be passed on "as-is" into `JSON.stringify`.
+ * Determines whether the specified type is a type that can be passed on "as-is" into
+ * `JSON.stringify`.
  * Values of these types don't need special conversion.
- * @param type The constructor of the type (wrapper constructor for primitive types, e.g. `Number` for `number`).
+ * @param type The constructor of the type (wrapper constructor for primitive types, e.g. `Number`
+ * for `number`).
  */
 function isDirectlySerializableNativeType(type) {
     return Boolean(~[Date, Number, String, Boolean].indexOf(type));
@@ -124,8 +126,17 @@ function isDirectlyDeserializableNativeType(type) {
     return Boolean(~[Number, String, Boolean].indexOf(type));
 }
 function isTypeTypedArray(type) {
-    return Boolean(~[Float32Array, Float64Array, Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array]
-        .indexOf(type));
+    return Boolean(~[
+        Float32Array,
+        Float64Array,
+        Int8Array,
+        Uint8Array,
+        Uint8ClampedArray,
+        Int16Array,
+        Uint16Array,
+        Int32Array,
+        Uint32Array,
+    ].indexOf(type));
 }
 function isObject(value) {
     return typeof value === 'object';
@@ -134,9 +145,12 @@ function shouldOmitParseString(jsonStr, expectedType) {
     var expectsTypesSerializedAsStrings = expectedType === String
         || expectedType === ArrayBuffer
         || expectedType === DataView;
-    var hasQuotes = jsonStr.length >= 2 && jsonStr[0] === '"' && jsonStr[jsonStr.length - 1] === '"';
+    var hasQuotes = jsonStr.length >= 2
+        && jsonStr[0] === '"'
+        && jsonStr[jsonStr.length - 1] === '"';
     var isInteger = /^\d+$/.test(jsonStr.trim());
-    return (expectsTypesSerializedAsStrings && !hasQuotes) || ((!hasQuotes && !isInteger) && expectedType === Date);
+    return (expectsTypesSerializedAsStrings && !hasQuotes)
+        || ((!hasQuotes && !isInteger) && expectedType === Date);
 }
 function parseToJSObject(json, expectedType) {
     if (typeof json !== 'string' || shouldOmitParseString(json, expectedType)) {
@@ -287,10 +301,12 @@ var metadata_JsonObjectMetadata = /** @class */ (function () {
         // Inherit json members and known types from parent @jsonObject (if any).
         var parentMetadata = prototype[METADATA_FIELD_KEY];
         if (parentMetadata) {
-            parentMetadata.dataMembers
-                .forEach(function (memberMetadata, propKey) { return objectMetadata.dataMembers.set(propKey, memberMetadata); });
-            parentMetadata.knownTypes
-                .forEach(function (knownType) { return objectMetadata.knownTypes.add(knownType); });
+            parentMetadata.dataMembers.forEach(function (memberMetadata, propKey) {
+                objectMetadata.dataMembers.set(propKey, memberMetadata);
+            });
+            parentMetadata.knownTypes.forEach(function (knownType) {
+                objectMetadata.knownTypes.add(knownType);
+            });
             objectMetadata.typeResolver = parentMetadata.typeResolver;
             objectMetadata.typeHintEmitter = parentMetadata.typeHintEmitter;
         }
@@ -318,9 +334,13 @@ var metadata_JsonObjectMetadata = /** @class */ (function () {
 }());
 
 function injectMetadataInformation(prototype, propKey, metadata) {
-    var decoratorName = "@jsonMember on " + nameof(prototype.constructor) + "." + String(propKey); // For error messages.
-    // When a property decorator is applied to a static member, 'constructor' is a constructor function.
-    // See: https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md#property-decorators
+    // For error messages
+    var decoratorName = "@jsonMember on " + nameof(prototype.constructor) + "." + String(propKey);
+    // When a property decorator is applied to a static member, 'constructor' is a constructor
+    // function.
+    // See:
+    // eslint-disable-next-line max-len
+    // https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md#property-decorators
     // ... and static members are not supported here, so abort.
     if (typeof prototype === 'function') {
         logError(decoratorName + ": cannot use a static property.");
@@ -337,7 +357,8 @@ function injectMetadataInformation(prototype, propKey, metadata) {
         return;
     }
     // Add jsonObject metadata to 'constructor' if not yet exists ('constructor' is the prototype).
-    // NOTE: this will not fire up custom serialization, as 'constructor' must be explicitly marked with '@jsonObject' as well.
+    // NOTE: this will not fire up custom serialization, as 'constructor' must be explicitly marked
+    // with '@jsonObject' as well.
     var objectMetadata = metadata_JsonObjectMetadata.ensurePresentInPrototype(prototype);
     if (!metadata.deserializer) {
         // @ts-ignore above is a check (!deser && !ctor)
@@ -640,9 +661,12 @@ function throwTypeMismatchError(targetType, expectedSourceType, actualSourceType
         + (" expected " + expectedSourceType + ", got " + actualSourceType + "."));
 }
 function makeTypeErrorMessage(expectedType, actualType, memberName) {
-    var expectedTypeName = typeof expectedType === 'function' ? nameof(expectedType) : expectedType;
+    var expectedTypeName = typeof expectedType === 'function'
+        ? nameof(expectedType)
+        : expectedType;
     var actualTypeName = typeof actualType === 'function' ? nameof(actualType) : actualType;
-    return "Could not deserialize " + memberName + ": expected '" + expectedTypeName + "', got '" + actualTypeName + "'.";
+    return "Could not deserialize " + memberName + ": expected '" + expectedTypeName + "',"
+        + (" got '" + actualTypeName + "'.");
 }
 function srcTypeNameForDebug(sourceObject) {
     return sourceObject ? nameof(sourceObject.constructor) : 'undefined';
@@ -743,17 +767,19 @@ function convertAsObject(sourceObject, typeDescriptor, knownTypes, memberName, d
         // Finally, assign deserialized properties to target object.
         Object.assign(targetObject, sourceObjectWithDeserializedProperties_1);
         // Call onDeserialized method (if any).
-        if (sourceObjectMetadata.onDeserializedMethodName) {
-            // check for member first
-            if (typeof targetObject[sourceObjectMetadata.onDeserializedMethodName] === 'function') {
-                targetObject[sourceObjectMetadata.onDeserializedMethodName]();
+        var methodName = sourceObjectMetadata.onDeserializedMethodName;
+        if (methodName) {
+            if (typeof targetObject[methodName] === 'function') {
+                // check for member first
+                targetObject[methodName]();
             }
-            // check for static
-            else if (typeof targetObject.constructor[sourceObjectMetadata.onDeserializedMethodName] === 'function') {
-                targetObject.constructor[sourceObjectMetadata.onDeserializedMethodName]();
+            else if (typeof targetObject.constructor[methodName] === 'function') {
+                // check for static
+                targetObject.constructor[methodName]();
             }
             else {
-                deserializer.getErrorHandler()(new TypeError("onDeserialized callback '" + nameof(sourceObjectMetadata.classType) + "." + sourceObjectMetadata.onDeserializedMethodName + "' is not a method."));
+                deserializer.getErrorHandler()(new TypeError("onDeserialized callback"
+                    + ("'" + nameof(sourceObjectMetadata.classType) + "." + methodName + "' is not a method.")));
             }
         }
         return targetObject;
@@ -769,19 +795,21 @@ function convertAsObject(sourceObject, typeDescriptor, knownTypes, memberName, d
 }
 function convertAsArray(sourceObject, typeDescriptor, knownTypes, memberName, deserializer, memberOptions) {
     if (!(typeDescriptor instanceof ArrayTypeDescriptor)) {
-        throw new TypeError("Could not deserialize " + memberName + " as Array: incorrect TypeDescriptor detected, please use"
-            + ' proper annotation or function for this type');
+        throw new TypeError("Could not deserialize " + memberName + " as Array: incorrect TypeDescriptor detected,"
+            + ' please use proper annotation or function for this type');
     }
     if (!Array.isArray(sourceObject)) {
         deserializer.getErrorHandler()(new TypeError(makeTypeErrorMessage(Array, sourceObject.constructor, memberName)));
         return [];
     }
     if (!typeDescriptor.elementType) {
-        deserializer.getErrorHandler()(new TypeError("Could not deserialize " + memberName + " as Array: missing constructor reference of Array elements."));
+        deserializer.getErrorHandler()(new TypeError("Could not deserialize " + memberName + " as Array: missing constructor reference of"
+            + " Array elements."));
         return [];
     }
     return sourceObject.map(function (element) {
-        // If an array element fails to deserialize, substitute with undefined. This is so that the original ordering is not interrupted by faulty
+        // If an array element fails to deserialize, substitute with undefined. This is so that the
+        // original ordering is not interrupted by faulty
         // entries, as an Array is ordered.
         try {
             return deserializer.convertSingleValue(element, typeDescriptor.elementType, knownTypes, memberName + "[]", memberOptions);
@@ -796,15 +824,16 @@ function convertAsArray(sourceObject, typeDescriptor, knownTypes, memberName, de
 }
 function convertAsSet(sourceObject, typeDescriptor, knownTypes, memberName, deserializer, memberOptions) {
     if (!(typeDescriptor instanceof SetTypeDescriptor)) {
-        throw new TypeError("Could not deserialize " + memberName + " as Set: incorrect TypeDescriptor detected, please use"
-            + ' proper annotation or function for this type');
+        throw new TypeError("Could not deserialize " + memberName + " as Set: incorrect TypeDescriptor detected,"
+            + " please use proper annotation or function for this type");
     }
     if (!Array.isArray(sourceObject)) {
         deserializer.getErrorHandler()(new TypeError(makeTypeErrorMessage(Array, sourceObject.constructor, memberName)));
         return new Set();
     }
     if (!typeDescriptor.elementType) {
-        deserializer.getErrorHandler()(new TypeError("Could not deserialize " + memberName + " as Set: missing constructor reference of Set elements."));
+        deserializer.getErrorHandler()(new TypeError("Could not deserialize " + memberName + " as Set: missing constructor reference of"
+            + " Set elements."));
         return new Set();
     }
     var resultSet = new Set();
@@ -826,8 +855,8 @@ function isExpectedMapShape(source, expectedShape) {
 }
 function convertAsMap(sourceObject, typeDescriptor, knownTypes, memberName, deserializer, memberOptions) {
     if (!(typeDescriptor instanceof MapTypeDescriptor)) {
-        throw new TypeError("Could not deserialize " + memberName + " as Map: incorrect TypeDescriptor detected, please use"
-            + ' proper annotation or function for this type');
+        throw new TypeError("Could not deserialize " + memberName + " as Map: incorrect TypeDescriptor detected,"
+            + 'please use proper annotation or function for this type');
     }
     var expectedShape = typeDescriptor.getCompleteOptions().shape;
     if (!isExpectedMapShape(sourceObject, expectedShape)) {
@@ -878,9 +907,11 @@ function convertAsMap(sourceObject, typeDescriptor, knownTypes, memberName, dese
     return resultMap;
 }
 function deserializeDate(sourceObject, typeDescriptor, knownTypes, memberName) {
-    // Support for Date with ISO 8601 format, or with numeric timestamp (milliseconds elapsed since the Epoch).
+    // Support for Date with ISO 8601 format, or with numeric timestamp (milliseconds elapsed since
+    // the Epoch).
     // ISO 8601 spec.: https://www.w3.org/TR/NOTE-datetime
-    if (typeof sourceObject === 'string' || (typeof sourceObject === 'number' && sourceObject > 0)) {
+    if (typeof sourceObject === 'string'
+        || (typeof sourceObject === 'number' && sourceObject > 0)) {
         return new Date(sourceObject);
     }
     else if (sourceObject instanceof Date) {
@@ -932,13 +963,14 @@ function convertAsUintArray(sourceObject, typeDescriptor, knownTypes, memberName
 
 /**
  * Specifies that a property, of type array, is part of an object when serializing.
- * @param elementConstructor Constructor of array elements (e.g. 'Number' for 'number[]', or 'Date' for 'Date[]').
+ * @param elementConstructor Constructor of array elements (e.g. 'Number' for 'number[]', or 'Date'
+ * for 'Date[]').
  * @param options Additional options.
  */
 function jsonArrayMember(elementConstructor, options) {
     if (options === void 0) { options = {}; }
     return function (target, propKey) {
-        var decoratorName = "@jsonArrayMember on " + nameof(target.constructor) + "." + String(propKey); // For error messages.
+        var decoratorName = "@jsonArrayMember on " + nameof(target.constructor) + "." + String(propKey);
         if (!isTypelike(elementConstructor)) {
             logError(decoratorName + ": could not resolve constructor of array elements at runtime.");
             return;
@@ -948,8 +980,10 @@ function jsonArrayMember(elementConstructor, options) {
             logError(decoratorName + ": 'dimensions' option must be at least 1.");
             return;
         }
-        // If ReflectDecorators is available, use it to check whether 'jsonArrayMember' has been used on an array.
-        if (isReflectMetadataSupported && Reflect.getMetadata('design:type', target, propKey) !== Array) {
+        // If ReflectDecorators is available, use it to check whether 'jsonArrayMember' has been
+        // used on an array.
+        if (isReflectMetadataSupported
+            && Reflect.getMetadata('design:type', target, propKey) !== Array) {
             logError(decoratorName + ": property is not an Array. " + MISSING_REFLECT_CONF_MSG);
             return;
         }
@@ -992,7 +1026,8 @@ var serializer_assign = (undefined && undefined.__assign) || function () {
 function defaultTypeEmitter(targetObject, sourceObject, expectedSourceType, sourceTypeMetadata) {
     // By default, we put a "__type" property on the output object if the actual object is not the
     // same as the expected one, so that deserialization will know what to deserialize into (given
-    // the required known-types are defined, and the object is a valid subtype of the expected type).
+    // the required known-types are defined, and the object is a valid subtype of the expected
+    // type).
     if (sourceObject.constructor !== expectedSourceType) {
         targetObject.__type = sourceTypeMetadata && sourceTypeMetadata.name
             ? sourceTypeMetadata.name
@@ -1072,7 +1107,8 @@ var serializer_Serializer = /** @class */ (function () {
         if (!isInstanceOf(sourceObject, typeDescriptor.ctor)) {
             var expectedName = nameof(typeDescriptor.ctor);
             var actualName = nameof(sourceObject.constructor);
-            this.errorHandler(new TypeError("Could not serialize '" + memberName + "': expected '" + expectedName + "', got '" + actualName + "'."));
+            this.errorHandler(new TypeError("Could not serialize '" + memberName + "': expected '" + expectedName + "',"
+                + (" got '" + actualName + "'.")));
             return;
         }
         var serializer = this.serializationStrategy.get(typeDescriptor.ctor);
@@ -1096,7 +1132,8 @@ function serializer_convertAsObject(sourceObject, typeDescriptor, memberName, se
     var sourceTypeMetadata;
     var targetObject;
     var typeHintEmitter = serializer.getTypeHintEmitter();
-    if (sourceObject.constructor !== typeDescriptor.ctor && sourceObject instanceof typeDescriptor.ctor) {
+    if (sourceObject.constructor !== typeDescriptor.ctor
+        && sourceObject instanceof typeDescriptor.ctor) {
         // The source object is not of the expected type, but it is a valid subtype.
         // This is OK, and we'll proceed to gather object metadata from the subtype instead.
         sourceTypeMetadata = metadata_JsonObjectMetadata.getFromConstructor(sourceObject.constructor);
@@ -1105,24 +1142,29 @@ function serializer_convertAsObject(sourceObject, typeDescriptor, memberName, se
         sourceTypeMetadata = metadata_JsonObjectMetadata.getFromConstructor(typeDescriptor.ctor);
     }
     if (sourceTypeMetadata) {
-        if (sourceTypeMetadata.beforeSerializationMethodName) {
-            // check for member first
-            if (typeof sourceObject[sourceTypeMetadata.beforeSerializationMethodName] === 'function') {
-                sourceObject[sourceTypeMetadata.beforeSerializationMethodName]();
+        var beforeSerializationMethodName = sourceTypeMetadata.beforeSerializationMethodName;
+        if (beforeSerializationMethodName) {
+            if (typeof sourceObject[beforeSerializationMethodName] === 'function') {
+                // check for member first
+                sourceObject[beforeSerializationMethodName]();
             }
-            // check for static
-            else if (typeof sourceObject.constructor[sourceTypeMetadata.beforeSerializationMethodName] === 'function') {
-                sourceObject.constructor[sourceTypeMetadata.beforeSerializationMethodName]();
+            else if (typeof sourceObject.constructor[beforeSerializationMethodName]
+                === 'function') {
+                // check for static
+                sourceObject.constructor[beforeSerializationMethodName]();
             }
             else {
-                serializer.getErrorHandler()(new TypeError("beforeSerialization callback '" + nameof(sourceTypeMetadata.classType) + "." + sourceTypeMetadata.beforeSerializationMethodName + "' is not a method."));
+                serializer.getErrorHandler()(new TypeError("beforeSerialization callback '"
+                    + (nameof(sourceTypeMetadata.classType) + "." + beforeSerializationMethodName)
+                    + "' is not a method."));
             }
         }
         var sourceMeta_1 = sourceTypeMetadata;
         // Strong-typed serialization available.
-        // We'll serialize by members that have been marked with @jsonMember (including array/set/map members),
-        // and perform recursive conversion on each of them. The converted objects are put on the 'targetObject',
-        // which is what will be put into 'JSON.stringify' finally.
+        // We'll serialize by members that have been marked with @jsonMember (including
+        // array/set/map members), and perform recursive conversion on each of them. The converted
+        // objects are put on the 'targetObject', which is what will be put into 'JSON.stringify'
+        // finally.
         targetObject = {};
         var classOptions_1 = mergeOptions(serializer.options, sourceMeta_1.options);
         if (sourceMeta_1.typeHintEmitter) {
@@ -1149,7 +1191,8 @@ function serializer_convertAsObject(sourceObject, typeDescriptor, memberName, se
     }
     else {
         // Untyped serialization, "as-is", we'll just pass the object on.
-        // We'll clone the source object, because type hints are added to the object itself, and we don't want to modify
+        // We'll clone the source object, because type hints are added to the object itself, and we
+        // don't want to modify
         // to the original object.
         targetObject = serializer_assign({}, sourceObject);
     }
@@ -1158,13 +1201,14 @@ function serializer_convertAsObject(sourceObject, typeDescriptor, memberName, se
     return targetObject;
 }
 /**
- * Performs the conversion of an array of typed objects (or primitive values) to an array of simple javascript objects
+ * Performs the conversion of an array of typed objects (or primitive values) to an array of simple
+ * javascript objects
  * (or primitive values) for serialization.
  */
 function serializer_convertAsArray(sourceObject, typeDescriptor, memberName, serializer, memberOptions) {
     if (!(typeDescriptor instanceof ArrayTypeDescriptor)) {
-        throw new TypeError("Could not serialize " + memberName + " as Array: incorrect TypeDescriptor detected, please use"
-            + ' proper annotation or function for this type');
+        throw new TypeError("Could not serialize " + memberName + " as Array: incorrect TypeDescriptor detected, please"
+            + ' use proper annotation or function for this type');
     }
     if (!typeDescriptor.elementType) {
         throw new TypeError("Could not serialize " + memberName + " as Array: missing element type definition.");
@@ -1187,7 +1231,9 @@ function serializer_convertAsArray(sourceObject, typeDescriptor, memberName, ser
         // Just for debugging purposes.
         memberName += '[]';
     }
-    return sourceObject.map(function (element) { return serializer.convertSingleValue(element, typeDescriptor.elementType, memberName, memberOptions); });
+    return sourceObject.map(function (element) {
+        return serializer.convertSingleValue(element, typeDescriptor.elementType, memberName, memberOptions);
+    });
 }
 /**
  * Performs the conversion of a set of typed objects (or primitive values) into an array
@@ -1196,8 +1242,8 @@ function serializer_convertAsArray(sourceObject, typeDescriptor, memberName, ser
  */
 function serializer_convertAsSet(sourceObject, typeDescriptor, memberName, serializer, memberOptions) {
     if (!(typeDescriptor instanceof SetTypeDescriptor)) {
-        throw new TypeError("Could not serialize " + memberName + " as Set: incorrect TypeDescriptor detected, please use"
-            + ' proper annotation or function for this type');
+        throw new TypeError("Could not serialize " + memberName + " as Set: incorrect TypeDescriptor detected, please"
+            + ' use proper annotation or function for this type');
     }
     if (!typeDescriptor.elementType) {
         throw new TypeError("Could not serialize " + memberName + " as Set: missing element type definition.");
@@ -1213,7 +1259,8 @@ function serializer_convertAsSet(sourceObject, typeDescriptor, memberName, seria
     sourceObject.forEach(function (element) {
         var resultElement = serializer.convertSingleValue(element, typeDescriptor.elementType, memberName, memberOptions);
         // Add to output if the source element was undefined, OR the converted element is defined.
-        // This will add intentionally undefined values to output, but not values that became undefined
+        // This will add intentionally undefined values to output, but not values that became
+        // undefined
         // DURING serializing (usually because of a type-error).
         if (!isValueDefined(element) || isValueDefined(resultElement)) {
             resultArray.push(resultElement);
@@ -1227,8 +1274,8 @@ function serializer_convertAsSet(sourceObject, typeDescriptor, memberName, seria
  */
 function serializer_convertAsMap(sourceObject, typeDescriptor, memberName, serializer, memberOptions) {
     if (!(typeDescriptor instanceof MapTypeDescriptor)) {
-        throw new TypeError("Could not serialize " + memberName + " as Map: incorrect TypeDescriptor detected, please use"
-            + ' proper annotation or function for this type');
+        throw new TypeError("Could not serialize " + memberName + " as Map: incorrect TypeDescriptor detected, please"
+            + ' use proper annotation or function for this type');
     }
     if (!typeDescriptor.valueType) {
         throw new TypeError("Could not serialize " + memberName + " as Map: missing value type definition.");
@@ -1277,7 +1324,8 @@ function convertAsTypedArray(sourceObject) {
  */
 function convertAsArrayBuffer(buffer) {
     // ArrayBuffer -> 16-bit character codes -> character array -> joined string.
-    return Array.from(new Uint16Array(buffer)).map(function (charCode) { return String.fromCharCode(charCode); }).join('');
+    return Array.from(new Uint16Array(buffer))
+        .map(function (charCode) { return String.fromCharCode(charCode); }).join('');
 }
 /**
  * Performs the conversion of DataView, converting its internal ArrayBuffer to a string and
@@ -1321,7 +1369,8 @@ var parser_TypedJSON = /** @class */ (function () {
         this.globalKnownTypes = [];
         this.indent = 0;
         var rootMetadata = metadata_JsonObjectMetadata.getFromConstructor(rootConstructor);
-        if (!rootMetadata || (!rootMetadata.isExplicitlyMarked && !rootMetadata.isHandledWithoutAnnotation)) {
+        if (!rootMetadata
+            || (!rootMetadata.isExplicitlyMarked && !rootMetadata.isHandledWithoutAnnotation)) {
             throw new TypeError('The TypedJSON root data type must have the @jsonObject decorator used.');
         }
         this.nameResolver = function (ctor) { return nameof(ctor); };
@@ -1421,7 +1470,8 @@ var parser_TypedJSON = /** @class */ (function () {
             settings.knownTypes.forEach(function (knownType, i) {
                 // tslint:disable-next-line:no-null-keyword
                 if (typeof knownType === 'undefined' || knownType === null) {
-                    logWarning("TypedJSON.config: 'knownTypes' contains an undefined/null value (element " + i + ").");
+                    logWarning("TypedJSON.config: 'knownTypes' contains an undefined/null value"
+                        + (" (element " + i + ")."));
                 }
             });
             this.globalKnownTypes = settings.knownTypes;
@@ -1603,44 +1653,48 @@ function jsonMember(optionsOrPrototype, propKey) {
         var prototype = optionsOrPrototype;
         // For error messages.
         var decoratorName = "@jsonMember on " + nameof(prototype.constructor) + "." + String(propKey);
-        // jsonMember used directly, no additional information directly available besides target and propKey.
+        // jsonMember used directly, no additional information directly available besides target and
+        // propKey.
         // Obtain property constructor through ReflectDecorators.
-        if (isReflectMetadataSupported) {
-            var reflectPropCtor = Reflect.getMetadata('design:type', prototype, propKey);
-            if (!reflectPropCtor) {
-                logError(decoratorName + ": could not resolve detected property constructor at runtime. " + MISSING_REFLECT_CONF_MSG);
-                return;
-            }
-            var typeDescriptor = ensureTypeDescriptor(reflectPropCtor);
-            if (isSpecialPropertyType(decoratorName, typeDescriptor)) {
-                return;
-            }
-            injectMetadataInformation(prototype, propKey, {
-                type: typeDescriptor,
-                key: propKey.toString(),
-                name: propKey.toString(),
-            });
-        }
-        else {
-            logError(decoratorName + ": ReflectDecorators is required if no 'constructor' option is specified.");
+        if (!isReflectMetadataSupported) {
+            logError(decoratorName + ": ReflectDecorators is required if no 'constructor' option is"
+                + " specified.");
             return;
         }
+        var reflectPropCtor = Reflect.getMetadata('design:type', prototype, propKey);
+        if (!reflectPropCtor) {
+            logError(decoratorName + ": could not resolve detected property constructor at runtime."
+                + MISSING_REFLECT_CONF_MSG);
+            return;
+        }
+        var typeDescriptor = ensureTypeDescriptor(reflectPropCtor);
+        if (isSpecialPropertyType(decoratorName, typeDescriptor)) {
+            return;
+        }
+        injectMetadataInformation(prototype, propKey, {
+            type: typeDescriptor,
+            key: propKey.toString(),
+            name: propKey.toString(),
+        });
     }
     else {
         // jsonMember used as a decorator factory.
         return function (target, _propKey) {
             var options = optionsOrPrototype || {};
             var typeDescriptor;
-            var decoratorName = "@jsonMember on " + nameof(target.constructor) + "." + String(_propKey); // For error messages.
+            var decoratorName = "@jsonMember on " + nameof(target.constructor) + "." + String(_propKey);
             if (options.hasOwnProperty('constructor')) {
                 if (!isValueDefined(options.constructor)) {
-                    logError(decoratorName + ": cannot resolve specified property constructor at runtime.");
+                    logError(decoratorName + ": cannot resolve specified property constructor at"
+                        + ' runtime.');
                     return;
                 }
-                // Property constructor has been specified. Use ReflectDecorators (if available) to check whether that constructor is correct. Warn if not.
+                // Property constructor has been specified. Use ReflectDecorators (if available) to
+                // check whether that constructor is correct. Warn if not.
                 typeDescriptor = ensureTypeDescriptor(options.constructor);
                 if (isReflectMetadataSupported && !isSubtypeOf(typeDescriptor.ctor, Reflect.getMetadata('design:type', target, _propKey))) {
-                    logWarning(decoratorName + ": detected property type does not match 'constructor' option.");
+                    logWarning(decoratorName + ": detected property type does not match"
+                        + " 'constructor' option.");
                 }
             }
             else {
@@ -1648,13 +1702,15 @@ function jsonMember(optionsOrPrototype, propKey) {
                 if (isReflectMetadataSupported) {
                     var reflectCtor = Reflect.getMetadata('design:type', target, _propKey);
                     if (!reflectCtor) {
-                        logError(decoratorName + ": cannot resolve detected property constructor at runtime.");
+                        logError(decoratorName + ": cannot resolve detected property constructor at"
+                            + " runtime.");
                         return;
                     }
                     typeDescriptor = ensureTypeDescriptor(reflectCtor);
                 }
                 else if (!options.deserializer) {
-                    logError(decoratorName + ": ReflectDecorators is required if no 'constructor' option is specified.");
+                    logError(decoratorName + ": ReflectDecorators is required if no 'constructor' option"
+                        + " is specified.");
                     return;
                 }
             }
@@ -1701,19 +1757,23 @@ function isSpecialPropertyType(decoratorName, typeDescriptor) {
 /**
  * Specifies that the property is part of the object when serializing.
  * Use this decorator on properties of type Set<T>.
- * @param elementConstructor Constructor of set elements (e.g. 'Number' for Set<number> or 'Date' for Set<Date>).
+ * @param elementConstructor Constructor of set elements (e.g. 'Number' for Set<number> or 'Date'
+ * for Set<Date>).
  * @param options Additional options.
  */
 function jsonSetMember(elementConstructor, options) {
     if (options === void 0) { options = {}; }
     return function (target, propKey) {
-        var decoratorName = "@jsonSetMember on " + nameof(target.constructor) + "." + String(propKey); // For error messages.
+        // For error messages
+        var decoratorName = "@jsonSetMember on " + nameof(target.constructor) + "." + String(propKey);
         if (!isTypelike(elementConstructor)) {
             logError(decoratorName + ": could not resolve constructor of set elements at runtime.");
             return;
         }
-        // If ReflectDecorators is available, use it to check whether 'jsonSetMember' has been used on a set. Warn if not.
-        if (isReflectMetadataSupported && Reflect.getMetadata('design:type', target, propKey) !== Set) {
+        // If ReflectDecorators is available, use it to check whether 'jsonSetMember' has been used
+        // on a set. Warn if not.
+        if (isReflectMetadataSupported
+            && Reflect.getMetadata('design:type', target, propKey) !== Set) {
             logError(decoratorName + ": property is not a Set. " + MISSING_REFLECT_CONF_MSG);
             return;
         }
@@ -1745,7 +1805,8 @@ function jsonSetMember(elementConstructor, options) {
 function jsonMapMember(keyConstructor, valueConstructor, options) {
     if (options === void 0) { options = {}; }
     return function (target, propKey) {
-        var decoratorName = "@jsonMapMember on " + nameof(target.constructor) + "." + String(propKey); // For error messages.
+        // For error messages
+        var decoratorName = "@jsonMapMember on " + nameof(target.constructor) + "." + String(propKey);
         if (!isTypelike(keyConstructor)) {
             logError(decoratorName + ": could not resolve constructor of map keys at runtime.");
             return;
@@ -1754,8 +1815,10 @@ function jsonMapMember(keyConstructor, valueConstructor, options) {
             logError(decoratorName + ": could not resolve constructor of map values at runtime.");
             return;
         }
-        // If ReflectDecorators is available, use it to check whether 'jsonMapMember' has been used on a map. Warn if not.
-        if (isReflectMetadataSupported && Reflect.getMetadata('design:type', target, propKey) !== Map) {
+        // If ReflectDecorators is available, use it to check whether 'jsonMapMember' has been used
+        // on a map. Warn if not.
+        if (isReflectMetadataSupported
+            && Reflect.getMetadata('design:type', target, propKey) !== Map) {
             logError(decoratorName + ": property is not a Map. " + MISSING_REFLECT_CONF_MSG);
             return;
         }

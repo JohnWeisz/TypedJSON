@@ -1,4 +1,4 @@
-export { TypedJSON, ITypedJSONSettings, JsonTypes, defaultTypeResolver, defaultTypeEmitter } from './parser';
+export { TypedJSON, ITypedJSONSettings, JsonTypes, defaultTypeResolver, defaultTypeEmitter, } from './parser';
 export { TypeResolver, TypeHintEmitter, JsonObjectMetadata } from './typedjson/metadata';
 export { jsonObject } from './typedjson/json-object';
 export { jsonMember } from './typedjson/json-member';

@@ -138,7 +138,10 @@ describe('map of array dictionary shape', () => {
         const object = new DictArrayMap();
         object.prop = new Map<string, Array<Simple>>([
             ['one', [new Simple({strProp: 'delta', numProp: 4})]],
-            ['two', [new Simple({strProp: 'gamma', numProp: 7}), new Simple({strProp: 'alpha', numProp: 2})]],
+            ['two', [
+                new Simple({strProp: 'gamma', numProp: 7}),
+                new Simple({strProp: 'alpha', numProp: 2}),
+            ]],
         ]);
         const result = TypedJSON.stringify(object, DictArrayMap);
 

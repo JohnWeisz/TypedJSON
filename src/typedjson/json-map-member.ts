@@ -17,7 +17,10 @@ export interface IJsonMapMemberOptions extends OptionsBase, Partial<MapOptions> 
     /** When set, the key on the JSON that should be used instead of the class property name */
     name?: string;
 
-    /** When set, this deserializer will be used to deserialize the member. The callee must assure the correct type. */
+    /**
+     * When set, this deserializer will be used to deserialize the member. The callee must assure
+     * the correct type.
+     */
     deserializer?: (json: any) => any;
 
     /** When set, this serializer will be used to serialize the member. */
@@ -37,7 +40,8 @@ export function jsonMapMember(
     options: IJsonMapMemberOptions = {},
 ) {
     return (target: Object, propKey: string | symbol) => {
-        const decoratorName = `@jsonMapMember on ${nameof(target.constructor)}.${String(propKey)}`; // For error messages.
+        // For error messages
+        const decoratorName = `@jsonMapMember on ${nameof(target.constructor)}.${String(propKey)}`;
 
         if (!isTypelike(keyConstructor)) {
             logError(`${decoratorName}: could not resolve constructor of map keys at runtime.`);
@@ -49,8 +53,10 @@ export function jsonMapMember(
             return;
         }
 
-        // If ReflectDecorators is available, use it to check whether 'jsonMapMember' has been used on a map. Warn if not.
-        if (isReflectMetadataSupported && Reflect.getMetadata('design:type', target, propKey) !== Map) {
+        // If ReflectDecorators is available, use it to check whether 'jsonMapMember' has been used
+        // on a map. Warn if not.
+        if (isReflectMetadataSupported
+            && Reflect.getMetadata('design:type', target, propKey) !== Map) {
             logError(`${decoratorName}: property is not a Map. ${MISSING_REFLECT_CONF_MSG}`);
             return;
         }

@@ -8,7 +8,8 @@ export interface IJsonObjectOptionsBase extends OptionsBase {
      */
     knownTypes?: Array<Function>;
     /**
-     * A function that will emit a type hint on the resulting JSON. It will override the global typeEmitter.
+     * A function that will emit a type hint on the resulting JSON. It will override the global
+     * typeEmitter.
      */
     typeHintEmitter?: TypeHintEmitter;
     /**
@@ -50,8 +51,8 @@ export interface IJsonObjectOptions<T> extends IJsonObjectOptionsBase {
     initializer?: InitializerCallback<T>;
 }
 /**
- * Marks that a class with a parameterized constructor is serializable using TypedJSON, with additional
- * settings. The 'initializer' setting must be specified.
+ * Marks that a class with a parameterized constructor is serializable using TypedJSON, with
+ * additional settings. The 'initializer' setting must be specified.
  * @param options Configuration settings.
  */
 export declare function jsonObject<T>(options?: IJsonObjectOptionsWithInitializer<T>): (target: Serializable<T>) => void;

@@ -5,7 +5,10 @@ import {IndexedObject, Serializable} from './types';
 
 export const METADATA_FIELD_KEY = '__typedJsonJsonObjectMetadataInformation__';
 
-export type TypeResolver = (sourceObject: IndexedObject, knownTypes: Map<string, Function>) => Function | undefined | null;
+export type TypeResolver = (
+    sourceObject: IndexedObject,
+    knownTypes: Map<string, Function>,
+) => Function | undefined | null;
 export type TypeHintEmitter
     = (
         targetObject: IndexedObject,
@@ -90,10 +93,12 @@ export class JsonObjectMetadata {
         // Inherit json members and known types from parent @jsonObject (if any).
         const parentMetadata: JsonObjectMetadata = prototype[METADATA_FIELD_KEY];
         if (parentMetadata) {
-            parentMetadata.dataMembers
-                .forEach((memberMetadata, propKey) => objectMetadata.dataMembers.set(propKey, memberMetadata));
-            parentMetadata.knownTypes
-                .forEach((knownType) => objectMetadata.knownTypes.add(knownType));
+            parentMetadata.dataMembers.forEach((memberMetadata, propKey) => {
+                objectMetadata.dataMembers.set(propKey, memberMetadata);
+            });
+            parentMetadata.knownTypes.forEach((knownType) => {
+                objectMetadata.knownTypes.add(knownType);
+            });
             objectMetadata.typeResolver = parentMetadata.typeResolver;
             objectMetadata.typeHintEmitter = parentMetadata.typeHintEmitter;
         }
@@ -164,11 +169,19 @@ export class JsonObjectMetadata {
     initializerCallback?: (sourceObject: Object, rawSourceObject: Object) => Object;
 }
 
-export function injectMetadataInformation(prototype: IndexedObject, propKey: string | symbol, metadata: JsonMemberMetadata) {
-    const decoratorName = `@jsonMember on ${nameof(prototype.constructor)}.${String(propKey)}`; // For error messages.
+export function injectMetadataInformation(
+    prototype: IndexedObject,
+    propKey: string | symbol,
+    metadata: JsonMemberMetadata,
+) {
+    // For error messages
+    const decoratorName = `@jsonMember on ${nameof(prototype.constructor)}.${String(propKey)}`;
 
-    // When a property decorator is applied to a static member, 'constructor' is a constructor function.
-    // See: https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md#property-decorators
+    // When a property decorator is applied to a static member, 'constructor' is a constructor
+    // function.
+    // See:
+    // eslint-disable-next-line max-len
+    // https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md#property-decorators
     // ... and static members are not supported here, so abort.
     if (typeof prototype === 'function') {
         logError(`${decoratorName}: cannot use a static property.`);
@@ -188,7 +201,8 @@ export function injectMetadataInformation(prototype: IndexedObject, propKey: str
     }
 
     // Add jsonObject metadata to 'constructor' if not yet exists ('constructor' is the prototype).
-    // NOTE: this will not fire up custom serialization, as 'constructor' must be explicitly marked with '@jsonObject' as well.
+    // NOTE: this will not fire up custom serialization, as 'constructor' must be explicitly marked
+    // with '@jsonObject' as well.
     const objectMetadata = JsonObjectMetadata.ensurePresentInPrototype(prototype);
 
     if (!metadata.deserializer) {

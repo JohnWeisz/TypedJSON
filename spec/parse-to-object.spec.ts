@@ -41,7 +41,8 @@ describe('parse To Object', () => {
         expect(parseToJSObject('"I am a string"', String)).toEqual('I am a string');
         expect(parseToJSObject('just a string', String)).toBe('just a string');
         // but also the types that are serialized to string
-        expect(parseToJSObject('"1970-01-18T20:51:55.254Z"', Date)).toEqual('1970-01-18T20:51:55.254Z');
+        expect(parseToJSObject('"1970-01-18T20:51:55.254Z"', Date))
+            .toEqual('1970-01-18T20:51:55.254Z');
         expect(parseToJSObject('1970-01-18T20:51:55.254Z', Date)).toBe('1970-01-18T20:51:55.254Z');
         expect(parseToJSObject('"畤慰"', ArrayBuffer)).toEqual('畤慰');
         expect(parseToJSObject('畤慰', ArrayBuffer)).toBe('畤慰');

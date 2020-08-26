@@ -49,7 +49,8 @@ describe('json (without automatic stringify)', () => {
             view.setInt8(3, 97);
             expect(TypedJSON.toPlainJson(buffer, ArrayBuffer)).toEqual('畤慰');
             expect(TypedJSON.toPlainJson(view, DataView)).toEqual('畤慰');
-            expect(TypedJSON.toPlainJson(new Uint8Array(buffer), Uint8Array)).toEqual([100, 117, 112, 97]);
+            expect(TypedJSON.toPlainJson(new Uint8Array(buffer), Uint8Array))
+                .toEqual([100, 117, 112, 97]);
         });
     });
 
@@ -75,12 +76,15 @@ describe('json (without automatic stringify)', () => {
 
         it('should deserialize', () => {
             expect(TypedJSON.parse(json, SomeThing)).toEqual(Object.assign(new SomeThing(), json));
-            expect(TypedJSON.parseAsArray([json], SomeThing)).toEqual([Object.assign(new SomeThing(), json)]);
+            expect(TypedJSON.parseAsArray([json], SomeThing))
+                .toEqual([Object.assign(new SomeThing(), json)]);
         });
 
         it('should serialize', () => {
-            expect(TypedJSON.toPlainJson(Object.assign(new SomeThing(), json), SomeThing)).toEqual(json);
-            expect(TypedJSON.toPlainArray([Object.assign(new SomeThing(), json)], SomeThing)).toEqual([json]);
+            expect(TypedJSON.toPlainJson(Object.assign(new SomeThing(), json), SomeThing))
+                .toEqual(json);
+            expect(TypedJSON.toPlainArray([Object.assign(new SomeThing(), json)], SomeThing))
+                .toEqual([json]);
         });
     });
 

@@ -182,10 +182,17 @@ describe('preserveNull', () => {
         ]);
         const json = TypedJSON.stringify(input, Person);
         expect(json).toEqual(
-            '{"map":[{"key":"one","value":null},{"key":"two","value":null},{"key":"three","value":"val"}]}',
+            '{"map":[{"key":"one","value":null},{"key":"two","value":null},'
+            + '{"key":"three","value":"val"}]}',
         );
         const obj = TypedJSON.parse(
-            {map: [{key: 'one', value: null}, {key: 'two', value: null}, {key: 'three', value: 'val'}]},
+            {
+                map: [
+                    {key: 'one', value: null},
+                    {key: 'two', value: null},
+                    {key: 'three', value: 'val'},
+                ],
+            },
             Person,
         );
         expect(obj).toEqual(input);

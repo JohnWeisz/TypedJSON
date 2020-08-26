@@ -28,7 +28,10 @@ describe('single class', () => {
 
     describe('deserialized', () => {
         beforeAll(function () {
-            this.person = TypedJSON.parse('{ "__type": "Bob", "firstName": "John", "lastName": "Doe", "pounds": 40 }', Person);
+            this.person = TypedJSON.parse(
+                '{ "__type": "Bob", "firstName": "John", "lastName": "Doe", "pounds": 40 }',
+                Person,
+            );
         });
 
         it('should be of proper type', function () {

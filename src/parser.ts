@@ -49,7 +49,11 @@ export interface ITypedJSONSettings extends OptionsBase {
 
 export class TypedJSON<T> {
     // #region Static
-    static parse<T>(object: any, rootType: Serializable<T>, settings?: ITypedJSONSettings): T | undefined {
+    static parse<T>(
+        object: any,
+        rootType: Serializable<T>,
+        settings?: ITypedJSONSettings,
+    ): T | undefined {
         return new TypedJSON(rootType, settings).parse(object);
     }
 
@@ -92,7 +96,11 @@ export class TypedJSON<T> {
         return new TypedJSON(elementType, settings).parseAsArray(object, dimensions as any);
     }
 
-    static parseAsSet<T>(object: any, elementType: Serializable<T>, settings?: ITypedJSONSettings): Set<T> {
+    static parseAsSet<T>(
+        object: any,
+        elementType: Serializable<T>,
+        settings?: ITypedJSONSettings,
+    ): Set<T> {
         return new TypedJSON(elementType, settings).parseAsSet(object);
     }
 
@@ -105,33 +113,63 @@ export class TypedJSON<T> {
         return new TypedJSON(valueType, settings).parseAsMap(object, keyType);
     }
 
-    static toPlainJson<T>(object: T, rootType: Serializable<T>, settings?: ITypedJSONSettings): JsonTypes {
+    static toPlainJson<T>(
+        object: T,
+        rootType: Serializable<T>,
+        settings?: ITypedJSONSettings,
+    ): JsonTypes {
         return new TypedJSON(rootType, settings).toPlainJson(object);
     }
 
     static toPlainArray<T>(
-        object: Array<T>, elementType: Serializable<T>, dimensions?: 1, settings?: ITypedJSONSettings,
+        object: Array<T>,
+        elementType: Serializable<T>,
+        dimensions?: 1,
+        settings?: ITypedJSONSettings,
     ): Array<Object>;
     static toPlainArray<T>(
-        object: Array<Array<T>>, elementType: Serializable<T>, dimensions: 2, settings?: ITypedJSONSettings,
+        object: Array<Array<T>>,
+        elementType: Serializable<T>,
+        dimensions: 2,
+        settings?: ITypedJSONSettings,
     ): Array<Array<Object>>;
     static toPlainArray<T>(
-        object: Array<Array<Array<T>>>, elementType: Serializable<T>, dimensions: 3, settings?: ITypedJSONSettings,
+        object: Array<Array<Array<T>>>,
+        elementType: Serializable<T>,
+        dimensions: 3,
+        settings?: ITypedJSONSettings,
     ): Array<Array<Array<Object>>>;
     static toPlainArray<T>(
-        object: Array<Array<Array<Array<T>>>>, elementType: Serializable<T>, dimensions: 4, settings?: ITypedJSONSettings,
+        object: Array<Array<Array<Array<T>>>>,
+        elementType: Serializable<T>,
+        dimensions: 4, settings?: ITypedJSONSettings,
     ): Array<Array<Array<Array<Object>>>>;
     static toPlainArray<T>(
-        object: Array<Array<Array<Array<Array<T>>>>>, elementType: Serializable<T>, dimensions: 5, settings?: ITypedJSONSettings,
+        object: Array<Array<Array<Array<Array<T>>>>>,
+        elementType: Serializable<T>,
+        dimensions: 5,
+        settings?: ITypedJSONSettings,
     ): Array<Array<Array<Array<Array<Object>>>>>;
     static toPlainArray<T>(
-        object: Array<any>, elementType: Serializable<T>, dimensions: number, settings?: ITypedJSONSettings,
+        object: Array<any>,
+        elementType: Serializable<T>,
+        dimensions: number,
+        settings?: ITypedJSONSettings,
     ): Array<any>;
-    static toPlainArray<T>(object: Array<any>, elementType: Serializable<T>, dimensions?: any, settings?: ITypedJSONSettings): Array<any> {
+    static toPlainArray<T>(
+        object: Array<any>,
+        elementType: Serializable<T>,
+        dimensions?: any,
+        settings?: ITypedJSONSettings,
+    ): Array<any> {
         return new TypedJSON(elementType, settings).toPlainArray(object, dimensions);
     }
 
-    static toPlainSet<T>(object: Set<T>, elementType: Serializable<T>, settings?: ITypedJSONSettings): Array<Object> | undefined {
+    static toPlainSet<T>(
+        object: Set<T>,
+        elementType: Serializable<T>,
+        settings?: ITypedJSONSettings,
+    ): Array<Object> | undefined {
         return new TypedJSON(elementType, settings).toPlainSet(object);
     }
 
@@ -144,33 +182,63 @@ export class TypedJSON<T> {
         return new TypedJSON(valueCtor, settings).toPlainMap(object, keyCtor);
     }
 
-    static stringify<T>(object: T, rootType: Serializable<T>, settings?: ITypedJSONSettings): string {
+    static stringify<T>(
+        object: T,
+        rootType: Serializable<T>,
+        settings?: ITypedJSONSettings,
+    ): string {
         return new TypedJSON(rootType, settings).stringify(object);
     }
 
     static stringifyAsArray<T>(
-        object: Array<T>, elementType: Serializable<T>, dimensions?: 1, settings?: ITypedJSONSettings,
+        object: Array<T>,
+        elementType: Serializable<T>,
+        dimensions?: 1,
+        settings?: ITypedJSONSettings,
     ): string;
     static stringifyAsArray<T>(
-        object: Array<Array<T>>, elementType: Serializable<T>, dimensions: 2, settings?: ITypedJSONSettings,
+        object: Array<Array<T>>,
+        elementType: Serializable<T>,
+        dimensions: 2,
+        settings?: ITypedJSONSettings,
     ): string;
     static stringifyAsArray<T>(
-        object: Array<Array<Array<T>>>, elementType: Serializable<T>, dimensions: 3, settings?: ITypedJSONSettings,
+        object: Array<Array<Array<T>>>,
+        elementType: Serializable<T>,
+        dimensions: 3,
+        settings?: ITypedJSONSettings,
     ): string;
     static stringifyAsArray<T>(
-        object: Array<Array<Array<Array<T>>>>, elementType: Serializable<T>, dimensions: 4, settings?: ITypedJSONSettings,
+        object: Array<Array<Array<Array<T>>>>,
+        elementType: Serializable<T>,
+        dimensions: 4,
+        settings?: ITypedJSONSettings,
     ): string;
     static stringifyAsArray<T>(
-        object: Array<Array<Array<Array<Array<T>>>>>, elementType: Serializable<T>, dimensions: 5, settings?: ITypedJSONSettings,
+        object: Array<Array<Array<Array<Array<T>>>>>,
+        elementType: Serializable<T>,
+        dimensions: 5,
+        settings?: ITypedJSONSettings,
     ): string;
     static stringifyAsArray<T>(
-        object: Array<any>, elementType: Serializable<T>, dimensions: number, settings?: ITypedJSONSettings,
+        object: Array<any>,
+        elementType: Serializable<T>,
+        dimensions: number, settings?: ITypedJSONSettings,
     ): string;
-    static stringifyAsArray<T>(object: Array<any>, elementType: Serializable<T>, dimensions?: any, settings?: ITypedJSONSettings): string {
+    static stringifyAsArray<T>(
+        object: Array<any>,
+        elementType: Serializable<T>,
+        dimensions?: any,
+        settings?: ITypedJSONSettings,
+    ): string {
         return new TypedJSON(elementType, settings).stringifyAsArray(object, dimensions);
     }
 
-    static stringifyAsSet<T>(object: Set<T>, elementType: Serializable<T>, settings?: ITypedJSONSettings): string {
+    static stringifyAsSet<T>(
+        object: Set<T>,
+        elementType: Serializable<T>,
+        settings?: ITypedJSONSettings,
+    ): string {
         return new TypedJSON(elementType, settings).stringifyAsSet(object);
     }
 
@@ -213,8 +281,11 @@ export class TypedJSON<T> {
     constructor(rootConstructor: Serializable<T>, settings?: ITypedJSONSettings) {
         const rootMetadata = JsonObjectMetadata.getFromConstructor(rootConstructor);
 
-        if (!rootMetadata || (!rootMetadata.isExplicitlyMarked && !rootMetadata.isHandledWithoutAnnotation)) {
-            throw new TypeError('The TypedJSON root data type must have the @jsonObject decorator used.');
+        if (!rootMetadata
+            || (!rootMetadata.isExplicitlyMarked && !rootMetadata.isHandledWithoutAnnotation)) {
+            throw new TypeError(
+                'The TypedJSON root data type must have the @jsonObject decorator used.',
+            );
         }
 
         this.nameResolver = (ctor) => nameof(ctor);
@@ -282,8 +353,9 @@ this.indent = settings.indent;
                 // tslint:disable-next-line:no-null-keyword
                 if (typeof knownType === 'undefined' || knownType === null) {
                     logWarning(
-                        `TypedJSON.config: 'knownTypes' contains an undefined/null value (element ${i}).`,
-);
+                        `TypedJSON.config: 'knownTypes' contains an undefined/null value`
+                        + ` (element ${i}).`,
+                    );
                 }
             });
 
@@ -379,11 +451,20 @@ json,
     toPlainArray(object: Array<T>, dimensions?: 1): Array<Object>;
     toPlainArray(object: Array<Array<T>>, dimensions: 2): Array<Array<Object>>;
     toPlainArray(object: Array<Array<Array<T>>>, dimensions: 3): Array<Array<Array<Object>>>;
-    toPlainArray(object: Array<Array<Array<Array<T>>>>, dimensions: 4): Array<Array<Array<Array<Object>>>>;
-    toPlainArray(object: Array<Array<Array<Array<Array<T>>>>>, dimensions: 5): Array<Array<Array<Array<Array<Object>>>>>;
+    toPlainArray(
+        object: Array<Array<Array<Array<T>>>>,
+        dimensions: 4,
+    ): Array<Array<Array<Array<Object>>>>;
+    toPlainArray(
+        object: Array<Array<Array<Array<Array<T>>>>>,
+        dimensions: 5,
+    ): Array<Array<Array<Array<Array<Object>>>>>;
     toPlainArray(object: Array<any>, dimensions: 1 | 2 | 3 | 4 | 5 = 1): Array<Object> | undefined {
         try {
-            return this.serializer.convertSingleValue(object, createArrayType(ensureTypeDescriptor(this.rootConstructor), dimensions));
+            return this.serializer.convertSingleValue(
+                object,
+                createArrayType(ensureTypeDescriptor(this.rootConstructor), dimensions),
+            );
         } catch (e) {
             this.errorHandler(e);
         }
@@ -397,9 +478,15 @@ json,
         }
     }
 
-    toPlainMap<K>(object: Map<K, T>, keyConstructor: Serializable<K>): IndexedObject | Array<{ key: any; value: any }> | undefined {
+    toPlainMap<K>(
+        object: Map<K, T>,
+        keyConstructor: Serializable<K>,
+    ): IndexedObject | Array<{ key: any; value: any }> | undefined {
         try {
-            return this.serializer.convertSingleValue(object, MapT(keyConstructor, this.rootConstructor));
+            return this.serializer.convertSingleValue(
+                object,
+                MapT(keyConstructor, this.rootConstructor),
+            );
         } catch (e) {
             this.errorHandler(e);
         }

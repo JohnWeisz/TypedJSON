@@ -93,7 +93,12 @@ describe('polymorphic custom names', () => {
                 break;
 
             case 2:
-                company.owner = new PartTimeEmployee('John', 'White', 160000, new Date(1992, 5, 27));
+                company.owner = new PartTimeEmployee(
+                    'John',
+                    'White',
+                    160000,
+                    new Date(1992, 5, 27),
+                );
                 (company.owner as PartTimeEmployee).workHours = Math.floor(Math.random() * 40);
                 break;
 

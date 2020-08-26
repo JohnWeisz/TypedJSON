@@ -47,7 +47,8 @@ describe('set of objects', () => {
         expect(result.size).toBe(3, 'Deserialized set is of wrong size');
         result.forEach((obj) => {
             expect(obj).toBeInstanceOf(Simple);
-            expect(obj).toHaveProperties(expectation.find((expected) => expected.strProp === obj.strProp));
+            expect(obj)
+                .toHaveProperties(expectation.find((expected) => expected.strProp === obj.strProp));
         });
     });
 
@@ -58,7 +59,8 @@ describe('set of objects', () => {
             {strProp: 'gamma', numProp: 0},
         ];
 
-        const result = TypedJSON.stringifyAsSet(new Set<Simple>(expectation.map(obj => new Simple(obj))), Simple);
+        const set = new Set<Simple>(expectation.map(obj => new Simple(obj)));
+        const result = TypedJSON.stringifyAsSet(set, Simple);
 
         expect(result).toBe(JSON.stringify(expectation));
     });
@@ -76,7 +78,8 @@ describe('set member', () => {
     }
 
     it('deserializes', () => {
-        const result = TypedJSON.parse(JSON.stringify({prop: [Everything.create(), Everything.create()]}), WithSet);
+        const object = {prop: [Everything.create(), Everything.create()]};
+        const result = TypedJSON.parse(JSON.stringify(object), WithSet);
 
         expect(result).toBeInstanceOf(WithSet);
         expect(result.prop).toBeDefined();
@@ -130,23 +133,23 @@ describe('set array member', () => {
 
     it('deserializes', () => {
         const result = TypedJSON.parse(
-JSON.stringify(
-            {
-prop: [
-                    [
-                        {strProp: 'delta', numProp: 4},
-                        {strProp: 'bravo', numProp: 2},
-                        {strProp: 'gamma', numProp: 0},
+            JSON.stringify(
+                {
+                    prop: [
+                        [
+                            {strProp: 'delta', numProp: 4},
+                            {strProp: 'bravo', numProp: 2},
+                            {strProp: 'gamma', numProp: 0},
+                        ],
+                        [
+                            {strProp: 'alpha', numProp: 3245},
+                            {strProp: 'zeta', numProp: 4358},
+                        ],
                     ],
-                    [
-                        {strProp: 'alpha', numProp: 3245},
-                        {strProp: 'zeta', numProp: 4358},
-                    ],
-                ],
-            },
-),
+                },
+            ),
             WithSet,
-);
+        );
 
         expect(result).toBeInstanceOf(WithSet);
         expect(result.prop).toBeDefined();
@@ -159,7 +162,10 @@ prop: [
                 new Simple({strProp: 'bravo', numProp: 2}),
                 new Simple({strProp: 'gamma', numProp: 0}),
             ],
-            [new Simple({strProp: 'alpha', numProp: 3245}), new Simple({strProp: 'zeta', numProp: 4358})],
+            [
+                new Simple({strProp: 'alpha', numProp: 3245}),
+                new Simple({strProp: 'zeta', numProp: 4358}),
+            ],
         ]);
     });
 
@@ -167,11 +173,33 @@ prop: [
         const object = new WithSet();
         object.prop = new Set<Array<Simple>>([
             [new Simple({strProp: 'delta', numProp: 4})],
-            [new Simple({strProp: 'alpha', numProp: 3245}), new Simple({strProp: 'zeta', numProp: 4358})],
+            [
+                new Simple({strProp: 'alpha', numProp: 3245}),
+                new Simple({strProp: 'zeta', numProp: 4358}),
+            ],
         ]);
         const result = TypedJSON.stringify(object, WithSet);
 
-        expect(result).toBe(JSON.stringify({prop: [[{strProp: 'delta', numProp: 4}], [{strProp: 'alpha', numProp: 3245}, {strProp: 'zeta', numProp: 4358}]]}));
+        expect(result).toBe(JSON.stringify({
+            prop: [
+                [
+                    {
+                    strProp: 'delta',
+                    numProp: 4,
+                    },
+                ],
+                [
+                    {
+                        strProp: 'alpha',
+                        numProp: 3245,
+                    },
+                    {
+                        strProp: 'zeta',
+                        numProp: 4358,
+                    },
+                ],
+            ],
+        }));
     });
 });
 

@@ -8,7 +8,8 @@ describe('basic serialization of', () => {
             expect(TypedJSON.parse('45834', Number)).toEqual(45834);
             expect(TypedJSON.parse('true', Boolean)).toEqual(true);
             expect(TypedJSON.parse('1543915254', Date)).toEqual(new Date(1543915254));
-            expect(TypedJSON.parse('"1970-01-18T20:51:55.254Z"', Date)).toEqual(new Date(1543915254));
+            expect(TypedJSON.parse('"1970-01-18T20:51:55.254Z"', Date))
+                .toEqual(new Date(1543915254));
 
             const dataBuffer = Uint8Array.from([100, 117, 112, 97]) as any;
             expect(TypedJSON.parse('"畤慰"', ArrayBuffer)).toEqual(dataBuffer);
@@ -20,8 +21,10 @@ describe('basic serialization of', () => {
             expect(TypedJSON.stringify('str', String)).toEqual('"str"');
             expect(TypedJSON.stringify(45834, Number)).toEqual('45834');
             expect(TypedJSON.stringify(true, Boolean)).toEqual('true');
-            expect(TypedJSON.stringify(new Date(1543915254), Date)).toEqual(`"${new Date(1543915254).toISOString()}"`);
-            expect(TypedJSON.stringify(new Date('2018-12-04T09:20:54'), Date)).toEqual(`"${new Date('2018-12-04T09:20:54').toISOString()}"`);
+            expect(TypedJSON.stringify(new Date(1543915254), Date))
+                .toEqual(`"${new Date(1543915254).toISOString()}"`);
+            expect(TypedJSON.stringify(new Date('2018-12-04T09:20:54'), Date))
+                .toEqual(`"${new Date('2018-12-04T09:20:54').toISOString()}"`);
 
             const buffer = new ArrayBuffer(4);
             const view = new DataView(buffer);
@@ -31,7 +34,8 @@ describe('basic serialization of', () => {
             view.setInt8(3, 97);
             expect(TypedJSON.stringify(buffer, ArrayBuffer)).toEqual('"畤慰"');
             expect(TypedJSON.stringify(view, DataView)).toEqual('"畤慰"');
-            expect(TypedJSON.stringify(new Uint8Array(buffer), Uint8Array)).toEqual('[100,117,112,97]');
+            expect(TypedJSON.stringify(new Uint8Array(buffer), Uint8Array))
+                .toEqual('[100,117,112,97]');
         });
     });
 

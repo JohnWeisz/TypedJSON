@@ -11,7 +11,8 @@ export interface IJsonObjectOptionsBase extends OptionsBase {
     knownTypes?: Array<Function>;
 
     /**
-     * A function that will emit a type hint on the resulting JSON. It will override the global typeEmitter.
+     * A function that will emit a type hint on the resulting JSON. It will override the global
+     * typeEmitter.
      */
     typeHintEmitter?: TypeHintEmitter;
 
@@ -60,11 +61,13 @@ export interface IJsonObjectOptions<T> extends IJsonObjectOptionsBase {
 }
 
 /**
- * Marks that a class with a parameterized constructor is serializable using TypedJSON, with additional
- * settings. The 'initializer' setting must be specified.
+ * Marks that a class with a parameterized constructor is serializable using TypedJSON, with
+ * additional settings. The 'initializer' setting must be specified.
  * @param options Configuration settings.
  */
-export function jsonObject<T>(options?: IJsonObjectOptionsWithInitializer<T>): (target: Serializable<T>) => void;
+export function jsonObject<T>(
+    options?: IJsonObjectOptionsWithInitializer<T>,
+): (target: Serializable<T>) => void;
 
 /**
  * Marks that a class is serializable using TypedJSON, with additional settings.
@@ -77,7 +80,9 @@ export function jsonObject<T>(options?: IJsonObjectOptions<T>): (target: Seriali
  */
 export function jsonObject<T>(target: Serializable<T>): void;
 
-export function jsonObject<T extends Object>(optionsOrTarget?: IJsonObjectOptions<T> | Serializable<T>): ((target: Serializable<T>) => void) | void {
+export function jsonObject<T extends Object>(
+    optionsOrTarget?: IJsonObjectOptions<T> | Serializable<T>,
+): ((target: Serializable<T>) => void) | void {
     let options: IJsonObjectOptions<T>;
 
     if (typeof optionsOrTarget === 'function') {
