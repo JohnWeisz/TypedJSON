@@ -1,8 +1,7 @@
-﻿import {isEqual} from "./utils/object-compare";
-import {jsonObject, jsonMember, jsonArrayMember, TypedJSON} from "../src/typedjson";
+import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src/typedjson';
+import {isEqual} from './utils/object-compare';
 
-describe('polymorphic interfaces', function() {
-
+describe('polymorphic interfaces', () => {
     interface Point {
         x: number;
         y: number;
@@ -32,10 +31,10 @@ describe('polymorphic interfaces', function() {
         y: number;
 
         @jsonArrayMember(String)
-        inputs: string[];
+        inputs: Array<string>;
 
         @jsonArrayMember(String)
-        outputs: string[];
+        outputs: Array<string>;
 
         constructor() {
             this.inputs = [];
@@ -44,11 +43,11 @@ describe('polymorphic interfaces', function() {
     }
 
     @jsonObject({
-        knownTypes: [BigNode, SmallNode]
+        knownTypes: [BigNode, SmallNode],
     })
     class GraphGrid {
         @jsonArrayMember(Object)
-        points: Point[];
+        points: Array<Point>;
 
         @jsonMember
         root: Point;
@@ -59,39 +58,39 @@ describe('polymorphic interfaces', function() {
     }
 
     function randPortType() {
-        var types = [
-            "string",
-            "integer",
-            "float",
-            "boolean",
-            "void"
+        const types = [
+            'string',
+            'integer',
+            'float',
+            'boolean',
+            'void',
         ];
 
         return types[Math.floor(Math.random() * types.length)];
     }
 
     function test(log: boolean) {
-        var graph = new GraphGrid();
+        const graph = new GraphGrid();
 
-        for (var i = 0; i < 20; i++) {
+        for (let i = 0; i < 20; i++) {
             let point: Point;
 
             if (Math.random() < 0.25) {
-                let bigNode = new BigNode();
+                const bigNode = new BigNode();
 
                 bigNode.inputs = [
                     randPortType(),
                     randPortType(),
-                    randPortType()
+                    randPortType(),
                 ];
                 bigNode.outputs = [
                     randPortType(),
-                    randPortType()
+                    randPortType(),
                 ];
 
                 point = bigNode;
             } else {
-                let smallNode = new SmallNode();
+                const smallNode = new SmallNode();
 
                 smallNode.inputType = randPortType();
                 smallNode.outputType = randPortType();
@@ -109,21 +108,21 @@ describe('polymorphic interfaces', function() {
             }
         }
 
-        var json = TypedJSON.stringify(graph, GraphGrid);
-        var clone = TypedJSON.parse(json, GraphGrid);
+        const json = TypedJSON.stringify(graph, GraphGrid);
+        const clone = TypedJSON.parse(json, GraphGrid);
 
         if (log) {
-            console.log("Test: polymorphism with interface property types...");
+            console.log('Test: polymorphism with interface property types...');
             console.log(graph);
             console.log(JSON.parse(json));
             console.log(clone);
-            console.log("Test finished.");
+            console.log('Test finished.');
         }
 
         return isEqual(graph, clone);
     }
 
-    it('should work', function () {
+    it('should work', () => {
         expect(test(false)).toBeTruthy();
     });
 });

@@ -1,12 +1,12 @@
-import { Serializable } from "./types";
-import { TypeHintEmitter, TypeResolver } from "./metadata";
-import { OptionsBase } from "./options-base";
+import { TypeHintEmitter, TypeResolver } from './metadata';
+import { OptionsBase } from './options-base';
+import { Serializable } from './types';
 export declare type InitializerCallback<T> = (sourceObject: T, rawSourceObject: T) => T;
 export interface IJsonObjectOptionsBase extends OptionsBase {
     /**
      * An array of known types to recognize when encountering type-hints.
      */
-    knownTypes?: Function[];
+    knownTypes?: Array<Function>;
     /**
      * A function that will emit a type hint on the resulting JSON. It will override the global typeEmitter.
      */

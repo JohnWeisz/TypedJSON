@@ -1,22 +1,22 @@
-﻿import { jsonObject, jsonMember, TypedJSON, jsonArrayMember } from "../src/typedjson";
-import { Everything } from "./utils/everything";
+import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src/typedjson';
+import {Everything} from './utils/everything';
 
-describe('basic serialization of', function () {
-    describe('builtins', function () {
-        it('should deserialize', function () {
+describe('basic serialization of', () => {
+    describe('builtins', () => {
+        it('should deserialize', () => {
             expect(TypedJSON.parse('"str"', String)).toEqual('str');
             expect(TypedJSON.parse('45834', Number)).toEqual(45834);
             expect(TypedJSON.parse('true', Boolean)).toEqual(true);
             expect(TypedJSON.parse('1543915254', Date)).toEqual(new Date(1543915254));
             expect(TypedJSON.parse('"1970-01-18T20:51:55.254Z"', Date)).toEqual(new Date(1543915254));
 
-            const dataBuffer = Uint8Array.from([100,117,112,97]) as any;
+            const dataBuffer = Uint8Array.from([100, 117, 112, 97]) as any;
             expect(TypedJSON.parse('"畤慰"', ArrayBuffer)).toEqual(dataBuffer);
             expect(TypedJSON.parse('"畤慰"', DataView)).toEqual(dataBuffer);
             expect(TypedJSON.parse('[100,117,112,97]', Uint8Array)).toEqual(dataBuffer);
         });
 
-        it('should serialize', function () {
+        it('should serialize', () => {
             expect(TypedJSON.stringify('str', String)).toEqual('"str"');
             expect(TypedJSON.stringify(45834, Number)).toEqual('45834');
             expect(TypedJSON.stringify(true, Boolean)).toEqual('true');
@@ -35,7 +35,7 @@ describe('basic serialization of', function () {
         });
     });
 
-    describe('single class', function () {
+    describe('single class', () => {
         @jsonObject
         class Person {
             @jsonMember
@@ -44,12 +44,12 @@ describe('basic serialization of', function () {
             @jsonMember
             lastName: string;
 
-            public getFullName() {
-                return this.firstName + " " + this.lastName;
+            getFullName() {
+                return `${this.firstName} ${this.lastName}`;
             }
         }
 
-        describe('deserialized', function () {
+        describe('deserialized', () => {
             beforeAll(function () {
                 this.person = TypedJSON.parse('{ "firstName": "John", "lastName": "Doe" }', Person);
             });
@@ -64,9 +64,9 @@ describe('basic serialization of', function () {
             });
         });
 
-        describe('serialized', function () {
-            it('should contain all data', function () {
-                const person = new Person;
+        describe('serialized', () => {
+            it('should contain all data', () => {
+                const person = new Person();
                 person.firstName = 'John';
                 person.lastName = 'Doe';
                 expect(TypedJSON.stringify(person, Person))
@@ -75,8 +75,8 @@ describe('basic serialization of', function () {
         });
     });
 
-    describe('all types', function () {
-        it('should deserialized', function () {
+    describe('all types', () => {
+        it('should deserialized', () => {
             const everything = Everything.create();
 
             const deserialized = TypedJSON.parse(JSON.stringify(everything), Everything);
@@ -84,7 +84,7 @@ describe('basic serialization of', function () {
             expect(deserialized).toEqual(Everything.expected());
         });
 
-        it('should serialize', function () {
+        it('should serialize', () => {
             const everything = Everything.create();
 
             const serialized = TypedJSON.stringify(new Everything(everything), Everything);
@@ -93,17 +93,16 @@ describe('basic serialization of', function () {
         });
     });
 
-    describe('nullable', function () {
-
+    describe('nullable', () => {
         @jsonObject
         class WithNullable {
             // nullable should be optional when not using preserve null
             @jsonMember
-            nullable?: string|null;
+            nullable?: string | null;
         }
 
-        it('should serialize to nothing', function () {
-            const nullClass = new WithNullable;
+        it('should serialize to nothing', () => {
+            const nullClass = new WithNullable();
             nullClass.nullable = null;
 
             const serialized = TypedJSON.stringify(nullClass, WithNullable);
@@ -111,22 +110,21 @@ describe('basic serialization of', function () {
             expect(serialized).toBe('{}');
         });
 
-        it('should deserialize to nothing when null', function () {
+        it('should deserialize to nothing when null', () => {
             const deserialized = TypedJSON.parse('{"nullable":null}', WithNullable);
 
-            expect(deserialized).toEqual(new WithNullable);
+            expect(deserialized).toEqual(new WithNullable());
         });
 
-        it('should deserialize to nothing when nothing', function () {
+        it('should deserialize to nothing when nothing', () => {
             const deserialized = TypedJSON.parse('{}', WithNullable);
 
-            expect(deserialized).toEqual(new WithNullable);
+            expect(deserialized).toEqual(new WithNullable());
         });
     });
 
-    describe('class with defaults', function () {
-
-        describe('by assigment', function () {
+    describe('class with defaults', () => {
+        describe('by assigment', () => {
             @jsonObject
             class WithDefaults {
                 @jsonMember
@@ -139,21 +137,21 @@ describe('basic serialization of', function () {
                 bool: boolean = true;
 
                 @jsonArrayMember(String)
-                arr: string[] = [];
+                arr: Array<string> = [];
 
                 @jsonMember
                 present: number = 10;
             }
 
-            it('should use defaults when missing', function () {
+            it('should use defaults when missing', () => {
                 const deserialized = TypedJSON.parse('{"present":5}', WithDefaults);
-                const expected = new WithDefaults;
+                const expected = new WithDefaults();
                 expected.present = 5;
                 expect(deserialized).toEqual(expected);
             });
         });
 
-        describe('by constructor', function () {
+        describe('by constructor', () => {
             @jsonObject
             class WithCtr {
                 @jsonMember
@@ -166,7 +164,7 @@ describe('basic serialization of', function () {
                 bool: boolean;
 
                 @jsonArrayMember(String)
-                arr: string[];
+                arr: Array<string>;
 
                 @jsonMember
                 present: number;
@@ -180,20 +178,19 @@ describe('basic serialization of', function () {
                 }
             }
 
-            it('should use defaults when missing', function () {
+            it('should use defaults when missing', () => {
                 const deserialized = TypedJSON.parse('{"present":5}', WithCtr);
-                const expected = new WithCtr;
+                const expected = new WithCtr();
                 expected.present = 5;
                 expect(deserialized).toEqual(expected);
             });
         });
     });
 
-    describe('getters/setters', function () {
-
+    describe('getters/setters', () => {
         @jsonObject
         class SomeClass {
-            private _prop: string = "value";
+            private _prop: string = 'value';
             @jsonMember
             get prop(): string {
                 return this._prop;
@@ -202,70 +199,68 @@ describe('basic serialization of', function () {
                 this._prop = val;
             }
 
-            private _getterOnly: string = "getter";
+            private _getterOnly: string = 'getter';
             @jsonMember
             get getterOnly(): string {
                 return this._getterOnly;
             }
 
-            private _setterOnly: string = "setter";
+            private _setterOnly: string = 'setter';
             @jsonMember
             set setterOnly(val: string) {
                 this._setterOnly = val;
             }
         }
 
-        it('should serialize', function () {
-            const serialized = TypedJSON.stringify(new SomeClass, SomeClass);
+        it('should serialize', () => {
+            const serialized = TypedJSON.stringify(new SomeClass(), SomeClass);
             expect(serialized).toBe('{"prop":"value","getterOnly":"getter"}');
         });
 
-        it('should deserialize', function () {
+        it('should deserialize', () => {
             const deserialized = TypedJSON.parse(
                 '{"prop":"other value","setterOnly":"ok"}',
                 SomeClass,
             );
 
-            const expected = new SomeClass;
-            expected.prop = "other value";
-            expected.setterOnly = "ok";
+            const expected = new SomeClass();
+            expected.prop = 'other value';
+            expected.setterOnly = 'ok';
             expect(deserialized).toEqual(expected);
         });
 
-        it('should deserialize ignoring readonly properties', function () {
+        it('should deserialize ignoring readonly properties', () => {
             pending('this is not supported as of now');
             const deserialized = TypedJSON.parse(
                 '{"prop":"other value","getterOnly":"ignored","setterOnly":"ok"}',
                 SomeClass,
             );
 
-            const expected = new SomeClass;
-            expected.prop = "other value";
-            expected.setterOnly = "ok";
+            const expected = new SomeClass();
+            expected.prop = 'other value';
+            expected.setterOnly = 'ok';
             expect(deserialized).toEqual(expected);
         });
     });
 
-    describe('structural inheritance', function () {
-        class JustForOrganizationalPurpose
-        {
+    describe('structural inheritance', () => {
+        class JustForOrganizationalPurpose {
 
         }
 
         @jsonObject
-        class Child extends JustForOrganizationalPurpose
-        {
+        class Child extends JustForOrganizationalPurpose {
 
         }
 
-        it('should work for unannotated base class', function () {
-            expect(TypedJSON.stringify(new Child, Child)).toEqual('{}');
-            expect(TypedJSON.parse('{}', Child)).toEqual(new Child);
+        it('should work for unannotated base class', () => {
+            expect(TypedJSON.stringify(new Child(), Child)).toEqual('{}');
+            expect(TypedJSON.parse('{}', Child)).toEqual(new Child());
         });
 
-        it('should throw when using passing base for serialization/deserialization', function () {
-            expect(() => TypedJSON.stringify(new Child, JustForOrganizationalPurpose)).toThrow();
+        it('should throw when using passing base for serialization/deserialization', () => {
+            expect(() => TypedJSON.stringify(new Child(), JustForOrganizationalPurpose)).toThrow();
             expect(() => TypedJSON.parse('{}', JustForOrganizationalPurpose)).toThrow();
-        })
+        });
     });
 });

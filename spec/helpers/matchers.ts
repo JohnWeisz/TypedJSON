@@ -1,7 +1,7 @@
-beforeEach(function() {
+beforeEach(() => {
     jasmine.addMatchers({
         toHaveProperties(util, customEqualityMatchers): jasmine.CustomMatcher {
-            function equalOnPropNames<T extends Object>(actual: T, expected: (keyof T)[]): boolean {
+            function equalOnPropNames<T extends Object>(actual: T, expected: Array<keyof T>): boolean {
                 return expected.every(prop => prop in actual);
             }
 
@@ -16,8 +16,8 @@ beforeEach(function() {
             return {
                 compare<T extends Object>(
                     actual: T,
-                    expected: Partial<T>|(keyof T)[],
-                    ...customMsgs: any[]
+                    expected: Partial<T> | Array<keyof T>,
+                    ...customMsgs: Array<any>
                 ) {
                     let pass: boolean;
                     let name: string;
@@ -31,11 +31,9 @@ beforeEach(function() {
 
                     return {
                         pass,
-                        message: util.buildFailureMessage(
-                            name, pass, actual, expected, ...customMsgs,
-                        ),
+                        message: util.buildFailureMessage(name, pass, actual, expected, ...customMsgs),
                     };
-                }
+                },
             };
         },
         toBeInstanceOf(util): jasmine.CustomMatcher {
@@ -43,15 +41,13 @@ beforeEach(function() {
                 compare<T>(
                     actual: T,
                     expected: Function,
-                    ...customMsgs: any[]
+                    ...customMsgs: Array<any>
                 ) {
                     const pass = actual instanceof expected;
                     return {
                         pass,
-                        message: util.buildFailureMessage(
-                            'To be instance of', pass, actual, expected, ...customMsgs,
-                        ),
-                    }
+                        message: util.buildFailureMessage('To be instance of', pass, actual, expected, ...customMsgs),
+                    };
                 },
             };
         },
@@ -60,25 +56,22 @@ beforeEach(function() {
                 compare<T extends ArrayLike<T>>(
                     actual: T,
                     expected: number,
-                    ...customMsgs: any[]
+                    ...customMsgs: Array<any>
                 ) {
                     const pass = actual && actual.length === expected;
                     return {
                         pass,
-                        message: util.buildFailureMessage(
-                            'To be of length', pass, actual, expected, ...customMsgs,
-                        ),
-                    }
+                        message: util.buildFailureMessage('To be of length', pass, actual, expected, ...customMsgs),
+                    };
                 },
             };
         },
     });
-    jasmine.addCustomEqualityTester(function (first: any, second: any): boolean|undefined {
-        const firstAsInt8Array: Int8Array|undefined = tryAsInt8Array(first);
-        const secondAsInt8Array: Int8Array|undefined = tryAsInt8Array(second);
+    jasmine.addCustomEqualityTester((first: any, second: any): boolean | undefined => {
+        const firstAsInt8Array: Int8Array | undefined = tryAsInt8Array(first);
+        const secondAsInt8Array: Int8Array | undefined = tryAsInt8Array(second);
 
-        if (!firstAsInt8Array || !secondAsInt8Array)
-        {
+        if (!firstAsInt8Array || !secondAsInt8Array) {
             return;
         }
 
@@ -89,24 +82,21 @@ beforeEach(function() {
     });
 });
 
-function tryAsInt8Array(obj: any): Int8Array|undefined {
-    if (obj instanceof ArrayBuffer)
-    {
+function tryAsInt8Array(obj: any): Int8Array | undefined {
+    if (obj instanceof ArrayBuffer) {
         return new Int8Array(obj);
-    }
-    else if (ArrayBuffer.isView(obj))
-    {
+    } else if (ArrayBuffer.isView(obj)) {
         return new Int8Array(obj.buffer);
     }
 }
 
-
 declare namespace jasmine {
+    /* eslint-disable @typescript-eslint/method-signature-style */
     interface Matchers<T> {
-        toHaveProperties(expectation: Partial<T>|(keyof T)[], ...expectationFailOutput: any[]): boolean;
-        toBeInstanceOf(expectation: Function, ...expectationFailOutput: any[]): boolean;
+        toHaveProperties(expectation: Partial<T> | Array<keyof T>, ...expectationFailOutput: Array<any>): boolean;
+        toBeInstanceOf(expectation: Function, ...expectationFailOutput: Array<any>): boolean;
     }
     interface ArrayLikeMatchers<T> extends Matchers<ArrayLike<T>> {
-        toBeOfLength(expectation: number, ...expectationFailOutput: any[]): boolean;
+        toBeOfLength: (expectation: number, ...expectationFailOutput: Array<any>) => boolean;
     }
 }

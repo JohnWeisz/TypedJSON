@@ -1,4 +1,4 @@
-import { OptionsBase } from "./options-base";
+import { OptionsBase } from './options-base';
 export interface IJsonSetMemberOptions extends OptionsBase {
     /** When set, indicates that the member must be present when deserializing. */
     isRequired?: boolean;

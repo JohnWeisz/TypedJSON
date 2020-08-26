@@ -1,5 +1,5 @@
-import { OptionsBase } from "./options-base";
-import { MapOptions, TypeDescriptor } from "./type-descriptor";
+import { OptionsBase } from './options-base';
+import { MapOptions, TypeDescriptor } from './type-descriptor';
 export interface IJsonMapMemberOptions extends OptionsBase, Partial<MapOptions> {
     /** When set, indicates that the member must be present when deserializing. */
     isRequired?: boolean;

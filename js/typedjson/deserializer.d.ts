@@ -1,7 +1,7 @@
-import { IndexedObject } from "./types";
-import { TypeResolver } from "./metadata";
-import { OptionsBase } from "./options-base";
-import { TypeDescriptor } from "./type-descriptor";
+import { TypeResolver } from './metadata';
+import { OptionsBase } from './options-base';
+import { TypeDescriptor } from './type-descriptor';
+import { IndexedObject } from './types';
 export declare function defaultTypeResolver(sourceObject: IndexedObject, knownTypes: Map<string, Function>): Function | undefined;
 export declare type DeserializerFn<T, TD extends TypeDescriptor, Raw> = (sourceObject: Raw, typeDescriptor: TypeDescriptor, knownTypes: Map<string, Function>, memberName: string, deserializer: Deserializer<T>, memberOptions?: OptionsBase) => T;
 /**

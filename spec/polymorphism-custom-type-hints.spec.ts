@@ -1,29 +1,26 @@
-﻿import { jsonObject, jsonMember, jsonArrayMember, TypedJSON } from "../src/typedjson";
-import { IndexedObject } from '../src/typedjson/types';
+import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src/typedjson';
+import {IndexedObject} from '../src/typedjson/types';
 
-describe('polymorphism custom type hints', function () {
-
-    describe('should work for a base class', function () {
+describe('polymorphism custom type hints', () => {
+    describe('should work for a base class', () => {
         let TYPE_MAP: IndexedObject;
 
         @jsonObject({
-            typeHintEmitter: (targetObject, sourceObject) => targetObject.personType = sourceObject.constructor.name + 'Type',
+            typeHintEmitter: (targetObject, sourceObject) => targetObject.personType = `${sourceObject.constructor.name}Type`,
             typeResolver: sourceObject => TYPE_MAP[sourceObject.personType],
         })
-        abstract class Person
-        {
+        abstract class Person {
             @jsonMember
-            public firstName: string;
+            firstName: string;
 
             @jsonMember
-            public lastName: string;
+            lastName: string;
 
             constructor();
             constructor(firstName?: string, lastName?: string);
             constructor(firstName: string, lastName: string);
             constructor(firstName?: string, lastName?: string) {
-                if (firstName && lastName)
-                {
+                if (firstName && lastName) {
                     this.firstName = firstName;
                     this.lastName = lastName;
                 }
@@ -31,10 +28,9 @@ describe('polymorphism custom type hints', function () {
         }
 
         @jsonObject
-        class Employee extends Person
-        {
+        class Employee extends Person {
             @jsonMember
-            public salary: number;
+            salary: number;
 
             constructor();
             constructor(firstName: string, lastName: string);
@@ -42,25 +38,22 @@ describe('polymorphism custom type hints', function () {
             constructor(firstName?: string, lastName?: string, salary?: number) {
                 super(firstName, lastName);
 
-                if (salary)
-                {
+                if (salary) {
                     this.salary = salary;
                 }
             }
         }
 
         @jsonObject
-        class PartTimeEmployee extends Employee
-        {
+        class PartTimeEmployee extends Employee {
             @jsonMember
-            public workHours: number;
+            workHours: number;
         }
 
         @jsonObject
-        class Investor extends Person
-        {
+        class Investor extends Person {
             @jsonMember
-            public investAmount: number;
+            investAmount: number;
 
             constructor();
             constructor(firstName: string, lastName: string);
@@ -73,35 +66,34 @@ describe('polymorphism custom type hints', function () {
         }
 
         TYPE_MAP = {
-            'EmployeeType': Employee,
-            'PartTimeEmployeeType': PartTimeEmployee,
-            'InvestorType': Investor,
-        }
+            EmployeeType: Employee,
+            PartTimeEmployeeType: PartTimeEmployee,
+            InvestorType: Investor,
+        };
 
         @jsonObject
-        class Company
-        {
+        class Company {
             @jsonMember
-            public name: string;
+            name: string;
 
             @jsonArrayMember(Employee)
-            public employees: Array<Employee> = [];
+            employees: Array<Employee> = [];
 
             @jsonMember
-            public owner: Person;
+            owner: Person;
         }
 
-        it('should emit custom hint', function () {
+        it('should emit custom hint', () => {
             const company = new Company();
-            company.name = "Json Types";
-            company.owner = new Investor("John", "White", 1700000);
+            company.name = 'Json Types';
+            company.owner = new Investor('John', 'White', 1700000);
 
-            const partTime = new PartTimeEmployee("Abe", "White", 160000);
+            const partTime = new PartTimeEmployee('Abe', 'White', 160000);
             partTime.workHours = 20;
             company.employees = [
-                new Employee("Donn", "Worker", 240000),
+                new Employee('Donn', 'Worker', 240000),
                 partTime,
-                new Employee("Smith", "Elly", 35500),
+                new Employee('Smith', 'Elly', 35500),
             ];
 
             const json = TypedJSON.toPlainJson(company, Company);
@@ -122,7 +114,7 @@ describe('polymorphism custom type hints', function () {
             });
         });
 
-        it('should resolve custom hints', function () {
+        it('should resolve custom hints', () => {
             const json = {
                 name: 'Json Types',
                 owner: {personType: 'InvestorType', firstName: 'John', lastName: 'White', investAmount: 1700000},
@@ -142,48 +134,44 @@ describe('polymorphism custom type hints', function () {
             const deserialized = TypedJSON.parse(JSON.stringify(json), Company);
 
             const company = new Company();
-            company.name = "Json Types";
-            company.owner = new Investor("John", "White", 1700000);
+            company.name = 'Json Types';
+            company.owner = new Investor('John', 'White', 1700000);
 
-            const partTime = new PartTimeEmployee("Abe", "White", 160000);
+            const partTime = new PartTimeEmployee('Abe', 'White', 160000);
             partTime.workHours = 20;
             company.employees = [
-                new Employee("Donn", "Worker", 240000),
+                new Employee('Donn', 'Worker', 240000),
                 partTime,
-                new Employee("Smith", "Elly", 35500),
+                new Employee('Smith', 'Elly', 35500),
             ];
             expect(deserialized).toEqual(company);
         });
     });
 
-    describe('should override parents', function () {
-        abstract class StructuralBase
-        {
+    describe('should override parents', () => {
+        abstract class StructuralBase {
             @jsonMember
             value: string;
         }
 
         @jsonObject({
             typeHintEmitter: (targetObject, sourceObject) => targetObject.type = (sourceObject.constructor as any).type,
-            typeResolver: (sourceObject => sourceObject.type === 'sub-one' ? ConcreteOne : AnotherConcreteOne),
+            typeResolver: sourceObject => sourceObject.type === 'sub-one' ? ConcreteOne : AnotherConcreteOne,
         })
-        abstract class SemanticBaseOne extends StructuralBase
-        {
+        abstract class SemanticBaseOne extends StructuralBase {
             @jsonMember
             prop1: number;
         }
 
         @jsonObject
-        class ConcreteOne extends SemanticBaseOne
-        {
+        class ConcreteOne extends SemanticBaseOne {
             static type = 'sub-one';
             @jsonMember
             propSub: string;
         }
 
         @jsonObject
-        class AnotherConcreteOne extends SemanticBaseOne
-        {
+        class AnotherConcreteOne extends SemanticBaseOne {
             static type = 'sub-two';
             @jsonMember
             propSub: number;
@@ -191,30 +179,27 @@ describe('polymorphism custom type hints', function () {
 
         @jsonObject({
             typeHintEmitter: (targetObject, sourceObject) => targetObject.hint = sourceObject instanceof ConcreteTwo ? 'first' : 'another',
-            typeResolver: (sourceObject => sourceObject.hint === 'first' ? ConcreteTwo : AnotherConcreteTwo),
+            typeResolver: sourceObject => sourceObject.hint === 'first' ? ConcreteTwo : AnotherConcreteTwo,
         })
-        abstract class SemanticBaseTwo extends StructuralBase
-        {
+        abstract class SemanticBaseTwo extends StructuralBase {
             @jsonMember
             prop2: number;
         }
 
         @jsonObject
-        class ConcreteTwo extends SemanticBaseTwo
-        {
+        class ConcreteTwo extends SemanticBaseTwo {
             @jsonMember
             propSub: string;
         }
 
         @jsonObject
-        class AnotherConcreteTwo extends SemanticBaseTwo
-        {
+        class AnotherConcreteTwo extends SemanticBaseTwo {
             @jsonMember
             propSub: number;
         }
 
-        it('should work for SemanticBaseOne', function () {
-            const inputAndResult: [() => SemanticBaseOne, () => IndexedObject][] = [
+        it('should work for SemanticBaseOne', () => {
+            const inputAndResult: Array<[() => SemanticBaseOne, () => IndexedObject]> = [
                 [
                     () => {
                         const expected = new ConcreteOne();
@@ -250,11 +235,11 @@ describe('polymorphism custom type hints', function () {
             inputAndResult.forEach(([inputFn, serializedFn]) => {
                 expect(TypedJSON.toPlainJson(inputFn(), SemanticBaseOne)).toEqual(serializedFn());
                 expect(TypedJSON.parse(serializedFn(), SemanticBaseOne)).toEqual(inputFn());
-            })
+            });
         });
 
-        it('should work for SemanticBaseTwo', function () {
-            const inputAndResult: [() => SemanticBaseTwo, () => IndexedObject][] = [
+        it('should work for SemanticBaseTwo', () => {
+            const inputAndResult: Array<[() => SemanticBaseTwo, () => IndexedObject]> = [
                 [
                     () => {
                         const expected = new ConcreteTwo();
@@ -290,7 +275,7 @@ describe('polymorphism custom type hints', function () {
             inputAndResult.forEach(([inputFn, serializedFn]) => {
                 expect(TypedJSON.toPlainJson(inputFn(), SemanticBaseTwo)).toEqual(serializedFn());
                 expect(TypedJSON.parse(serializedFn(), SemanticBaseTwo)).toEqual(inputFn());
-            })
+            });
         });
-    })
+    });
 });

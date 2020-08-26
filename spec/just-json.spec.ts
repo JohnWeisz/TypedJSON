@@ -1,8 +1,8 @@
-﻿import { jsonArrayMember, jsonMember, jsonObject, TypedJSON } from "../src/typedjson";
+import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src/typedjson';
 
-describe('json (without automatic stringify)', function () {
-    describe('string', function () {
-        it('should deserialize', function () {
+describe('json (without automatic stringify)', () => {
+    describe('string', () => {
+        it('should deserialize', () => {
             // stringified json version cuz ""
             expect(TypedJSON.parse('"str"', String)).toEqual('str');
             // already parsed
@@ -12,16 +12,16 @@ describe('json (without automatic stringify)', function () {
             try {
                 expect(TypedJSON.parse('"sdfs"fdsf"', String)).toEqual(undefined);
                 fail();
-            } catch(e) {}
+            } catch (e) {}
         });
 
-        it('should serialize', function () {
+        it('should serialize', () => {
             expect(TypedJSON.toPlainJson('str', String)).toEqual('str');
         });
     });
 
-    describe('rest of primitives', function () {
-        it('should deserialize', function () {
+    describe('rest of primitives', () => {
+        it('should deserialize', () => {
             expect(TypedJSON.parse(45834, Number)).toEqual(45834);
             expect(TypedJSON.parse(true, Boolean)).toEqual(true);
             expect(TypedJSON.parse(1543915254, Date)).toEqual(new Date(1543915254));
@@ -33,7 +33,7 @@ describe('json (without automatic stringify)', function () {
             expect(TypedJSON.parse([100, 117, 112, 97], Uint8Array)).toEqual(dataBuffer);
         });
 
-        it('should serialize', function () {
+        it('should serialize', () => {
             expect(TypedJSON.toPlainJson(45834, Number)).toEqual(45834);
             expect(TypedJSON.toPlainJson(true, Boolean)).toEqual(true);
             const dateMs = new Date(1543915254);
@@ -53,8 +53,7 @@ describe('json (without automatic stringify)', function () {
         });
     });
 
-    describe('object', function () {
-
+    describe('object', () => {
         @jsonObject
         class SomeThing {
             @jsonMember
@@ -62,7 +61,7 @@ describe('json (without automatic stringify)', function () {
             @jsonMember
             propNum: number;
             @jsonArrayMember(String)
-            propArr: String[];
+            propArr: Array<String>;
             @jsonMember
             propDate: Date;
         }
@@ -74,23 +73,23 @@ describe('json (without automatic stringify)', function () {
             propDate: new Date(1543915254),
         });
 
-        it('should deserialize', function () {
+        it('should deserialize', () => {
             expect(TypedJSON.parse(json, SomeThing)).toEqual(Object.assign(new SomeThing(), json));
             expect(TypedJSON.parseAsArray([json], SomeThing)).toEqual([Object.assign(new SomeThing(), json)]);
         });
 
-        it('should serialize', function () {
+        it('should serialize', () => {
             expect(TypedJSON.toPlainJson(Object.assign(new SomeThing(), json), SomeThing)).toEqual(json);
             expect(TypedJSON.toPlainArray([Object.assign(new SomeThing(), json)], SomeThing)).toEqual([json]);
         });
     });
 
-    describe('array', function () {
-        it('should deserialize', function () {
+    describe('array', () => {
+        it('should deserialize', () => {
             expect(TypedJSON.parseAsArray(['alas', 'dfsd'], String)).toEqual(['alas', 'dfsd']);
         });
 
-        it('should serialize', function () {
+        it('should serialize', () => {
           expect(TypedJSON.toPlainArray(['alas', 'dfsd'], String)).toEqual(['alas', 'dfsd']);
         });
     });

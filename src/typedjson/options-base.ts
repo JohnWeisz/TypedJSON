@@ -12,13 +12,13 @@ export interface OptionsBase {
     preserveNull?: boolean;
 }
 
-const kAllOptions: (keyof OptionsBase)[] = [
+const kAllOptions: Array<keyof OptionsBase> = [
     'preserveNull',
 ];
 
-export function extractOptionBase(from: {[key: string]: any} & OptionsBase): OptionsBase|undefined {
+export function extractOptionBase(from: {[key: string]: any} & OptionsBase): OptionsBase | undefined {
     const options = Object.keys(from)
-        .filter(key => (kAllOptions as string[]).indexOf(key) > -1)
+        .filter(key => (kAllOptions as Array<string>).indexOf(key) > -1)
         .reduce((obj, key) => {
             obj[key] = from[key];
             return obj;
@@ -28,7 +28,7 @@ export function extractOptionBase(from: {[key: string]: any} & OptionsBase): Opt
 
 export function getDefaultOptionOf<K extends keyof OptionsBase>(key: K): Required<OptionsBase>[K] {
     switch (key) {
-        case "preserveNull":
+        case 'preserveNull':
             return false;
     }
     // never reached
@@ -39,19 +39,21 @@ export function getOptionValue<K extends keyof OptionsBase>(
     key: K,
     options?: OptionsBase,
 ): Required<OptionsBase>[K] {
-    if (options && options[key] != null) return options[key]!;
+    if (options && options[key] != null) {
+return options[key]!;
+}
     return getDefaultOptionOf(key);
 }
 
 export function mergeOptions(
     existing?: OptionsBase,
     moreSpecific?: OptionsBase,
-): OptionsBase|undefined {
+): OptionsBase | undefined {
     return !moreSpecific
         ? existing
-        : Object.assign(
-            {},
-            existing,
-            moreSpecific,
-        );
+        : {
+
+            ...existing,
+            ...moreSpecific,
+        };
 }

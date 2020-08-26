@@ -1,17 +1,16 @@
-﻿import {jsonObject, jsonMember, jsonArrayMember, TypedJSON} from "../src/typedjson";
+import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src/typedjson';
 
-describe('custom member serializer', function () {
-
+describe('custom member serializer', () => {
     @jsonObject
     class Person {
-        @jsonMember({ serializer: ((value: string) => value.split(' ')) })
+        @jsonMember({serializer: (value: string) => value.split(' ')})
         firstName: string;
 
         @jsonMember
         lastName: string;
 
-        public getFullName() {
-            return this.firstName + " " + this.lastName;
+        getFullName() {
+            return `${this.firstName} ${this.lastName}`;
         }
     }
 
@@ -25,36 +24,35 @@ describe('custom member serializer', function () {
     it('should properly serialize', function () {
         expect(this.json).toEqual(
             {
-                firstName:['Mulit', 'term', 'name'],
+                firstName: ['Mulit', 'term', 'name'],
                 lastName: 'Surname',
-            });
+            },
+        );
     });
 
-    it('should not affect deserialization', function () {
+    it('should not affect deserialization', () => {
         expect(TypedJSON.parse('{"firstName":"name","lastName":"last"}', Person))
             .toEqual(Object.assign(new Person(), {firstName: 'name', lastName: 'last'}));
     });
-
 });
 
-describe('custom array member serializer', function () {
-
+describe('custom array member serializer', () => {
     @jsonObject
     class Obj {
-        @jsonArrayMember(Number, { serializer: ((values: number[]) => values.join(',')) })
-        nums: number[];
+        @jsonArrayMember(Number, {serializer: (values: Array<number>) => values.join(',')})
+        nums: Array<number>;
 
         @jsonMember
         str: string;
 
-        public sum() {
+        sum() {
             return this.nums.reduce((sum, cur) => sum + cur, 0);
         }
     }
 
     beforeAll(function () {
         this.obj = new Obj();
-        this.obj.nums = [3,45,34];
+        this.obj.nums = [3, 45, 34];
         this.obj.str = 'Text';
         this.json = JSON.parse(TypedJSON.stringify(this.obj, Obj));
     });
@@ -64,18 +62,17 @@ describe('custom array member serializer', function () {
             {
                 nums: '3,45,34',
                 str: 'Text',
-            });
+            },
+        );
     });
 
-    it('should not affect deserialization', function () {
+    it('should not affect deserialization', () => {
         expect(TypedJSON.parse('{"nums":[4,5,6,7],"str":"string"}', Obj))
-            .toEqual(Object.assign(new Obj(), {nums: [4,5,6,7], str: 'string'} as Obj));
+            .toEqual(Object.assign(new Obj(), {nums: [4, 5, 6, 7], str: 'string'} as Obj));
     });
-
 });
 
-describe('custom delegating array member serializer', function () {
-
+describe('custom delegating array member serializer', () => {
     @jsonObject
     class Inner {
         @jsonMember
@@ -91,7 +88,7 @@ describe('custom delegating array member serializer', function () {
         }
     }
 
-    function objArraySerializer(values: Inner[]) {
+    function objArraySerializer(values: Array<Inner>) {
         return TypedJSON.toPlainArray(
             values.filter(value => value.shouldSerialize),
             Inner,
@@ -100,8 +97,8 @@ describe('custom delegating array member serializer', function () {
 
     @jsonObject
     class Obj {
-        @jsonArrayMember(Inner, { serializer: objArraySerializer })
-        inners: Inner[];
+        @jsonArrayMember(Inner, {serializer: objArraySerializer})
+        inners: Array<Inner>;
 
         @jsonMember
         str: string;
@@ -126,7 +123,7 @@ describe('custom delegating array member serializer', function () {
                     },
                 ],
                 str: 'Text',
-            });
+            },
+        );
     });
-
 });

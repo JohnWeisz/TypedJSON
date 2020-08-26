@@ -1,8 +1,8 @@
-import { Constructor, IndexedObject, Serializable } from "./typedjson/types";
-import { defaultTypeEmitter } from "./typedjson/serializer";
-import { defaultTypeResolver } from "./typedjson/deserializer";
-import { TypeResolver, TypeHintEmitter } from "./typedjson/metadata";
-import { OptionsBase } from "./typedjson/options-base";
+import { defaultTypeResolver } from './typedjson/deserializer';
+import { TypeHintEmitter, TypeResolver } from './typedjson/metadata';
+import { OptionsBase } from './typedjson/options-base';
+import { defaultTypeEmitter } from './typedjson/serializer';
+import { Constructor, IndexedObject, Serializable } from './typedjson/types';
 export declare type JsonTypes = Object | boolean | string | number | null | undefined;
 export { defaultTypeResolver, defaultTypeEmitter };
 export interface ITypedJSONSettings extends OptionsBase {
@@ -37,32 +37,32 @@ export interface ITypedJSONSettings extends OptionsBase {
 }
 export declare class TypedJSON<T> {
     static parse<T>(object: any, rootType: Serializable<T>, settings?: ITypedJSONSettings): T | undefined;
-    static parseAsArray<T>(object: any, elementType: Serializable<T>, settings?: ITypedJSONSettings, dimensions?: 1): T[];
-    static parseAsArray<T>(object: any, elementType: Serializable<T>, settings: ITypedJSONSettings | undefined, dimensions: 2): T[][];
-    static parseAsArray<T>(object: any, elementType: Serializable<T>, settings: ITypedJSONSettings | undefined, dimensions: 3): T[][][];
-    static parseAsArray<T>(object: any, elementType: Serializable<T>, settings: ITypedJSONSettings | undefined, dimensions: 4): T[][][][];
-    static parseAsArray<T>(object: any, elementType: Serializable<T>, settings: ITypedJSONSettings | undefined, dimensions: 5): T[][][][][];
+    static parseAsArray<T>(object: any, elementType: Serializable<T>, settings?: ITypedJSONSettings, dimensions?: 1): Array<T>;
+    static parseAsArray<T>(object: any, elementType: Serializable<T>, settings: ITypedJSONSettings | undefined, dimensions: 2): Array<Array<T>>;
+    static parseAsArray<T>(object: any, elementType: Serializable<T>, settings: ITypedJSONSettings | undefined, dimensions: 3): Array<Array<Array<T>>>;
+    static parseAsArray<T>(object: any, elementType: Serializable<T>, settings: ITypedJSONSettings | undefined, dimensions: 4): Array<Array<Array<Array<T>>>>;
+    static parseAsArray<T>(object: any, elementType: Serializable<T>, settings: ITypedJSONSettings | undefined, dimensions: 5): Array<Array<Array<Array<Array<T>>>>>;
     static parseAsSet<T>(object: any, elementType: Serializable<T>, settings?: ITypedJSONSettings): Set<T>;
     static parseAsMap<K, V>(object: any, keyType: Serializable<K>, valueType: Serializable<V>, settings?: ITypedJSONSettings): Map<K, V>;
     static toPlainJson<T>(object: T, rootType: Serializable<T>, settings?: ITypedJSONSettings): JsonTypes;
-    static toPlainArray<T>(object: T[], elementType: Serializable<T>, dimensions?: 1, settings?: ITypedJSONSettings): Object[];
-    static toPlainArray<T>(object: T[][], elementType: Serializable<T>, dimensions: 2, settings?: ITypedJSONSettings): Object[][];
-    static toPlainArray<T>(object: T[][][], elementType: Serializable<T>, dimensions: 3, settings?: ITypedJSONSettings): Object[][][];
-    static toPlainArray<T>(object: T[][][][], elementType: Serializable<T>, dimensions: 4, settings?: ITypedJSONSettings): Object[][][][];
-    static toPlainArray<T>(object: T[][][][][], elementType: Serializable<T>, dimensions: 5, settings?: ITypedJSONSettings): Object[][][][][];
-    static toPlainArray<T>(object: any[], elementType: Serializable<T>, dimensions: number, settings?: ITypedJSONSettings): any[];
-    static toPlainSet<T>(object: Set<T>, elementType: Serializable<T>, settings?: ITypedJSONSettings): Object[] | undefined;
-    static toPlainMap<K, V>(object: Map<K, V>, keyCtor: Serializable<K>, valueCtor: Serializable<V>, settings?: ITypedJSONSettings): IndexedObject | {
+    static toPlainArray<T>(object: Array<T>, elementType: Serializable<T>, dimensions?: 1, settings?: ITypedJSONSettings): Array<Object>;
+    static toPlainArray<T>(object: Array<Array<T>>, elementType: Serializable<T>, dimensions: 2, settings?: ITypedJSONSettings): Array<Array<Object>>;
+    static toPlainArray<T>(object: Array<Array<Array<T>>>, elementType: Serializable<T>, dimensions: 3, settings?: ITypedJSONSettings): Array<Array<Array<Object>>>;
+    static toPlainArray<T>(object: Array<Array<Array<Array<T>>>>, elementType: Serializable<T>, dimensions: 4, settings?: ITypedJSONSettings): Array<Array<Array<Array<Object>>>>;
+    static toPlainArray<T>(object: Array<Array<Array<Array<Array<T>>>>>, elementType: Serializable<T>, dimensions: 5, settings?: ITypedJSONSettings): Array<Array<Array<Array<Array<Object>>>>>;
+    static toPlainArray<T>(object: Array<any>, elementType: Serializable<T>, dimensions: number, settings?: ITypedJSONSettings): Array<any>;
+    static toPlainSet<T>(object: Set<T>, elementType: Serializable<T>, settings?: ITypedJSONSettings): Array<Object> | undefined;
+    static toPlainMap<K, V>(object: Map<K, V>, keyCtor: Serializable<K>, valueCtor: Serializable<V>, settings?: ITypedJSONSettings): IndexedObject | Array<{
         key: any;
         value: any;
-    }[] | undefined;
+    }> | undefined;
     static stringify<T>(object: T, rootType: Serializable<T>, settings?: ITypedJSONSettings): string;
-    static stringifyAsArray<T>(object: T[], elementType: Serializable<T>, dimensions?: 1, settings?: ITypedJSONSettings): string;
-    static stringifyAsArray<T>(object: T[][], elementType: Serializable<T>, dimensions: 2, settings?: ITypedJSONSettings): string;
-    static stringifyAsArray<T>(object: T[][][], elementType: Serializable<T>, dimensions: 3, settings?: ITypedJSONSettings): string;
-    static stringifyAsArray<T>(object: T[][][][], elementType: Serializable<T>, dimensions: 4, settings?: ITypedJSONSettings): string;
-    static stringifyAsArray<T>(object: T[][][][][], elementType: Serializable<T>, dimensions: 5, settings?: ITypedJSONSettings): string;
-    static stringifyAsArray<T>(object: any[], elementType: Serializable<T>, dimensions: number, settings?: ITypedJSONSettings): string;
+    static stringifyAsArray<T>(object: Array<T>, elementType: Serializable<T>, dimensions?: 1, settings?: ITypedJSONSettings): string;
+    static stringifyAsArray<T>(object: Array<Array<T>>, elementType: Serializable<T>, dimensions: 2, settings?: ITypedJSONSettings): string;
+    static stringifyAsArray<T>(object: Array<Array<Array<T>>>, elementType: Serializable<T>, dimensions: 3, settings?: ITypedJSONSettings): string;
+    static stringifyAsArray<T>(object: Array<Array<Array<Array<T>>>>, elementType: Serializable<T>, dimensions: 4, settings?: ITypedJSONSettings): string;
+    static stringifyAsArray<T>(object: Array<Array<Array<Array<Array<T>>>>>, elementType: Serializable<T>, dimensions: 5, settings?: ITypedJSONSettings): string;
+    static stringifyAsArray<T>(object: Array<any>, elementType: Serializable<T>, dimensions: number, settings?: ITypedJSONSettings): string;
     static stringifyAsSet<T>(object: Set<T>, elementType: Serializable<T>, settings?: ITypedJSONSettings): string;
     static stringifyAsMap<K, V>(object: Map<K, V>, keyCtor: Serializable<K>, valueCtor: Serializable<V>, settings?: ITypedJSONSettings): string;
     private static _globalConfig;
@@ -94,12 +94,12 @@ export declare class TypedJSON<T> {
      * @returns Deserialized T or undefined if there were errors.
      */
     parse(object: any): T | undefined;
-    parseAsArray(object: any, dimensions?: 1): T[];
-    parseAsArray(object: any, dimensions: 2): T[][];
-    parseAsArray(object: any, dimensions: 3): T[][][];
-    parseAsArray(object: any, dimensions: 4): T[][][][];
-    parseAsArray(object: any, dimensions: 5): T[][][][][];
-    parseAsArray(object: any, dimensions: number): any[];
+    parseAsArray(object: any, dimensions?: 1): Array<T>;
+    parseAsArray(object: any, dimensions: 2): Array<Array<T>>;
+    parseAsArray(object: any, dimensions: 3): Array<Array<Array<T>>>;
+    parseAsArray(object: any, dimensions: 4): Array<Array<Array<Array<T>>>>;
+    parseAsArray(object: any, dimensions: 5): Array<Array<Array<Array<Array<T>>>>>;
+    parseAsArray(object: any, dimensions: number): Array<any>;
     parseAsSet(object: any): Set<T>;
     parseAsMap<K>(object: any, keyConstructor: Serializable<K>): Map<K, T>;
     /**
@@ -108,16 +108,16 @@ export declare class TypedJSON<T> {
      * @returns Serialized object or undefined if an error has occured.
      */
     toPlainJson(object: T): JsonTypes;
-    toPlainArray(object: T[], dimensions?: 1): Object[];
-    toPlainArray(object: T[][], dimensions: 2): Object[][];
-    toPlainArray(object: T[][][], dimensions: 3): Object[][][];
-    toPlainArray(object: T[][][][], dimensions: 4): Object[][][][];
-    toPlainArray(object: T[][][][][], dimensions: 5): Object[][][][][];
-    toPlainSet(object: Set<T>): Object[] | undefined;
-    toPlainMap<K>(object: Map<K, T>, keyConstructor: Serializable<K>): IndexedObject | {
+    toPlainArray(object: Array<T>, dimensions?: 1): Array<Object>;
+    toPlainArray(object: Array<Array<T>>, dimensions: 2): Array<Array<Object>>;
+    toPlainArray(object: Array<Array<Array<T>>>, dimensions: 3): Array<Array<Array<Object>>>;
+    toPlainArray(object: Array<Array<Array<Array<T>>>>, dimensions: 4): Array<Array<Array<Array<Object>>>>;
+    toPlainArray(object: Array<Array<Array<Array<Array<T>>>>>, dimensions: 5): Array<Array<Array<Array<Array<Object>>>>>;
+    toPlainSet(object: Set<T>): Array<Object> | undefined;
+    toPlainMap<K>(object: Map<K, T>, keyConstructor: Serializable<K>): IndexedObject | Array<{
         key: any;
         value: any;
-    }[] | undefined;
+    }> | undefined;
     /**
      * Converts an instance of the specified class type to a JSON string.
      * @param object The instance to convert to a JSON string.
@@ -126,11 +126,11 @@ export declare class TypedJSON<T> {
      *     the errorHandler did not throw.
      */
     stringify(object: T): string;
-    stringifyAsArray(object: T[], dimensions?: 1): string;
-    stringifyAsArray(object: T[][], dimensions: 2): string;
-    stringifyAsArray(object: T[][][], dimensions: 3): string;
-    stringifyAsArray(object: T[][][][], dimensions: 4): string;
-    stringifyAsArray(object: T[][][][][], dimensions: 5): string;
+    stringifyAsArray(object: Array<T>, dimensions?: 1): string;
+    stringifyAsArray(object: Array<Array<T>>, dimensions: 2): string;
+    stringifyAsArray(object: Array<Array<Array<T>>>, dimensions: 3): string;
+    stringifyAsArray(object: Array<Array<Array<Array<T>>>>, dimensions: 4): string;
+    stringifyAsArray(object: Array<Array<Array<Array<Array<T>>>>>, dimensions: 5): string;
     stringifyAsSet(object: Set<T>): string;
     stringifyAsMap<K>(object: Map<K, T>, keyConstructor: Serializable<K>): string;
     private _mapKnownTypes;

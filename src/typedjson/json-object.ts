@@ -1,15 +1,14 @@
-﻿import { Serializable } from "./types";
-import { JsonObjectMetadata, TypeHintEmitter, TypeResolver } from "./metadata";
-import { extractOptionBase, OptionsBase } from "./options-base";
+import {JsonObjectMetadata, TypeHintEmitter, TypeResolver} from './metadata';
+import {extractOptionBase, OptionsBase} from './options-base';
+import {Serializable} from './types';
 
 export type InitializerCallback<T> = (sourceObject: T, rawSourceObject: T) => T;
 
-export interface IJsonObjectOptionsBase extends OptionsBase
-{
+export interface IJsonObjectOptionsBase extends OptionsBase {
     /**
      * An array of known types to recognize when encountering type-hints.
      */
-    knownTypes?: Function[];
+    knownTypes?: Array<Function>;
 
     /**
      * A function that will emit a type hint on the resulting JSON. It will override the global typeEmitter.
@@ -40,8 +39,7 @@ export interface IJsonObjectOptionsBase extends OptionsBase
     name?: string;
 }
 
-export interface IJsonObjectOptionsWithInitializer<T> extends IJsonObjectOptionsBase
-{
+export interface IJsonObjectOptionsWithInitializer<T> extends IJsonObjectOptionsBase {
     /**
      * Function to call before deserializing and initializing the object, accepting two arguments:
      *   (1) sourceObject, an 'Object' instance with all properties already deserialized, and
@@ -51,8 +49,7 @@ export interface IJsonObjectOptionsWithInitializer<T> extends IJsonObjectOptions
     initializer: InitializerCallback<T>;
 }
 
-export interface IJsonObjectOptions<T> extends IJsonObjectOptionsBase
-{
+export interface IJsonObjectOptions<T> extends IJsonObjectOptionsBase {
     /**
      * Function to call before deserializing and initializing the object, accepting two arguments:
      *   (1) sourceObject, an 'Object' instance with all properties already deserialized, and
@@ -80,73 +77,61 @@ export function jsonObject<T>(options?: IJsonObjectOptions<T>): (target: Seriali
  */
 export function jsonObject<T>(target: Serializable<T>): void;
 
-export function jsonObject<T extends Object>(optionsOrTarget?: IJsonObjectOptions<T> | Serializable<T>
-): ((target: Serializable<T>) => void) | void {
+export function jsonObject<T extends Object>(optionsOrTarget?: IJsonObjectOptions<T> | Serializable<T>): ((target: Serializable<T>) => void) | void {
     let options: IJsonObjectOptions<T>;
 
-    if (typeof optionsOrTarget === "function")
-    {
+    if (typeof optionsOrTarget === 'function') {
         // jsonObject is being used as a decorator, directly.
         options = {};
-    }
-    else
-    {
+    } else {
         // jsonObject is being used as a decorator factory.
         options = optionsOrTarget || {};
     }
 
     function decorator(
-        target: Serializable<T>
+        target: Serializable<T>,
     ): void {
         // Create or obtain JsonObjectMetadata object.
-        let objectMetadata = JsonObjectMetadata.ensurePresentInPrototype(target.prototype);
+        const objectMetadata = JsonObjectMetadata.ensurePresentInPrototype(target.prototype);
 
         // Fill JsonObjectMetadata.
         objectMetadata.isExplicitlyMarked = true;
         objectMetadata.onDeserializedMethodName = options.onDeserialized;
         objectMetadata.beforeSerializationMethodName = options.beforeSerialization;
 
-        if (options.typeResolver)
-        {
+        if (options.typeResolver) {
             objectMetadata.typeResolver = options.typeResolver;
         }
-        if (options.typeHintEmitter)
-        {
+        if (options.typeHintEmitter) {
             objectMetadata.typeHintEmitter = options.typeHintEmitter;
         }
 
         // T extend Object so it is fine
         objectMetadata.initializerCallback = options.initializer as any;
-        if (options.name)
-        {
+        if (options.name) {
             objectMetadata.name = options.name;
         }
         const optionsBase = extractOptionBase(options);
-        if (optionsBase)
-        {
+        if (optionsBase) {
             objectMetadata.options = optionsBase;
         }
 
-        if (options.knownTypes)
-        {
+        if (options.knownTypes) {
             options.knownTypes
-                .filter(knownType => !!knownType)
+                .filter(knownType => Boolean(knownType))
                 .forEach(knownType => objectMetadata.knownTypes.add(knownType));
         }
     }
 
-    if (typeof optionsOrTarget === "function")
-    {
+    if (typeof optionsOrTarget === 'function') {
         // jsonObject is being used as a decorator, directly.
         decorator(optionsOrTarget);
-    }
-    else
-    {
+    } else {
         // jsonObject is being used as a decorator factory.
         return decorator;
     }
 }
 
 function isSubClass<T>(target: Serializable<T>) {
-    return
+    return;
 }

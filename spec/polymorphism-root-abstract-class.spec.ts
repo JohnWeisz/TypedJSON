@@ -1,7 +1,6 @@
-﻿import { jsonObject, jsonMember, TypedJSON } from "../src/typedjson";
+import {jsonMember, jsonObject, TypedJSON} from '../src/typedjson';
 
-describe('single class', function () {
-
+describe('single class', () => {
     abstract class Person {
         @jsonMember
         firstName?: string;
@@ -9,8 +8,8 @@ describe('single class', function () {
         @jsonMember
         lastName?: string;
 
-        public getFullName() {
-            return this.firstName + " " + this.lastName;
+        getFullName() {
+            return `${this.firstName} ${this.lastName}`;
         }
     }
 
@@ -19,15 +18,15 @@ describe('single class', function () {
         @jsonMember
         pounds?: number;
 
-        public getFullName() {
-            return super.getFullName() + ` weighing ${this.pounds}`;
+        getFullName() {
+            return `${super.getFullName()} weighing ${this.pounds}`;
         }
     }
 
     // todo we need something better
-    jsonObject({ knownTypes: [Bob]})(Person);
+    jsonObject({knownTypes: [Bob]})(Person);
 
-    describe('deserialized', function () {
+    describe('deserialized', () => {
         beforeAll(function () {
             this.person = TypedJSON.parse('{ "__type": "Bob", "firstName": "John", "lastName": "Doe", "pounds": 40 }', Person);
         });
@@ -42,9 +41,9 @@ describe('single class', function () {
         });
     });
 
-    describe('serialized', function () {
-        it('should contain all data', function () {
-            const person = new Bob;
+    describe('serialized', () => {
+        it('should contain all data', () => {
+            const person = new Bob();
             person.firstName = 'John';
             person.lastName = 'Doe';
             person.pounds = 30;

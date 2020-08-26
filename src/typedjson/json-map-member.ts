@@ -1,15 +1,13 @@
-﻿import { nameof, logError, isReflectMetadataSupported, MISSING_REFLECT_CONF_MSG } from "./helpers";
-import { injectMetadataInformation } from "./metadata";
-import { extractOptionBase, OptionsBase } from "./options-base";
-import { isTypelike, MapOptions, MapT, TypeDescriptor } from "./type-descriptor";
+import {isReflectMetadataSupported, logError, MISSING_REFLECT_CONF_MSG, nameof} from './helpers';
+import {injectMetadataInformation} from './metadata';
+import {extractOptionBase, OptionsBase} from './options-base';
+import {isTypelike, MapOptions, MapT, TypeDescriptor} from './type-descriptor';
 
-declare abstract class Reflect
-{
-    public static getMetadata(metadataKey: string, target: any, targetKey: string | symbol): any;
+declare abstract class Reflect {
+    static getMetadata(metadataKey: string, target: any, targetKey: string | symbol): any;
 }
 
-export interface IJsonMapMemberOptions extends OptionsBase, Partial<MapOptions>
-{
+export interface IJsonMapMemberOptions extends OptionsBase, Partial<MapOptions> {
     /** When set, indicates that the member must be present when deserializing. */
     isRequired?: boolean;
 
@@ -34,29 +32,25 @@ export interface IJsonMapMemberOptions extends OptionsBase, Partial<MapOptions>
  * @param options Additional options.
  */
 export function jsonMapMember(
-    keyConstructor: Function|TypeDescriptor,
-    valueConstructor: Function|TypeDescriptor,
+    keyConstructor: Function | TypeDescriptor,
+    valueConstructor: Function | TypeDescriptor,
     options: IJsonMapMemberOptions = {},
 ) {
-    return (target: Object, propKey: string | symbol) =>
-    {
+    return (target: Object, propKey: string | symbol) => {
         const decoratorName = `@jsonMapMember on ${nameof(target.constructor)}.${String(propKey)}`; // For error messages.
 
-        if (!isTypelike(keyConstructor))
-        {
+        if (!isTypelike(keyConstructor)) {
             logError(`${decoratorName}: could not resolve constructor of map keys at runtime.`);
             return;
         }
 
-        if (!isTypelike(valueConstructor))
-        {
+        if (!isTypelike(valueConstructor)) {
             logError(`${decoratorName}: could not resolve constructor of map values at runtime.`);
             return;
         }
 
         // If ReflectDecorators is available, use it to check whether 'jsonMapMember' has been used on a map. Warn if not.
-        if (isReflectMetadataSupported && Reflect.getMetadata("design:type", target, propKey) !== Map)
-        {
+        if (isReflectMetadataSupported && Reflect.getMetadata('design:type', target, propKey) !== Map) {
             logError(`${decoratorName}: property is not a Map. ${MISSING_REFLECT_CONF_MSG}`);
             return;
         }

@@ -1,8 +1,7 @@
-﻿import { jsonObject, jsonMember, TypedJSON } from "../src/typedjson";
+import {jsonMember, jsonObject, TypedJSON} from '../src/typedjson';
 
-describe('initializer', function () {
-
-    it('should be called', function() {
+describe('initializer', () => {
+    it('should be called', () => {
         const initializerSpy = jasmine.createSpy().and.callFake((src, raw) => {
             expect(src instanceof Person).toBeFalsy();
             expect(src.getDescription).toBeUndefined();
@@ -24,7 +23,7 @@ describe('initializer', function () {
             @jsonMember
             city: string;
 
-            public getAddressLine() {
+            getAddressLine() {
                 return `${this.street}, ${this.city}`;
             }
         }
@@ -44,21 +43,21 @@ describe('initializer', function () {
                 this.address = address;
             }
 
-            public getDescription() {
+            getDescription() {
                 return `${this.name} is living at ${this.address.getAddressLine()}`;
             }
         }
 
         const person = TypedJSON.parse(
             {name: 'John', address: {street: '44th', city: 'New York'}},
-            Person
+            Person,
         )!;
         expect(person instanceof Person).toBeTruthy();
         expect(person.getDescription()).toEqual('John is living at 44th, New York');
         expect(initializerSpy).toHaveBeenCalled();
     });
 
-    it('should fail if nothing is returned', function() {
+    it('should fail if nothing is returned', () => {
         const initializerSpy = jasmine.createSpy().and.callFake(() => null);
 
         @jsonObject({
@@ -68,7 +67,7 @@ describe('initializer', function () {
             @jsonMember
             name: string;
 
-            public getDescription() {
+            getDescription() {
                 return `${this.name} is his name`;
             }
         }
@@ -84,7 +83,7 @@ describe('initializer', function () {
         expect(errorHandlerSpy).toHaveBeenCalled();
     });
 
-    it('should fail if wrong type is returned', function() {
+    it('should fail if wrong type is returned', () => {
         const initializerSpy = jasmine.createSpy()
             .and.callFake((src) => new Person2(src.name));
 
@@ -95,7 +94,7 @@ describe('initializer', function () {
             @jsonMember
             name: string;
 
-            public getDescription() {
+            getDescription() {
                 return `${this.name} is his name`;
             }
         }
@@ -107,7 +106,7 @@ describe('initializer', function () {
                 this.name = name;
             }
 
-            public getDescription() {
+            getDescription() {
                 return `${this.name} is his name`;
             }
         }
@@ -123,7 +122,7 @@ describe('initializer', function () {
         expect(errorHandlerSpy).toHaveBeenCalled();
     });
 
-    it('should accept subtypes', function() {
+    it('should accept subtypes', () => {
         const initializerSpy = jasmine.createSpy()
             .and.callFake((src) => new Person2(src.name, 123));
 
@@ -138,12 +137,12 @@ describe('initializer', function () {
                 this.name = name;
             }
 
-            public getDescription() {
+            getDescription() {
                 return `${this.name} is his name`;
             }
         }
 
-        class Person2 extends Person{
+        class Person2 extends Person {
             age: number;
 
             constructor(name: string, age: number) {
@@ -151,7 +150,7 @@ describe('initializer', function () {
                 this.age = age;
             }
 
-            public getDescription() {
+            getDescription() {
                 return `${super.getDescription()} and is ${this.age}y old`;
             }
         }

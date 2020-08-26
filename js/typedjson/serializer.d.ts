@@ -1,7 +1,7 @@
-import { IndexedObject } from "./types";
-import { JsonObjectMetadata, TypeHintEmitter } from "./metadata";
-import { OptionsBase } from "./options-base";
-import { TypeDescriptor } from "./type-descriptor";
+import { JsonObjectMetadata, TypeHintEmitter } from './metadata';
+import { OptionsBase } from './options-base';
+import { TypeDescriptor } from './type-descriptor';
+import { IndexedObject } from './types';
 export declare function defaultTypeEmitter(targetObject: IndexedObject, sourceObject: IndexedObject, expectedSourceType: Function, sourceTypeMetadata?: JsonObjectMetadata): void;
 /**
  * @param sourceObject The original object that should be serialized.

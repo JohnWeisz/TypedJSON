@@ -4,5 +4,5 @@ export declare type IndexedObject = Object & {
 export interface AbstractType<T> extends Function {
     prototype: T;
 }
-export declare type Constructor<T> = new (...args: any[]) => T;
+export declare type Constructor<T> = new (...args: Array<any>) => T;
 export declare type Serializable<T> = Constructor<T> | AbstractType<T>;

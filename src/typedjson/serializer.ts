@@ -1,13 +1,12 @@
-﻿import {
+import {
     identity,
     isInstanceOf,
     isValueDefined,
     logError,
     nameof,
-} from "./helpers";
-import { IndexedObject, Serializable } from "./types";
-import { JsonObjectMetadata, TypeHintEmitter } from "./metadata";
-import { getOptionValue, mergeOptions, OptionsBase } from "./options-base";
+} from './helpers';
+import {JsonObjectMetadata, TypeHintEmitter} from './metadata';
+import {getOptionValue, mergeOptions, OptionsBase} from './options-base';
 import {
     ArrayTypeDescriptor,
     ConcreteTypeDescriptor,
@@ -15,7 +14,8 @@ import {
     MapTypeDescriptor,
     SetTypeDescriptor,
     TypeDescriptor,
-} from "./type-descriptor";
+} from './type-descriptor';
+import {IndexedObject, Serializable} from './types';
 
 export function defaultTypeEmitter(
     targetObject: IndexedObject,
@@ -26,8 +26,7 @@ export function defaultTypeEmitter(
     // By default, we put a "__type" property on the output object if the actual object is not the
     // same as the expected one, so that deserialization will know what to deserialize into (given
     // the required known-types are defined, and the object is a valid subtype of the expected type).
-    if (sourceObject.constructor !== expectedSourceType)
-    {
+    if (sourceObject.constructor !== expectedSourceType) {
         targetObject.__type = sourceTypeMetadata && sourceTypeMetadata.name
             ? sourceTypeMetadata.name
             : nameof(sourceObject.constructor);
@@ -59,9 +58,8 @@ export type SerializerFn<T, TD extends TypeDescriptor, Raw> = (
  *
  * (1) typed object-tree -> (2) simple JS object-tree -> (3) JSON-string
  */
-export class Serializer
-{
-    public options?: OptionsBase;
+export class Serializer {
+    options?: OptionsBase;
     private typeHintEmitter: TypeHintEmitter = defaultTypeEmitter;
     private errorHandler: (error: Error) => void = logError;
     private serializationStrategy = new Map<Serializable<any>, SerializerFn<any, TypeDescriptor, any>>([
@@ -79,49 +77,42 @@ export class Serializer
         [Map, convertAsMap],
 
         // typed arrays
-        [Float32Array,  convertAsTypedArray],
-        [Float64Array,  convertAsTypedArray],
-        [Int8Array,  convertAsTypedArray],
-        [Uint8Array,  convertAsTypedArray],
-        [Uint8ClampedArray,  convertAsTypedArray],
-        [Int16Array,  convertAsTypedArray],
-        [Uint16Array,  convertAsTypedArray],
-        [Int32Array,  convertAsTypedArray],
+        [Float32Array, convertAsTypedArray],
+        [Float64Array, convertAsTypedArray],
+        [Int8Array, convertAsTypedArray],
+        [Uint8Array, convertAsTypedArray],
+        [Uint8ClampedArray, convertAsTypedArray],
+        [Int16Array, convertAsTypedArray],
+        [Uint16Array, convertAsTypedArray],
+        [Int32Array, convertAsTypedArray],
         [Uint32Array, convertAsTypedArray],
     ]);
 
-    public setTypeHintEmitter(typeEmitterCallback: TypeHintEmitter)
-    {
-        if (typeof typeEmitterCallback !== "function")
-        {
-            throw new TypeError("'typeEmitterCallback' is not a function.");
+    setTypeHintEmitter(typeEmitterCallback: TypeHintEmitter) {
+        if (typeof typeEmitterCallback !== 'function') {
+            throw new TypeError('\'typeEmitterCallback\' is not a function.');
         }
 
         this.typeHintEmitter = typeEmitterCallback;
     }
 
-    public getTypeHintEmitter(): TypeHintEmitter
-    {
+    getTypeHintEmitter(): TypeHintEmitter {
         return this.typeHintEmitter;
     }
 
-    public setErrorHandler(errorHandlerCallback: (error: Error) => void)
-    {
-        if (typeof errorHandlerCallback !== "function")
-        {
-            throw new TypeError("'errorHandlerCallback' is not a function.");
+    setErrorHandler(errorHandlerCallback: (error: Error) => void) {
+        if (typeof errorHandlerCallback !== 'function') {
+            throw new TypeError('\'errorHandlerCallback\' is not a function.');
         }
 
         this.errorHandler = errorHandlerCallback;
     }
 
-    public getErrorHandler(): (error: Error) => void
-    {
+    getErrorHandler(): (error: Error) => void {
         return this.errorHandler;
     }
 
-    public retrievePreserveNull(memberOptions?: OptionsBase): boolean
-    {
+    retrievePreserveNull(memberOptions?: OptionsBase): boolean {
         return getOptionValue('preserveNull', mergeOptions(this.options, memberOptions));
     }
 
@@ -129,23 +120,26 @@ export class Serializer
      * Convert a value of any supported serializable type.
      * The value type will be detected, and the correct serialization method will be called.
      */
-    public convertSingleValue(
+    convertSingleValue(
         sourceObject: any,
         typeDescriptor: TypeDescriptor,
-        memberName: string = "object",
+        memberName: string = 'object',
         memberOptions?: OptionsBase,
     ): any {
-        if (this.retrievePreserveNull(memberOptions) && sourceObject === null) return null;
-        if (!isValueDefined(sourceObject)) return;
+        if (this.retrievePreserveNull(memberOptions) && sourceObject === null) {
+return null;
+}
+        if (!isValueDefined(sourceObject)) {
+return;
+}
 
-        if (!isInstanceOf(sourceObject, typeDescriptor.ctor))
-        {
-            let expectedName = nameof(typeDescriptor.ctor);
-            let actualName = nameof(sourceObject.constructor);
+        if (!isInstanceOf(sourceObject, typeDescriptor.ctor)) {
+            const expectedName = nameof(typeDescriptor.ctor);
+            const actualName = nameof(sourceObject.constructor);
 
             this.errorHandler(new TypeError(
-                `Could not serialize '${memberName}': expected '${expectedName}', got '${actualName}'.`),
-            );
+                `Could not serialize '${memberName}': expected '${expectedName}', got '${actualName}'.`,
+));
             return;
         }
 
@@ -154,13 +148,12 @@ export class Serializer
             return serializer(sourceObject, typeDescriptor, memberName, this, memberOptions);
         }
         // if not present in the strategy do property by property serialization
-        if (typeof sourceObject === "object")
-        {
+        if (typeof sourceObject === 'object') {
             return convertAsObject(sourceObject, typeDescriptor, memberName, this, memberOptions);
         }
         this.errorHandler(new TypeError(
-            `Could not serialize '${memberName}': don't know how to serialize this type'.`),
-        );
+            `Could not serialize '${memberName}': don't know how to serialize this type'.`,
+));
     }
 }
 
@@ -175,39 +168,30 @@ function convertAsObject(
     serializer: Serializer,
     memberOptions?: OptionsBase,
 ) {
-    let sourceTypeMetadata: JsonObjectMetadata|undefined;
+    let sourceTypeMetadata: JsonObjectMetadata | undefined;
     let targetObject: IndexedObject;
     let typeHintEmitter = serializer.getTypeHintEmitter();
 
-    if (sourceObject.constructor !== typeDescriptor.ctor && sourceObject instanceof typeDescriptor.ctor)
-    {
+    if (sourceObject.constructor !== typeDescriptor.ctor && sourceObject instanceof typeDescriptor.ctor) {
         // The source object is not of the expected type, but it is a valid subtype.
         // This is OK, and we'll proceed to gather object metadata from the subtype instead.
         sourceTypeMetadata = JsonObjectMetadata.getFromConstructor(sourceObject.constructor);
-    }
-    else
-    {
+    } else {
         sourceTypeMetadata = JsonObjectMetadata.getFromConstructor(typeDescriptor.ctor);
     }
 
-    if (sourceTypeMetadata)
-    {
-
+    if (sourceTypeMetadata) {
         if (sourceTypeMetadata.beforeSerializationMethodName) {
             // check for member first
-            if (typeof (sourceObject as any)[sourceTypeMetadata.beforeSerializationMethodName] === "function")
-            {
+            if (typeof (sourceObject as any)[sourceTypeMetadata.beforeSerializationMethodName] === 'function') {
                 (sourceObject as any)[sourceTypeMetadata.beforeSerializationMethodName]();
             }
             // check for static
-            else if (typeof (sourceObject.constructor as any)[sourceTypeMetadata.beforeSerializationMethodName] === "function")
-            {
+            else if (typeof (sourceObject.constructor as any)[sourceTypeMetadata.beforeSerializationMethodName] === 'function') {
                 (sourceObject.constructor as any)[sourceTypeMetadata.beforeSerializationMethodName]();
-            }
-            else
-            {
+            } else {
                 serializer.getErrorHandler()(new TypeError(
-                    `beforeSerialization callback '${nameof(sourceTypeMetadata.classType)}.${sourceTypeMetadata.beforeSerializationMethodName}' is not a method.`
+                    `beforeSerialization callback '${nameof(sourceTypeMetadata.classType)}.${sourceTypeMetadata.beforeSerializationMethodName}' is not a method.`,
                 ));
             }
         }
@@ -220,13 +204,11 @@ function convertAsObject(
         targetObject = {};
 
         const classOptions = mergeOptions(serializer.options, sourceMeta.options);
-        if (sourceMeta.typeHintEmitter)
-        {
+        if (sourceMeta.typeHintEmitter) {
             typeHintEmitter = sourceMeta.typeHintEmitter;
         }
 
-        sourceMeta.dataMembers.forEach((objMemberMetadata) =>
-        {
+        sourceMeta.dataMembers.forEach((objMemberMetadata) => {
             const objMemberOptions = mergeOptions(classOptions, objMemberMetadata.options);
             let serialized;
             if (objMemberMetadata.serializer) {
@@ -251,13 +233,11 @@ function convertAsObject(
                 targetObject[objMemberMetadata.name] = serialized;
             }
         });
-    }
-    else
-    {
+    } else {
         // Untyped serialization, "as-is", we'll just pass the object on.
         // We'll clone the source object, because type hints are added to the object itself, and we don't want to modify
         // to the original object.
-        targetObject = { ...sourceObject };
+        targetObject = {...sourceObject};
     }
 
     // Add type-hint.
@@ -271,19 +251,17 @@ function convertAsObject(
  * (or primitive values) for serialization.
  */
 function convertAsArray(
-    sourceObject: any[],
+    sourceObject: Array<any>,
     typeDescriptor: TypeDescriptor,
-    memberName:string ,
+    memberName: string,
     serializer: Serializer,
     memberOptions?: OptionsBase,
-): any[] {
-    if (!(typeDescriptor instanceof ArrayTypeDescriptor))
-    {
+): Array<any> {
+    if (!(typeDescriptor instanceof ArrayTypeDescriptor)) {
         throw new TypeError(`Could not serialize ${memberName} as Array: incorrect TypeDescriptor detected, please use`
             + ' proper annotation or function for this type');
     }
-    if (!typeDescriptor.elementType)
-    {
+    if (!typeDescriptor.elementType) {
         throw new TypeError(`Could not serialize ${memberName} as Array: missing element type definition.`);
     }
 
@@ -292,28 +270,24 @@ function convertAsArray(
     // value emitted during serialization. This is so that invalid element types don't unexpectedly
     // alter the ordering of other, valid elements, and that no unexpected undefined values are in
     // the emitted array.
-    sourceObject.forEach((element, i) =>
-    {
+    sourceObject.forEach((element, i) => {
         if (!(serializer.retrievePreserveNull(memberOptions) && element === null)
             && !isInstanceOf(element, typeDescriptor.elementType.ctor)
         ) {
             const expectedTypeName = nameof(typeDescriptor.elementType.ctor);
             const actualTypeName = element && nameof(element.constructor);
-            throw new TypeError(`Could not serialize ${memberName}[${i}]:` +
-                ` expected '${expectedTypeName}', got '${actualTypeName}'.`);
+            throw new TypeError(`Could not serialize ${memberName}[${i}]:`
+                + ` expected '${expectedTypeName}', got '${actualTypeName}'.`);
         }
     });
 
-    if (memberName)
-    {
+    if (memberName) {
         // Just for debugging purposes.
-        memberName += "[]";
+        memberName += '[]';
     }
 
     return sourceObject.map(
-        element => serializer.convertSingleValue(
-            element, typeDescriptor.elementType, memberName, memberOptions
-        ),
+        element => serializer.convertSingleValue(element, typeDescriptor.elementType, memberName, memberOptions),
     );
 }
 
@@ -328,37 +302,32 @@ function convertAsSet(
     memberName: string,
     serializer: Serializer,
     memberOptions?: OptionsBase,
-): any[] {
-    if (!(typeDescriptor instanceof SetTypeDescriptor))
-    {
+): Array<any> {
+    if (!(typeDescriptor instanceof SetTypeDescriptor)) {
         throw new TypeError(`Could not serialize ${memberName} as Set: incorrect TypeDescriptor detected, please use`
             + ' proper annotation or function for this type');
     }
-    if (!typeDescriptor.elementType)
-    {
+    if (!typeDescriptor.elementType) {
         throw new TypeError(`Could not serialize ${memberName} as Set: missing element type definition.`);
     }
 
     // For debugging and error tracking.
-    if (memberName)
-    {
-        memberName += "[]";
+    if (memberName) {
+        memberName += '[]';
     }
 
-    let resultArray: any[] = [];
+    const resultArray: Array<any> = [];
 
     // Convert each element of the set, and put it into an output array.
     // The output array is the one serialized, as JSON.stringify does not support Set serialization.
     // (TODO: clarification needed)
-    sourceObject.forEach(element =>
-    {
+    sourceObject.forEach(element => {
         const resultElement = serializer.convertSingleValue(element, typeDescriptor.elementType, memberName, memberOptions);
 
         // Add to output if the source element was undefined, OR the converted element is defined.
         // This will add intentionally undefined values to output, but not values that became undefined
         // DURING serializing (usually because of a type-error).
-        if (!isValueDefined(element) || isValueDefined(resultElement))
-        {
+        if (!isValueDefined(element) || isValueDefined(resultElement)) {
             resultArray.push(resultElement);
         }
     });
@@ -376,25 +345,21 @@ function convertAsMap(
     memberName: string,
     serializer: Serializer,
     memberOptions?: OptionsBase,
-): IndexedObject | { key: any, value: any }[] {
-    if (!(typeDescriptor instanceof MapTypeDescriptor))
-    {
+): IndexedObject | Array<{ key: any; value: any }> {
+    if (!(typeDescriptor instanceof MapTypeDescriptor)) {
         throw new TypeError(`Could not serialize ${memberName} as Map: incorrect TypeDescriptor detected, please use`
             + ' proper annotation or function for this type');
     }
-    if (!typeDescriptor.valueType)
-    {
+    if (!typeDescriptor.valueType) {
         throw new TypeError(`Could not serialize ${memberName} as Map: missing value type definition.`);
     }
 
-    if (!typeDescriptor.keyType)
-    {
+    if (!typeDescriptor.keyType) {
         throw new TypeError(`Could not serialize ${memberName} as Map: missing key type definition.`);
     }
 
-    if (memberName)
-    {
-        memberName += "[]";
+    if (memberName) {
+        memberName += '[]';
     }
 
     // const resultArray: Array<{ key: any, value: any }> = [];
@@ -403,9 +368,8 @@ function convertAsMap(
     const preserveNull = serializer.retrievePreserveNull(memberOptions);
 
     // Convert each *entry* in the map to a simple javascript object with key and value properties.
-    sourceObject.forEach((value, key) =>
-    {
-        let resultKeyValuePairObj = {
+    sourceObject.forEach((value, key) => {
+        const resultKeyValuePairObj = {
             key: serializer.convertSingleValue(key, typeDescriptor.keyType, memberName, memberOptions),
             value: serializer.convertSingleValue(value, typeDescriptor.valueType, memberName, memberOptions),
         };
@@ -414,8 +378,7 @@ function convertAsMap(
         const keyDefined = isValueDefined(resultKeyValuePairObj.key);
         const valueDefined = isValueDefined(resultKeyValuePairObj.value)
             || (resultKeyValuePairObj.value === null && preserveNull);
-        if (keyDefined && valueDefined)
-        {
+        if (keyDefined && valueDefined) {
             if (resultShape === MapShape.OBJECT) {
                 result[resultKeyValuePairObj.key] = resultKeyValuePairObj.value;
             } else {
@@ -432,25 +395,22 @@ function convertAsMap(
  * This is needed because typed arrays are otherwise serialized as objects, so we'll end up
  * with something like "{ 0: 0, 1: 1, ... }".
  */
-function convertAsTypedArray(sourceObject: ArrayBufferView)
-{
+function convertAsTypedArray(sourceObject: ArrayBufferView) {
     return Array.from(sourceObject as any);
 }
 
 /**
  * Performs the conversion of a raw ArrayBuffer to a string.
  */
-function convertAsArrayBuffer(buffer: ArrayBuffer)
-{
+function convertAsArrayBuffer(buffer: ArrayBuffer) {
     // ArrayBuffer -> 16-bit character codes -> character array -> joined string.
-    return Array.from(new Uint16Array(buffer)).map(charCode => String.fromCharCode(charCode)).join("");
+    return Array.from(new Uint16Array(buffer)).map(charCode => String.fromCharCode(charCode)).join('');
 }
 
 /**
  * Performs the conversion of DataView, converting its internal ArrayBuffer to a string and
  * returning that string.
  */
-function convertAsDataView(dataView: DataView)
-{
+function convertAsDataView(dataView: DataView) {
     return convertAsArrayBuffer(dataView.buffer);
 }

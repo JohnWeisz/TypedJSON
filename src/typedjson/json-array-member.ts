@@ -1,20 +1,18 @@
-﻿import { nameof, logError, isReflectMetadataSupported, MISSING_REFLECT_CONF_MSG } from "./helpers";
-import { injectMetadataInformation } from "./metadata";
-import { extractOptionBase, OptionsBase } from "./options-base";
+import {isReflectMetadataSupported, logError, MISSING_REFLECT_CONF_MSG, nameof} from './helpers';
+import {injectMetadataInformation} from './metadata';
+import {extractOptionBase, OptionsBase} from './options-base';
 import {
     ArrayTypeDescriptor,
     ensureTypeDescriptor,
     isTypelike,
     TypeDescriptor,
-} from "./type-descriptor";
+} from './type-descriptor';
 
-declare abstract class Reflect
-{
-    public static getMetadata(metadataKey: string, target: any, targetKey: string | symbol): any;
+declare abstract class Reflect {
+    static getMetadata(metadataKey: string, target: any, targetKey: string | symbol): any;
 }
 
-export interface IJsonArrayMemberOptions extends OptionsBase
-{
+export interface IJsonArrayMemberOptions extends OptionsBase {
     /** When set, indicates that the member must be present when deserializing. */
     isRequired?: boolean;
 
@@ -39,28 +37,23 @@ export interface IJsonArrayMemberOptions extends OptionsBase
  * @param elementConstructor Constructor of array elements (e.g. 'Number' for 'number[]', or 'Date' for 'Date[]').
  * @param options Additional options.
  */
-export function jsonArrayMember(elementConstructor: Function|TypeDescriptor, options: IJsonArrayMemberOptions = {})
-{
-    return (target: Object, propKey: string | symbol) =>
-    {
+export function jsonArrayMember(elementConstructor: Function | TypeDescriptor, options: IJsonArrayMemberOptions = {}) {
+    return (target: Object, propKey: string | symbol) => {
         const decoratorName = `@jsonArrayMember on ${nameof(target.constructor)}.${String(propKey)}`; // For error messages.
 
-        if (!isTypelike(elementConstructor))
-        {
+        if (!isTypelike(elementConstructor)) {
             logError(`${decoratorName}: could not resolve constructor of array elements at runtime.`);
             return;
         }
 
         const dimensions = options.dimensions === undefined ? 1 : options.dimensions;
-        if (!isNaN(dimensions) && dimensions < 1)
-        {
+        if (!isNaN(dimensions) && dimensions < 1) {
             logError(`${decoratorName}: 'dimensions' option must be at least 1.`);
             return;
         }
 
         // If ReflectDecorators is available, use it to check whether 'jsonArrayMember' has been used on an array.
-        if (isReflectMetadataSupported && Reflect.getMetadata("design:type", target, propKey) !== Array)
-        {
+        if (isReflectMetadataSupported && Reflect.getMetadata('design:type', target, propKey) !== Array) {
             logError(`${decoratorName}: property is not an Array. ${MISSING_REFLECT_CONF_MSG}`);
             return;
         }

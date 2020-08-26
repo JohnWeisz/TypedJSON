@@ -1,17 +1,16 @@
-﻿import { jsonObject, jsonMember, jsonArrayMember, TypedJSON } from "../src/typedjson";
+import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src/typedjson';
 
-describe('custom member deserializer', function () {
-
+describe('custom member deserializer', () => {
     @jsonObject
     class Person {
-        @jsonMember({ deserializer: ((json: any) => json[0]) })
+        @jsonMember({deserializer: (json: any) => json[0]})
         firstName: string;
 
         @jsonMember
         lastName: string;
 
-        public getFullName() {
-            return this.firstName + " " + this.lastName;
+        getFullName() {
+            return `${this.firstName} ${this.lastName}`;
         }
     }
 
@@ -36,20 +35,18 @@ describe('custom member deserializer', function () {
     it('should not affect serialization', function () {
         expect(TypedJSON.stringify(this.person, Person)).toBe('{"firstName":"John","lastName":"Doe"}');
     });
-
 });
 
-describe('custom array member deserializer', function () {
-
+describe('custom array member deserializer', () => {
     @jsonObject
     class Obj {
-        @jsonArrayMember(Number, { deserializer: ((json: any) => json.split(',').map((v) => parseInt(v, 10))) })
-        nums: number[];
+        @jsonArrayMember(Number, {deserializer: (json: any) => json.split(',').map((v) => parseInt(v, 10))})
+        nums: Array<number>;
 
         @jsonMember
         str: string;
 
-        public sum() {
+        sum() {
             return this.nums.reduce((sum, cur) => sum + cur, 0);
         }
     }
@@ -59,7 +56,7 @@ describe('custom array member deserializer', function () {
     });
 
     it('should properly deserialize', function () {
-        expect(this.obj.nums).toEqual([1,2,3,4,5]);
+        expect(this.obj.nums).toEqual([1, 2, 3, 4, 5]);
         expect(this.obj.str).toBe('Some string');
     });
 
@@ -75,11 +72,9 @@ describe('custom array member deserializer', function () {
     it('should not affect serialization', function () {
         expect(TypedJSON.stringify(this.obj, Obj)).toBe('{"nums":[1,2,3,4,5],"str":"Some string"}');
     });
-
 });
 
-describe('custom delegating array member serializer', function () {
-
+describe('custom delegating array member serializer', () => {
     @jsonObject
     class Inner {
         @jsonMember
@@ -90,7 +85,7 @@ describe('custom delegating array member serializer', function () {
         }
     }
 
-    function objArrayDeserializer(values: {prop: string, shouldDeserialize: boolean}[]|undefined) {
+    function objArrayDeserializer(values: Array<{prop: string; shouldDeserialize: boolean}> | undefined) {
         if (values) {
             return TypedJSON.parseAsArray(
                 values.filter(value => value.shouldDeserialize),
@@ -101,28 +96,30 @@ describe('custom delegating array member serializer', function () {
 
     @jsonObject
     class Obj {
-        @jsonArrayMember(Inner, { deserializer: objArrayDeserializer })
-        inners: Inner[];
+        @jsonArrayMember(Inner, {deserializer: objArrayDeserializer})
+        inners: Array<Inner>;
 
         @jsonMember
         str: string;
     }
 
     beforeAll(function () {
-        this.obj = TypedJSON.parse(JSON.stringify({
+        this.obj = TypedJSON.parse(
+            JSON.stringify({
                 inners: [
                     {
                         prop: 'something',
-                        shouldDeserialize: false
+                        shouldDeserialize: false,
                     },
                     {
                         prop: 'gogo',
-                        shouldDeserialize: true
+                        shouldDeserialize: true,
                     },
                 ],
                 str: 'Text',
             }),
-            Obj);
+            Obj,
+        );
     });
 
     it('should properly serialize', function () {
@@ -135,5 +132,4 @@ describe('custom delegating array member serializer', function () {
         expect(this.obj.inners[0]).toHaveProperties({prop: 'gogo'});
         expect(this.obj.inners[0].woo()).toEqual('hoo');
     });
-
 });
