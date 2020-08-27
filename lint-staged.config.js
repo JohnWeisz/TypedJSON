@@ -4,7 +4,6 @@ function mapFilenames(filenames) {
 
 module.exports = {
     '*': () => [
-        'npm run build',
         'npm run test',
     ],
     '*.ts': (filenames) => [
