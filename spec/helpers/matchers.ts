@@ -114,6 +114,7 @@ function tryAsInt8Array(obj: any): Int8Array | undefined {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 declare namespace jasmine {
     /* eslint-disable @typescript-eslint/method-signature-style */
     interface Matchers<T> {
