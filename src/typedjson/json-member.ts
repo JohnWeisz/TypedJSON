@@ -139,30 +139,27 @@ export function jsonMember<T extends Function>(
                         + ` 'constructor' option.`,
                     );
                 }
-            } else {
-                // Use ReflectDecorators to obtain property constructor.
-                if (isReflectMetadataSupported) {
-                    const reflectCtor = Reflect.getMetadata(
-                        'design:type',
-                        target,
-                        _propKey,
-                    ) as Function | null | undefined;
+            } else if (isReflectMetadataSupported) {
+                const reflectCtor = Reflect.getMetadata(
+                    'design:type',
+                    target,
+                    _propKey,
+                ) as Function | null | undefined;
 
-                    if (reflectCtor == null) {
-                        logError(
-                            `${decoratorName}: cannot resolve detected property constructor at`
-                            + ` runtime.`,
-                        );
-                        return;
-                    }
-                    typeDescriptor = ensureTypeDescriptor(reflectCtor);
-                } else if (options.deserializer === undefined) {
+                if (reflectCtor == null) {
                     logError(
-                        `${decoratorName}: ReflectDecorators is required if no 'constructor' option`
-                        + ` is specified.`,
+                        `${decoratorName}: cannot resolve detected property constructor at`
+                        + ` runtime.`,
                     );
                     return;
                 }
+                typeDescriptor = ensureTypeDescriptor(reflectCtor);
+            } else if (options.deserializer === undefined) {
+                logError(
+                    `${decoratorName}: ReflectDecorators is required if no 'constructor' option`
+                    + ` is specified.`,
+                );
+                return;
             }
 
             if (typeDescriptor !== undefined
