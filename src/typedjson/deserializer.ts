@@ -687,6 +687,7 @@ function convertAsFloatArray<T extends Float32Array | Float64Array>(
     );
 }
 
+// @todo: investigate bitwise and types
 function convertAsUintArray<T extends Uint8Array | Uint8ClampedArray | Uint16Array | Uint32Array>(
     sourceObject: string | number | Date,
     typeDescriptor: TypeDescriptor,
@@ -695,6 +696,7 @@ function convertAsUintArray<T extends Uint8Array | Uint8ClampedArray | Uint16Arr
 ): T {
     const constructor = typeDescriptor.ctor as Constructor<T>;
     if (Array.isArray(sourceObject) && sourceObject.every(elem => !isNaN(elem))) {
+        // eslint-disable-next-line no-bitwise
         return new constructor(sourceObject.map(value => ~~value));
     }
     return throwTypeMismatchError(
