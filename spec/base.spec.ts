@@ -8,6 +8,7 @@ describe('basic serialization of', () => {
             expect(TypedJSON.parse('45834', Number)).toEqual(45834);
             expect(TypedJSON.parse('true', Boolean)).toEqual(true);
             expect(TypedJSON.parse('1543915254', Date)).toEqual(new Date(1543915254));
+            expect(TypedJSON.parse('-1543915254', Date)).toEqual(new Date(-1543915254));
             expect(TypedJSON.parse('"1970-01-18T20:51:55.254Z"', Date))
                 .toEqual(new Date(1543915254));
 
@@ -23,6 +24,8 @@ describe('basic serialization of', () => {
             expect(TypedJSON.stringify(true, Boolean)).toEqual('true');
             expect(TypedJSON.stringify(new Date(1543915254), Date))
                 .toEqual(`"${new Date(1543915254).toISOString()}"`);
+            expect(TypedJSON.stringify(new Date(-1543915254), Date))
+                .toEqual(`"${new Date(-1543915254).toISOString()}"`);
             expect(TypedJSON.stringify(new Date('2018-12-04T09:20:54'), Date))
                 .toEqual(`"${new Date('2018-12-04T09:20:54').toISOString()}"`);
 
