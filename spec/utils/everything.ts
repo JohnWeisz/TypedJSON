@@ -64,43 +64,17 @@ export interface IEverything {
 
 @jsonObject
 export class Everything implements IEverything {
-    static create(): IEverything {
-        return {
-            strProp: 'string',
-            numProp: 123,
-            boolProp: true,
-            dateProp: new Date(1543912019),
-            // nullable: null,
-            undefinable: undefined,
-            enum: JustEnum.Four,
-            constEnum: ConstEnum.Four,
-            strEnum: StrEnum.Four,
-            constStrEnum: ConstStrEnum.Four,
-            // heteroEnum: HeteroEnum.Two,
-            // heteroEnum2: HeteroEnum.Four,
-            // constHeteroEnum: ConstHeteroEnum.Two,
-            // constHeteroEnum2: ConstHeteroEnum.Four,
-            // [symbolProp]: 'symbol string',
-        };
-    }
-
-    static expected(): Everything {
-        const obj = Everything.create();
-        // properties that are undefined are not serialized
-        delete obj.undefinable;
-        return new Everything(obj);
-    }
-
     @jsonMember
     strProp: string;
+
     @jsonMember
     numProp: number;
+
     @jsonMember
     boolProp: boolean;
     @jsonMember
     dateProp: Date;
     // @jsonMember
-    // nullable: {}|null;
     @jsonMember
     optional?: {};
     @jsonMember
@@ -122,12 +96,39 @@ export class Everything implements IEverything {
     // @jsonMember
     // constHeteroEnum2: ConstHeteroEnum;
     // @jsonMember
-    // [symbolProp]: string;
-
     constructor(init?: IEverything) {
         if (init) {
             Object.assign(this, init);
         }
+    }
+
+    // [symbolProp]: string;
+    static create(): IEverything {
+        return {
+            strProp: 'string',
+            numProp: 123,
+            boolProp: true,
+            dateProp: new Date(1543912019),
+            // nullable: null,
+            undefinable: undefined,
+            enum: JustEnum.Four,
+            constEnum: ConstEnum.Four,
+            strEnum: StrEnum.Four,
+            constStrEnum: ConstStrEnum.Four,
+            // heteroEnum: HeteroEnum.Two,
+            // heteroEnum2: HeteroEnum.Four,
+            // constHeteroEnum: ConstHeteroEnum.Two,
+            // constHeteroEnum2: ConstHeteroEnum.Four,
+            // [symbolProp]: 'symbol string',
+        };
+    }
+
+    // nullable: {}|null;
+    static expected(): Everything {
+        const obj = Everything.create();
+        // properties that are undefined are not serialized
+        delete obj.undefinable;
+        return new Everything(obj);
     }
 
     foo() {

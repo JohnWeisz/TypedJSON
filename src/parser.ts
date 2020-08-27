@@ -48,7 +48,45 @@ export interface ITypedJSONSettings extends OptionsBase {
 }
 
 export class TypedJSON<T> {
-    // #region Static
+
+    private static _globalConfig: ITypedJSONSettings;
+
+    private serializer: Serializer = new Serializer();
+    private deserializer: Deserializer<T> = new Deserializer<T>();
+    private globalKnownTypes: Array<Constructor<any>> = [];
+    private indent: number = 0;
+    private rootConstructor: Serializable<T>;
+    private errorHandler: (e: Error) => void;
+    private nameResolver: (ctor: Function) => string;
+    private replacer?: (key: string, value: any) => any;
+
+    /**
+     * Creates a new TypedJSON instance to serialize (stringify) and deserialize (parse) object
+     *     instances of the specified root class type.
+     * @param rootConstructor The constructor of the root class type.
+     * @param settings Additional configuration settings.
+     */
+    constructor(rootConstructor: Serializable<T>, settings?: ITypedJSONSettings) {
+        const rootMetadata = JsonObjectMetadata.getFromConstructor(rootConstructor);
+
+        if (!rootMetadata
+            || (!rootMetadata.isExplicitlyMarked && !rootMetadata.isHandledWithoutAnnotation)) {
+            throw new TypeError(
+                'The TypedJSON root data type must have the @jsonObject decorator used.',
+            );
+        }
+
+        this.nameResolver = (ctor) => nameof(ctor);
+        this.rootConstructor = rootConstructor;
+        this.errorHandler = (error) => logError(error);
+
+        if (settings) {
+            this.config(settings);
+        } else if (TypedJSON._globalConfig) {
+            this.config({});
+        }
+    }
+
     static parse<T>(
         object: any,
         rootType: Serializable<T>,
@@ -251,51 +289,11 @@ export class TypedJSON<T> {
         return new TypedJSON(valueCtor, settings).stringifyAsMap(object, keyCtor);
     }
 
-    private static _globalConfig: ITypedJSONSettings;
-
     static setGlobalConfig(config: ITypedJSONSettings) {
         if (this._globalConfig) {
             Object.assign(this._globalConfig, config);
         } else {
             this._globalConfig = config;
-        }
-    }
-
-    // #endregion
-
-    private serializer: Serializer = new Serializer();
-    private deserializer: Deserializer<T> = new Deserializer<T>();
-    private globalKnownTypes: Array<Constructor<any>> = [];
-    private indent: number = 0;
-    private rootConstructor: Serializable<T>;
-    private errorHandler: (e: Error) => void;
-    private nameResolver: (ctor: Function) => string;
-    private replacer?: (key: string, value: any) => any;
-
-    /**
-     * Creates a new TypedJSON instance to serialize (stringify) and deserialize (parse) object
-     *     instances of the specified root class type.
-     * @param rootConstructor The constructor of the root class type.
-     * @param settings Additional configuration settings.
-     */
-    constructor(rootConstructor: Serializable<T>, settings?: ITypedJSONSettings) {
-        const rootMetadata = JsonObjectMetadata.getFromConstructor(rootConstructor);
-
-        if (!rootMetadata
-            || (!rootMetadata.isExplicitlyMarked && !rootMetadata.isHandledWithoutAnnotation)) {
-            throw new TypeError(
-                'The TypedJSON root data type must have the @jsonObject decorator used.',
-            );
-        }
-
-        this.nameResolver = (ctor) => nameof(ctor);
-        this.rootConstructor = rootConstructor;
-        this.errorHandler = (error) => logError(error);
-
-        if (settings) {
-            this.config(settings);
-        } else if (TypedJSON._globalConfig) {
-            this.config({});
         }
     }
 

@@ -43,7 +43,48 @@ export interface JsonMemberMetadata {
 }
 
 export class JsonObjectMetadata {
-    // #region Static
+
+    dataMembers = new Map<string, JsonMemberMetadata>();
+
+    /** Set of known types used for polymorphic deserialization */
+    knownTypes = new Set<Serializable<any>>();
+
+    /** If present override the global function */
+    typeHintEmitter?: TypeHintEmitter;
+    /** If present override the global function */
+    typeResolver?: TypeResolver;
+    /** Gets or sets the constructor function for the jsonObject. */
+    classType: Function;
+
+    /**
+     * Indicates whether this class was explicitly annotated with @jsonObject
+     * or implicitly by @jsonMember
+     */
+    isExplicitlyMarked: boolean = false;
+
+    /**
+     * Indicates whether this type is handled without annotation. This is usually
+     * used for the builtin types (except for Maps, Sets, and normal Arrays).
+     */
+    isHandledWithoutAnnotation: boolean = false;
+
+    /** Name used to encode polymorphic type */
+    name?: string;
+
+    options?: OptionsBase;
+
+    onDeserializedMethodName?: string;
+
+    beforeSerializationMethodName?: string;
+
+    initializerCallback?: (sourceObject: Object, rawSourceObject: Object) => Object;
+
+    constructor(
+        classType: Function,
+    ) {
+        this.classType = classType;
+    }
+
     /**
      * Gets the name of a class as it appears in a serialized JSON string.
      * @param ctor The constructor of a class (with or without jsonObject).
@@ -87,7 +128,7 @@ export class JsonObjectMetadata {
         if (prototype.hasOwnProperty(METADATA_FIELD_KEY)) {
             return prototype[METADATA_FIELD_KEY];
         }
-            // Target has no JsonObjectMetadata associated with it yet, create it now.
+        // Target has no JsonObjectMetadata associated with it yet, create it now.
         const objectMetadata = new JsonObjectMetadata(prototype.constructor);
 
         // Inherit json members and known types from parent @jsonObject (if any).
@@ -125,48 +166,6 @@ export class JsonObjectMetadata {
         return isDirectlySerializableNativeType(ctor) || isTypeTypedArray(ctor)
             || ctor === DataView || ctor === ArrayBuffer;
     }
-    // #endregion
-
-    constructor(
-        classType: Function,
-    ) {
-        this.classType = classType;
-    }
-
-    dataMembers = new Map<string, JsonMemberMetadata>();
-
-    /** Set of known types used for polymorphic deserialization */
-    knownTypes = new Set<Serializable<any>>();
-    /** If present override the global function */
-    typeHintEmitter?: TypeHintEmitter;
-    /** If present override the global function */
-    typeResolver?: TypeResolver;
-
-    /** Gets or sets the constructor function for the jsonObject. */
-    classType: Function;
-
-    /**
-     * Indicates whether this class was explicitly annotated with @jsonObject
-     * or implicitly by @jsonMember
-     */
-    isExplicitlyMarked: boolean = false;
-
-    /**
-     * Indicates whether this type is handled without annotation. This is usually
-     * used for the builtin types (except for Maps, Sets, and normal Arrays).
-     */
-    isHandledWithoutAnnotation: boolean = false;
-
-    /** Name used to encode polymorphic type */
-    name?: string;
-
-    options?: OptionsBase;
-
-    onDeserializedMethodName?: string;
-
-    beforeSerializationMethodName?: string;
-
-    initializerCallback?: (sourceObject: Object, rawSourceObject: Object) => Object;
 }
 
 export function injectMetadataInformation(
