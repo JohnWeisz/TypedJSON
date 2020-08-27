@@ -20,6 +20,7 @@ describe('onDeserialized', () => {
                 return `${this.name} is ${this.age}y old`;
             }
         }
+
         spyOn(Person, 'afterDeser');
 
         const person = TypedJSON.parse({name: 'John', age: 20}, Person)!;
@@ -85,6 +86,7 @@ describe('onDeserialized', () => {
                 return `${this.name} is ${this.age}y old`;
             }
         }
+
         spyOn(Person, 'afterDeser');
 
         const person = TypedJSON.parse({name: 'John', age: 20}, Person)!;

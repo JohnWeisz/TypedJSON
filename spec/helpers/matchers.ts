@@ -121,8 +121,10 @@ declare namespace jasmine {
             expectation: Partial<T> | Array<keyof T>,
             ...expectationFailOutput: Array<any>,
         ): boolean;
+
         toBeInstanceOf(expectation: Function, ...expectationFailOutput: Array<any>): boolean;
     }
+
     interface ArrayLikeMatchers<T> extends Matchers<ArrayLike<T>> {
         toBeOfLength: (expectation: number, ...expectationFailOutput: Array<any>) => boolean;
     }

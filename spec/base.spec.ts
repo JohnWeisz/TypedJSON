@@ -199,6 +199,7 @@ describe('basic serialization of', () => {
             get prop(): string {
                 return this._prop;
             }
+
             set prop(val: string) {
                 this._prop = val;
             }

@@ -91,7 +91,7 @@ export function jsonMember<T extends Function>(
         if (!reflectPropCtor) {
             logError(
                 `${decoratorName}: could not resolve detected property constructor at runtime.${
-                 MISSING_REFLECT_CONF_MSG}`,
+                    MISSING_REFLECT_CONF_MSG}`,
             );
             return;
         }

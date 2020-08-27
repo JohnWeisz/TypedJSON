@@ -1,5 +1,6 @@
 export abstract class TypeDescriptor {
-    protected constructor(readonly ctor: Function) {}
+    protected constructor(readonly ctor: Function) {
+    }
 
     getTypes(): Array<Function> {
         return [this.ctor];

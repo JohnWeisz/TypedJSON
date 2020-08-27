@@ -99,31 +99,31 @@ export class TypedJSON<T> {
         object: any,
         elementType: Serializable<T>,
         settings?: ITypedJSONSettings,
-        dimensions?: 1
+        dimensions?: 1,
     ): Array<T>;
     static parseAsArray<T>(
         object: any,
         elementType: Serializable<T>,
         settings: ITypedJSONSettings | undefined,
-        dimensions: 2
+        dimensions: 2,
     ): Array<Array<T>>;
     static parseAsArray<T>(
         object: any,
         elementType: Serializable<T>,
         settings: ITypedJSONSettings | undefined,
-        dimensions: 3
+        dimensions: 3,
     ): Array<Array<Array<T>>>;
     static parseAsArray<T>(
         object: any,
         elementType: Serializable<T>,
         settings: ITypedJSONSettings | undefined,
-        dimensions: 4
+        dimensions: 4,
     ): Array<Array<Array<Array<T>>>>;
     static parseAsArray<T>(
         object: any,
         elementType: Serializable<T>,
         settings: ITypedJSONSettings | undefined,
-        dimensions: 5
+        dimensions: 5,
     ): Array<Array<Array<Array<Array<T>>>>>;
     static parseAsArray<T>(
         object: any,
@@ -216,7 +216,7 @@ export class TypedJSON<T> {
         keyCtor: Serializable<K>,
         valueCtor: Serializable<V>,
         settings?: ITypedJSONSettings,
-    ): IndexedObject | Array<{ key: any; value: any }> | undefined {
+    ): IndexedObject | Array<{key: any; value: any}> | undefined {
         return new TypedJSON(valueCtor, settings).toPlainMap(object, keyCtor);
     }
 
@@ -327,17 +327,17 @@ export class TypedJSON<T> {
         }
 
         if (settings.replacer) {
-this.replacer = settings.replacer;
-}
+            this.replacer = settings.replacer;
+        }
         if (settings.typeResolver) {
-this.deserializer.setTypeResolver(settings.typeResolver);
-}
+            this.deserializer.setTypeResolver(settings.typeResolver);
+        }
         if (settings.typeHintEmitter) {
-this.serializer.setTypeHintEmitter(settings.typeHintEmitter);
-}
+            this.serializer.setTypeHintEmitter(settings.typeHintEmitter);
+        }
         if (settings.indent) {
-this.indent = settings.indent;
-}
+            this.indent = settings.indent;
+        }
 
         if (settings.nameResolver) {
             this.nameResolver = settings.nameResolver;
@@ -406,7 +406,7 @@ this.indent = settings.indent;
     parseAsArray(object: any, dimensions: number = 1): Array<any> {
         const json = parseToJSObject(object, Array);
         return this.deserializer.convertSingleValue(
-json,
+            json,
             createArrayType(ensureTypeDescriptor(this.rootConstructor), dimensions),
             this._mapKnownTypes(this.globalKnownTypes),
         );
@@ -415,7 +415,7 @@ json,
     parseAsSet(object: any): Set<T> {
         const json = parseToJSObject(object, Set);
         return this.deserializer.convertSingleValue(
-json,
+            json,
             SetT(this.rootConstructor),
             this._mapKnownTypes(this.globalKnownTypes),
         );
@@ -479,7 +479,7 @@ json,
     toPlainMap<K>(
         object: Map<K, T>,
         keyConstructor: Serializable<K>,
-    ): IndexedObject | Array<{ key: any; value: any }> | undefined {
+    ): IndexedObject | Array<{key: any; value: any}> | undefined {
         try {
             return this.serializer.convertSingleValue(
                 object,
