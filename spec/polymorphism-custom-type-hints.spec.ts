@@ -5,7 +5,7 @@ describe('polymorphism custom type hints', () => {
     describe('should work for a base class', () => {
         @jsonObject({
             typeHintEmitter: (targetObject, sourceObject) => {
-                return targetObject.personType = `${sourceObject.constructor.name}Type`;
+                targetObject.personType = `${sourceObject.constructor.name}Type`;
             },
             typeResolver: sourceObject => TYPE_MAP[sourceObject.personType],
         })
