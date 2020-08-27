@@ -91,7 +91,7 @@ export function jsonObject<T extends Object>(
         options = {};
     } else {
         // jsonObject is being used as a decorator factory.
-        options = optionsOrTarget || {};
+        options = optionsOrTarget ?? {};
     }
 
     function decorator(
@@ -105,24 +105,24 @@ export function jsonObject<T extends Object>(
         objectMetadata.onDeserializedMethodName = options.onDeserialized;
         objectMetadata.beforeSerializationMethodName = options.beforeSerialization;
 
-        if (options.typeResolver) {
+        if (options.typeResolver !== undefined) {
             objectMetadata.typeResolver = options.typeResolver;
         }
-        if (options.typeHintEmitter) {
+        if (options.typeHintEmitter !== undefined) {
             objectMetadata.typeHintEmitter = options.typeHintEmitter;
         }
 
         // T extend Object so it is fine
         objectMetadata.initializerCallback = options.initializer as any;
-        if (options.name) {
+        if (options.name !== undefined) {
             objectMetadata.name = options.name;
         }
         const optionsBase = extractOptionBase(options);
-        if (optionsBase) {
+        if (optionsBase !== undefined) {
             objectMetadata.options = optionsBase;
         }
 
-        if (options.knownTypes) {
+        if (options.knownTypes !== undefined) {
             options.knownTypes
                 .filter(knownType => Boolean(knownType))
                 .forEach(knownType => objectMetadata.knownTypes.add(knownType));

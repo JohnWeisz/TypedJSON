@@ -11,7 +11,7 @@ describe('array of objects', () => {
         numProp: number;
 
         constructor(init?: {strProp: string; numProp: number}) {
-            if (init) {
+            if (init !== undefined) {
                 this.strProp = init.strProp;
                 this.numProp = init.numProp;
             }
@@ -86,7 +86,7 @@ describe('multidimensional arrays', () => {
         arrayWithArray?: Array<Array<WithArrays>>;
 
         constructor(init?: IWithArrays) {
-            if (init) {
+            if (init !== undefined) {
                 Object.assign(this, init);
             }
         }

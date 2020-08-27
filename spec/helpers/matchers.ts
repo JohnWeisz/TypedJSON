@@ -76,7 +76,7 @@ beforeEach(() => {
                     expected: number,
                     ...customMsgs: Array<any>
                 ) {
-                    const pass = actual && actual.length === expected;
+                    const pass = actual?.length === expected;
                     return {
                         pass,
                         message: util.buildFailureMessage(
@@ -95,7 +95,7 @@ beforeEach(() => {
         const firstAsInt8Array: Int8Array | undefined = tryAsInt8Array(first);
         const secondAsInt8Array: Int8Array | undefined = tryAsInt8Array(second);
 
-        if (!firstAsInt8Array || !secondAsInt8Array) {
+        if (firstAsInt8Array === undefined || secondAsInt8Array === undefined) {
             return;
         }
 

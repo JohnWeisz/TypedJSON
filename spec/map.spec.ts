@@ -14,7 +14,7 @@ describe('map dictionary shape', () => {
         numProp: number;
 
         constructor(init?: {strProp: string; numProp: number}) {
-            if (init) {
+            if (init !== undefined) {
                 this.strProp = init.strProp;
                 this.numProp = init.numProp;
             }
@@ -84,7 +84,7 @@ describe('map of array dictionary shape', () => {
         numProp: number;
 
         constructor(init?: {strProp: string; numProp: number}) {
-            if (init) {
+            if (init !== undefined) {
                 this.strProp = init.strProp;
                 this.numProp = init.numProp;
             }

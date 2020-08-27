@@ -70,7 +70,10 @@ export function jsonMember<T extends Function>(
     optionsOrPrototype?: IJsonMemberOptions | IndexedObject,
     propKey?: string | symbol,
 ): PropertyDecorator | void {
-    if (propKey && (typeof propKey === 'string' || typeof propKey === 'symbol')) {
+    // @todo, why do we check if propkey is string or symbol? the type only allows symbol/string
+    //    The check is not required.
+    if (propKey !== undefined
+        && (typeof propKey === 'string' || typeof propKey as any === 'symbol')) {
         const prototype = optionsOrPrototype as IndexedObject;
         // For error messages.
         const decoratorName = `@jsonMember on ${nameof(prototype.constructor)}.${String(propKey)}`;
@@ -86,9 +89,10 @@ export function jsonMember<T extends Function>(
             return;
         }
 
-        const reflectPropCtor = Reflect.getMetadata('design:type', prototype, propKey) as Function;
+        const reflectPropCtor: Function | null | undefined =
+            Reflect.getMetadata('design:type', prototype, propKey);
 
-        if (!reflectPropCtor) {
+        if (reflectPropCtor == null) {
             logError(
                 `${decoratorName}: could not resolve detected property constructor at runtime.${
                     MISSING_REFLECT_CONF_MSG}`,
@@ -109,7 +113,7 @@ export function jsonMember<T extends Function>(
     } else {
         // jsonMember used as a decorator factory.
         return (target: Object, _propKey: string | symbol) => {
-            const options: IJsonMemberOptions = optionsOrPrototype as IJsonMemberOptions || {};
+            const options: IJsonMemberOptions = optionsOrPrototype as IJsonMemberOptions ?? {};
             let typeDescriptor: TypeDescriptor | undefined;
             const decoratorName =
                 `@jsonMember on ${nameof(target.constructor)}.${String(_propKey)}`;
@@ -142,9 +146,9 @@ export function jsonMember<T extends Function>(
                         'design:type',
                         target,
                         _propKey,
-                    ) as Function;
+                    ) as Function | null | undefined;
 
-                    if (!reflectCtor) {
+                    if (reflectCtor == null) {
                         logError(
                             `${decoratorName}: cannot resolve detected property constructor at`
                             + ` runtime.`,
@@ -152,7 +156,7 @@ export function jsonMember<T extends Function>(
                         return;
                     }
                     typeDescriptor = ensureTypeDescriptor(reflectCtor);
-                } else if (!options.deserializer) {
+                } else if (options.deserializer === undefined) {
                     logError(
                         `${decoratorName}: ReflectDecorators is required if no 'constructor' option`
                         + ` is specified.`,
@@ -161,7 +165,8 @@ export function jsonMember<T extends Function>(
                 }
             }
 
-            if (typeDescriptor && isSpecialPropertyType(decoratorName, typeDescriptor)) {
+            if (typeDescriptor !== undefined
+                && isSpecialPropertyType(decoratorName, typeDescriptor)) {
                 return;
             }
             injectMetadataInformation(target, _propKey, {
@@ -170,7 +175,7 @@ export function jsonMember<T extends Function>(
                 isRequired: options.isRequired,
                 options: extractOptionBase(options),
                 key: _propKey.toString(),
-                name: options.name || _propKey.toString(),
+                name: options.name ?? _propKey.toString(),
                 deserializer: options.deserializer,
                 serializer: options.serializer,
             });

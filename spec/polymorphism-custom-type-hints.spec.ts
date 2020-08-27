@@ -21,7 +21,7 @@ describe('polymorphism custom type hints', () => {
             constructor(firstName?: string, lastName?: string);
             constructor(firstName: string, lastName: string);
             constructor(firstName?: string, lastName?: string) {
-                if (firstName && lastName) {
+                if (firstName !== undefined && lastName !== undefined) {
                     this.firstName = firstName;
                     this.lastName = lastName;
                 }
@@ -38,7 +38,7 @@ describe('polymorphism custom type hints', () => {
             constructor(firstName?: string, lastName?: string, salary?: number) {
                 super(firstName, lastName);
 
-                if (salary) {
+                if (salary !== undefined) {
                     this.salary = salary;
                 }
             }
@@ -60,7 +60,7 @@ describe('polymorphism custom type hints', () => {
             constructor(firstName?: string, lastName?: string, investAmount?: number) {
                 super(firstName, lastName);
 
-                this.investAmount = investAmount || 0;
+                this.investAmount = investAmount ?? 0;
             }
         }
 

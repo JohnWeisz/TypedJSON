@@ -91,12 +91,14 @@ describe('custom delegating array member serializer', () => {
     function objArrayDeserializer(
         values: Array<{prop: string; shouldDeserialize: boolean}> | undefined,
     ) {
-        if (values) {
-            return TypedJSON.parseAsArray(
-                values.filter(value => value.shouldDeserialize),
-                Inner,
-            );
+        if (values === undefined) {
+            return;
         }
+
+        return TypedJSON.parseAsArray(
+            values.filter(value => value.shouldDeserialize),
+            Inner,
+        );
     }
 
     @jsonObject

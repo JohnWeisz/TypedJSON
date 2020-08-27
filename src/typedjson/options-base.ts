@@ -41,7 +41,7 @@ export function getOptionValue<K extends keyof OptionsBase>(
     key: K,
     options?: OptionsBase,
 ): Required<OptionsBase>[K] {
-    if (options && options[key] != null) {
+    if (options?.[key] !== undefined) {
         return options[key]!;
     }
     return getDefaultOptionOf(key);
@@ -51,7 +51,7 @@ export function mergeOptions(
     existing?: OptionsBase,
     moreSpecific?: OptionsBase,
 ): OptionsBase | undefined {
-    return !moreSpecific
+    return moreSpecific === undefined
         ? existing
         : {
 

@@ -23,6 +23,6 @@ export declare class Deserializer<T> {
     instantiateType(ctor: any): any;
     mergeKnownTypes(...knownTypeMaps: Array<Map<string, Function>>): Map<string, Function>;
     createKnownTypesMap(knowTypes: Set<Function>): Map<string, Function>;
-    private isExpectedMapShape;
     retrievePreserveNull(memberOptions?: OptionsBase): boolean;
+    private isExpectedMapShape;
 }

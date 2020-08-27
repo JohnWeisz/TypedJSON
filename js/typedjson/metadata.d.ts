@@ -22,24 +22,6 @@ export interface JsonMemberMetadata {
     serializer?: (value: any) => any;
 }
 export declare class JsonObjectMetadata {
-    /**
-     * Gets the name of a class as it appears in a serialized JSON string.
-     * @param ctor The constructor of a class (with or without jsonObject).
-     */
-    static getJsonObjectName(ctor: Function): string;
-    /**
-     * Gets jsonObject metadata information from a class.
-     * @param ctor The constructor class.
-     */
-    static getFromConstructor<T>(ctor: Serializable<T>): JsonObjectMetadata | undefined;
-    static ensurePresentInPrototype(prototype: IndexedObject): JsonObjectMetadata;
-    /**
-     * Gets the known type name of a jsonObject class for type hint.
-     * @param constructor The constructor class.
-     */
-    static getKnownTypeNameFromType(constructor: Function): string;
-    private static doesHandleWithoutAnnotation;
-    constructor(classType: Function);
     dataMembers: Map<string, JsonMemberMetadata>;
     /** Set of known types used for polymorphic deserialization */
     knownTypes: Set<Serializable<any>>;
@@ -65,5 +47,23 @@ export declare class JsonObjectMetadata {
     onDeserializedMethodName?: string;
     beforeSerializationMethodName?: string;
     initializerCallback?: (sourceObject: Object, rawSourceObject: Object) => Object;
+    constructor(classType: Function);
+    /**
+     * Gets the name of a class as it appears in a serialized JSON string.
+     * @param ctor The constructor of a class (with or without jsonObject).
+     */
+    static getJsonObjectName(ctor: Function): string;
+    /**
+     * Gets jsonObject metadata information from a class.
+     * @param ctor The constructor class.
+     */
+    static getFromConstructor<T>(ctor: Serializable<T>): JsonObjectMetadata | undefined;
+    static ensurePresentInPrototype(prototype: IndexedObject): JsonObjectMetadata;
+    /**
+     * Gets the known type name of a jsonObject class for type hint.
+     * @param constructor The constructor class.
+     */
+    static getKnownTypeNameFromType(constructor: Function): string;
+    private static doesHandleWithoutAnnotation;
 }
 export declare function injectMetadataInformation(prototype: IndexedObject, propKey: string | symbol, metadata: JsonMemberMetadata): void;

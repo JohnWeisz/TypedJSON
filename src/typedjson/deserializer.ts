@@ -15,7 +15,7 @@ export function defaultTypeResolver(
     sourceObject: IndexedObject,
     knownTypes: Map<string, Function>,
 ): Function | undefined {
-    if (sourceObject.__type) {
+    if (sourceObject.__type != null) {
         return knownTypes.get(sourceObject.__type);
     }
 }
@@ -107,7 +107,7 @@ export class Deserializer<T> {
         }
 
         const deserializer = this.deserializationStrategy.get(typeDescriptor.ctor);
-        if (deserializer) {
+        if (deserializer !== undefined) {
             return deserializer(
                 sourceObject,
                 typeDescriptor,
@@ -135,10 +135,10 @@ export class Deserializer<T> {
 
         knownTypeMaps.forEach(knownTypes => {
             knownTypes.forEach((ctor, name) => {
-                if (this.nameResolver) {
-                    result.set(this.nameResolver(ctor), ctor);
-                } else {
+                if (this.nameResolver === undefined) {
                     result.set(name, ctor);
+                } else {
+                    result.set(this.nameResolver(ctor), ctor);
                 }
             });
         });
@@ -150,14 +150,12 @@ export class Deserializer<T> {
         const map = new Map<string, Function>();
 
         knowTypes.forEach(ctor => {
-            if (this.nameResolver) {
-                map.set(this.nameResolver(ctor), ctor);
-            } else {
+            if (this.nameResolver === undefined) {
                 const knownTypeMeta = JsonObjectMetadata.getFromConstructor(ctor);
-                const name = knownTypeMeta && knownTypeMeta.isExplicitlyMarked && knownTypeMeta.name
-                    ? knownTypeMeta.name
-                    : ctor.name;
-                map.set(name, ctor);
+                const name = knownTypeMeta?.isExplicitlyMarked === true ? knownTypeMeta.name : null;
+                map.set(name ?? ctor.name, ctor);
+            } else {
+                map.set(this.nameResolver(ctor), ctor);
             }
         });
 
@@ -201,7 +199,7 @@ function makeTypeErrorMessage(
 }
 
 function srcTypeNameForDebug(sourceObject: any) {
-    return sourceObject ? nameof(sourceObject.constructor) : 'undefined';
+    return sourceObject == null ? 'undefined' : nameof(sourceObject.constructor);
 }
 
 function deserializeDirectly<T extends string | number | boolean>(
@@ -239,13 +237,13 @@ function convertAsObject<T>(
     let knownTypeConstructors = knownTypes;
     let typeResolver = deserializer.getTypeResolver();
 
-    if (sourceObjectMetadata) {
+    if (sourceObjectMetadata !== undefined) {
         // Merge known types received from "above" with known types defined on the current type.
         knownTypeConstructors = deserializer.mergeKnownTypes(
             knownTypeConstructors,
             deserializer.createKnownTypesMap(sourceObjectMetadata.knownTypes),
         );
-        if (sourceObjectMetadata.typeResolver) {
+        if (sourceObjectMetadata.typeResolver !== undefined) {
             typeResolver = sourceObjectMetadata.typeResolver;
         }
     }
@@ -253,14 +251,14 @@ function convertAsObject<T>(
     // Check if a type-hint is available from the source object.
     const typeFromTypeHint = typeResolver(sourceObject, knownTypeConstructors);
 
-    if (typeFromTypeHint) {
+    if (typeFromTypeHint != null) {
         // Check if type hint is a valid subtype of the expected source type.
         if (isSubtypeOf(typeFromTypeHint, expectedSelfType)) {
             // Hell yes.
             expectedSelfType = typeFromTypeHint;
             sourceObjectMetadata = JsonObjectMetadata.getFromConstructor(typeFromTypeHint);
 
-            if (sourceObjectMetadata) {
+            if (sourceObjectMetadata !== undefined) {
                 // Also merge new known types from subtype.
                 knownTypeConstructors = deserializer.mergeKnownTypes(
                     knownTypeConstructors,
@@ -270,7 +268,7 @@ function convertAsObject<T>(
         }
     }
 
-    if (sourceObjectMetadata && sourceObjectMetadata.isExplicitlyMarked) {
+    if (sourceObjectMetadata?.isExplicitlyMarked === true) {
         const sourceMetadata = sourceObjectMetadata;
         // Strong-typed deserialization available, get to it.
         // First deserialize properties into a temporary object.
@@ -285,9 +283,14 @@ function convertAsObject<T>(
             const objMemberOptions = mergeOptions(classOptions, objMemberMetadata.options);
 
             let revivedValue;
-            if (objMemberMetadata.deserializer) {
+            if (objMemberMetadata.deserializer !== undefined) {
                 revivedValue = objMemberMetadata.deserializer(objMemberValue);
-            } else if (objMemberMetadata.type) {
+            } else if (objMemberMetadata.type === undefined) {
+                throw new TypeError(
+                    `Cannot deserialize ${objMemberDebugName} there is`
+                    + ` no constructor nor deserialization function to use.`,
+                );
+            } else {
                 revivedValue = deserializer.convertSingleValue(
                     objMemberValue,
                     objMemberMetadata.type,
@@ -295,18 +298,15 @@ function convertAsObject<T>(
                     objMemberDebugName,
                     objMemberOptions,
                 );
-            } else {
-                throw new TypeError(
-                    `Cannot deserialize ${objMemberDebugName} there is`
-                    + ` no constructor nor deserialization function to use.`,
-                );
             }
 
+            // @todo revivedValue will never be null in RHS of ||
             if (isValueDefined(revivedValue)
-                || (deserializer.retrievePreserveNull(objMemberOptions) && revivedValue === null)
+                || (deserializer.retrievePreserveNull(objMemberOptions)
+                    && revivedValue as any === null)
             ) {
                 sourceObjectWithDeserializedProperties[objMemberMetadata.key] = revivedValue;
-            } else if (objMemberMetadata.isRequired) {
+            } else if (objMemberMetadata.isRequired === true) {
                 deserializer.getErrorHandler()(new TypeError(
                     `Missing required member '${objMemberDebugName}'.`,
                 ));
@@ -324,7 +324,7 @@ function convertAsObject<T>(
                 );
 
                 // Check the validity of user-defined initializer callback.
-                if (!targetObject) {
+                if (targetObject as any === undefined) {
                     throw new TypeError(
                         `Cannot deserialize ${memberName}:`
                         + ` 'initializer' function returned undefined/null`
@@ -352,7 +352,7 @@ function convertAsObject<T>(
 
         // Call onDeserialized method (if any).
         const methodName = sourceObjectMetadata.onDeserializedMethodName;
-        if (methodName) {
+        if (methodName !== undefined) {
             if (typeof (targetObject as any)[methodName] === 'function') {
                 // check for member first
                 (targetObject as any)[methodName]();
@@ -406,7 +406,7 @@ function convertAsArray(
         return [];
     }
 
-    if (!typeDescriptor.elementType) {
+    if (typeDescriptor.elementType as any == null) {
         deserializer.getErrorHandler()(
             new TypeError(
                 `Could not deserialize ${memberName} as Array: missing constructor reference of`
@@ -461,7 +461,7 @@ function convertAsSet(
         return new Set<any>();
     }
 
-    if (!typeDescriptor.elementType) {
+    if (typeDescriptor.elementType as any == null) {
         deserializer.getErrorHandler()(
             new TypeError(
                 `Could not deserialize ${memberName} as Set: missing constructor reference of`
@@ -520,14 +520,14 @@ function convertAsMap(
         return new Map<any, any>();
     }
 
-    if (!typeDescriptor.keyType) {
+    if (typeDescriptor.keyType as any == null) {
         deserializer.getErrorHandler()(
             new TypeError(`Could not deserialize ${memberName} as Map: missing key constructor.`),
         );
         return new Map<any, any>();
     }
 
-    if (!typeDescriptor.valueType) {
+    if (typeDescriptor.valueType as any == null) {
         deserializer.getErrorHandler()(
             new TypeError(`Could not deserialize ${memberName} as Map: missing value constructor.`),
         );
