@@ -9,6 +9,7 @@ export abstract class TypeDescriptor {
 export type Typelike = TypeDescriptor | Function;
 
 export class ConcreteTypeDescriptor extends TypeDescriptor {
+    // eslint-disable-next-line @typescript-eslint/no-useless-constructor
     constructor(ctor: Function) {
         super(ctor);
     }
