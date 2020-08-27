@@ -71,23 +71,23 @@ export function isSubtypeOf(A: Function, B: Function) {
 }
 
 export function logError(message?: any, ...optionalParams: Array<any>) {
-    if (typeof console === 'object' && typeof console.error === 'function') {
+    if (typeof console as any === 'object' && typeof console.error as any === 'function') {
         console.error(message, ...optionalParams);
-    } else if (typeof console === 'object' && typeof console.log === 'function') {
+    } else if (typeof console as any === 'object' && typeof console.log as any === 'function') {
         console.log(`ERROR: ${message}`, ...optionalParams);
     }
 }
 
 export function logMessage(message?: any, ...optionalParams: Array<any>) {
-    if (typeof console === 'object' && typeof console.log === 'function') {
+    if (typeof console as any === 'object' && typeof console.log as any === 'function') {
         console.log(message, ...optionalParams);
     }
 }
 
 export function logWarning(message?: any, ...optionalParams: Array<any>) {
-    if (typeof console === 'object' && typeof console.warn === 'function') {
+    if (typeof console as any === 'object' && typeof console.warn as any === 'function') {
         console.warn(message, ...optionalParams);
-    } else if (typeof console === 'object' && typeof console.log === 'function') {
+    } else if (typeof console as any === 'object' && typeof console.log as any === 'function') {
         console.log(`WARNING: ${message}`, ...optionalParams);
     }
 }
@@ -115,14 +115,14 @@ export function isInstanceOf<T>(value: any, constructor: Function): boolean {
 }
 
 export const isReflectMetadataSupported =
-    typeof Reflect === 'object' && typeof Reflect.getMetadata === 'function';
+    typeof Reflect as any === 'object' && typeof Reflect.getMetadata as any === 'function';
 
 /**
  * Gets the name of a function.
  * @param fn The function whose name to get.
  */
 export function nameof(fn: Function & {name?: string}) {
-    if (typeof fn.name === 'string') {
+    if (typeof fn.name as string | undefined === 'string') {
         return fn.name;
     }
     return 'undefined';
