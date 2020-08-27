@@ -13,8 +13,6 @@ describe('map dictionary shape', () => {
         @jsonMember
         numProp: number;
 
-        constructor(init: { strProp: string; numProp: number })
-        constructor()
         constructor(init?: { strProp: string; numProp: number }) {
             if (init) {
                 this.strProp = init.strProp;
@@ -85,8 +83,6 @@ describe('map of array dictionary shape', () => {
         @jsonMember
         numProp: number;
 
-        constructor(init: { strProp: string; numProp: number })
-        constructor()
         constructor(init?: { strProp: string; numProp: number }) {
             if (init) {
                 this.strProp = init.strProp;

@@ -10,8 +10,6 @@ describe('array of objects', () => {
         @jsonMember
         numProp: number;
 
-        constructor(init: {strProp: string; numProp: number})
-        constructor()
         constructor(init?: {strProp: string; numProp: number}) {
             if (init) {
                 this.strProp = init.strProp;
@@ -87,8 +85,6 @@ describe('multidimensional arrays', () => {
         @jsonArrayMember(WithArrays, {dimensions: 2})
         arrayWithArray?: Array<Array<WithArrays>>;
 
-        constructor(init: IWithArrays)
-        constructor()
         constructor(init?: IWithArrays) {
             if (init) {
                 Object.assign(this, init);
