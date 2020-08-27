@@ -15,15 +15,15 @@ export const MISSING_REFLECT_CONF_MSG = 'Are you sure, that you have both "exper
  * for `number`).
  */
 export function isDirectlySerializableNativeType(type: Function): boolean {
-    return Boolean(~[Date, Number, String, Boolean].indexOf(type as any));
+    return [Date, Number, String, Boolean].indexOf(type as any) !== -1;
 }
 
 export function isDirectlyDeserializableNativeType(type: Function): boolean {
-    return Boolean(~[Number, String, Boolean].indexOf(type as any));
+    return [Number, String, Boolean].indexOf(type as any) !== -1;
 }
 
 export function isTypeTypedArray(type: Function): boolean {
-    return Boolean(~[
+    return [
         Float32Array,
         Float64Array,
         Int8Array,
@@ -33,7 +33,7 @@ export function isTypeTypedArray(type: Function): boolean {
         Uint16Array,
         Int32Array,
         Uint32Array,
-    ].indexOf(type as any));
+    ].indexOf(type as any) !== -1;
 }
 
 export function isObject(value: any): value is Object {
