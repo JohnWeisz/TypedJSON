@@ -13,6 +13,7 @@ describe('json (without automatic stringify)', () => {
                 expect(TypedJSON.parse('"sdfs"fdsf"', String)).toEqual(undefined);
                 fail();
             } catch (e) {
+                // Ignore error
             }
         });
 
