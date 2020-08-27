@@ -41,7 +41,7 @@ function toJsonDecorator<T extends Object>(target: Function, options: IToJsonOpt
     if (options.overwrite !== true && target.prototype.toJSON !== undefined) {
         throw new Error(`${target.name} already has toJSON defined!`);
     }
-    target.prototype.toJSON = function () {
+    target.prototype.toJSON = function toJSON() {
         return TypedJSON.toPlainJson(this, Object.getPrototypeOf(this).constructor);
     };
 }
