@@ -18,6 +18,7 @@ describe('preserveNull', () => {
         const obj = TypedJSON.parse({name: null}, Person);
         expect(obj).toEqual(input);
 
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         delete TypedJSON._globalConfig;
     });
