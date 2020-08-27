@@ -73,6 +73,7 @@ export function jsonObject<T>(
  * Marks that a class is serializable using TypedJSON, with additional settings.
  * @param options Configuration settings.
  */
+// eslint-disable-next-line @typescript-eslint/unified-signatures
 export function jsonObject<T>(options?: IJsonObjectOptions<T>): (target: Serializable<T>) => void;
 
 /**

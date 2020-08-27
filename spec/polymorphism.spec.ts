@@ -53,8 +53,7 @@ describe('polymorphism', () => {
         investAmount: number;
 
         constructor();
-        constructor(firstName: string, lastName: string);
-        constructor(firstName: string, lastName: string, investAmount: number);
+        constructor(firstName: string, lastName: string, investAmount?: number);
         constructor(firstName?: string, lastName?: string, investAmount?: number) {
             super(firstName, lastName);
 

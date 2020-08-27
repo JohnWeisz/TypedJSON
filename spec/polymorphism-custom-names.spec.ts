@@ -10,8 +10,6 @@ describe('polymorphic custom names', () => {
         @jsonMember({name: 'last-name'})
         lastName: string;
 
-        constructor();
-        constructor(firstName: string, lastName: string);
         constructor(firstName?: string, lastName?: string) {
             if (firstName && lastName) {
                 this.firstName = firstName;
@@ -53,8 +51,7 @@ describe('polymorphic custom names', () => {
         investAmount: number;
 
         constructor();
-        constructor(firstName: string, lastName: string);
-        constructor(firstName: string, lastName: string, investAmount: number);
+        constructor(firstName: string, lastName: string, investAmount?: number);
         constructor(firstName?: string, lastName?: string, investAmount?: number) {
             super(firstName, lastName);
 

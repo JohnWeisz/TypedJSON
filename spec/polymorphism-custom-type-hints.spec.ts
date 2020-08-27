@@ -18,7 +18,6 @@ describe('polymorphism custom type hints', () => {
             @jsonMember
             lastName: string;
 
-            constructor();
             constructor(firstName?: string, lastName?: string);
             constructor(firstName: string, lastName: string);
             constructor(firstName?: string, lastName?: string) {
@@ -35,8 +34,7 @@ describe('polymorphism custom type hints', () => {
             salary: number;
 
             constructor();
-            constructor(firstName: string, lastName: string);
-            constructor(firstName: string, lastName: string, salary: number);
+            constructor(firstName: string, lastName: string, salary?: number);
             constructor(firstName?: string, lastName?: string, salary?: number) {
                 super(firstName, lastName);
 
@@ -58,8 +56,7 @@ describe('polymorphism custom type hints', () => {
             investAmount: number;
 
             constructor();
-            constructor(firstName: string, lastName: string);
-            constructor(firstName: string, lastName: string, investAmount: number);
+            constructor(firstName: string, lastName: string, investAmount?: number);
             constructor(firstName?: string, lastName?: string, investAmount?: number) {
                 super(firstName, lastName);
 

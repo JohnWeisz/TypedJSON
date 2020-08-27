@@ -124,8 +124,6 @@ export class Everything implements IEverything {
     // @jsonMember
     // [symbolProp]: string;
 
-    constructor();
-    constructor(init: IEverything);
     constructor(init?: IEverything) {
         if (init) {
             Object.assign(this, init);

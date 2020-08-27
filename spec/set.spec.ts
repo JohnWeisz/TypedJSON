@@ -10,8 +10,6 @@ describe('set of objects', () => {
         @jsonMember
         numProp: number;
 
-        constructor(init: { strProp: string; numProp: number })
-        constructor()
         constructor(init?: { strProp: string; numProp: number }) {
             if (init) {
                 this.strProp = init.strProp;
@@ -107,8 +105,6 @@ describe('set array member', () => {
         @jsonMember
         numProp: number;
 
-        constructor(init: { strProp: string; numProp: number })
-        constructor()
         constructor(init?: { strProp: string; numProp: number }) {
             if (init) {
                 this.strProp = init.strProp;
