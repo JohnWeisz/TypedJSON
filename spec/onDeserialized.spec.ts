@@ -69,12 +69,12 @@ describe('onDeserialized', () => {
             @jsonMember
             age: number;
 
-            static afterDeser() {
-                // should NOT call
-            }
-
             constructor() {
                 spyOn<Person, 'afterDeser'>(this, 'afterDeser');
+            }
+
+            static afterDeser() {
+                // should NOT call
             }
 
             afterDeser() {

@@ -76,12 +76,12 @@ describe('beforeSerialization', () => {
                 spyOn<Person, 'beforeSerial'>(this, 'beforeSerial');
             }
 
-            beforeSerial() {
-                // should call
-            }
-
             static beforeSerial() {
                 // should NOT call
+            }
+
+            beforeSerial() {
+                // should call
             }
         }
 

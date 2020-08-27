@@ -164,13 +164,13 @@ export class Deserializer<T> {
         return map;
     }
 
+    retrievePreserveNull(memberOptions?: OptionsBase): boolean {
+        return getOptionValue('preserveNull', mergeOptions(this.options, memberOptions));
+    }
+
     private isExpectedMapShape(source: any, expectedShape: MapShape): boolean {
         return (expectedShape === MapShape.ARRAY && Array.isArray(source))
         || (expectedShape === MapShape.OBJECT && typeof source === 'object');
-    }
-
-    retrievePreserveNull(memberOptions?: OptionsBase): boolean {
-        return getOptionValue('preserveNull', mergeOptions(this.options, memberOptions));
     }
 }
 
