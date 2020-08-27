@@ -97,7 +97,7 @@ export class Everything implements IEverything {
     // constHeteroEnum2: ConstHeteroEnum;
     // @jsonMember
     constructor(init?: IEverything) {
-        if (init) {
+        if (init !== undefined) {
             Object.assign(this, init);
         }
     }

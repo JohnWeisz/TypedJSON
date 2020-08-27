@@ -11,7 +11,7 @@ describe('set of objects', () => {
         numProp: number;
 
         constructor(init?: {strProp: string; numProp: number}) {
-            if (init) {
+            if (init !== undefined) {
                 this.strProp = init.strProp;
                 this.numProp = init.numProp;
             }
@@ -106,7 +106,7 @@ describe('set array member', () => {
         numProp: number;
 
         constructor(init?: {strProp: string; numProp: number}) {
-            if (init) {
+            if (init !== undefined) {
                 this.strProp = init.strProp;
                 this.numProp = init.numProp;
             }

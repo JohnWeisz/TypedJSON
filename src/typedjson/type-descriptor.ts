@@ -84,7 +84,7 @@ export class MapTypeDescriptor extends GenericTypeDescriptor {
 
     getCompleteOptions(): MapOptions {
         return {
-            shape: this.options?.shape ? this.options.shape : MapShape.ARRAY,
+            shape: this.options?.shape ?? MapShape.ARRAY,
         };
     }
 }
@@ -117,7 +117,7 @@ export function MapT(
 // }
 
 export function isTypelike(type: any): type is Typelike {
-    return type && (typeof type === 'function' || type instanceof TypeDescriptor);
+    return type != null && (typeof type === 'function' || type instanceof TypeDescriptor);
 }
 
 export function ensureTypeDescriptor(type: Typelike): TypeDescriptor {

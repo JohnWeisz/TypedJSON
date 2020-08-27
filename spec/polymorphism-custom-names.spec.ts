@@ -11,7 +11,7 @@ describe('polymorphic custom names', () => {
         lastName: string;
 
         constructor(firstName?: string, lastName?: string) {
-            if (firstName && lastName) {
+            if (firstName !== undefined && lastName !== undefined) {
                 this.firstName = firstName;
                 this.lastName = lastName;
             }
@@ -32,7 +32,7 @@ describe('polymorphic custom names', () => {
         constructor(firstName?: string, lastName?: string, salary?: number, joined?: Date) {
             super(firstName, lastName);
 
-            if (salary && joined) {
+            if (salary !== undefined && joined !== undefined) {
                 this.salary = salary;
                 this.joined = joined;
             }
@@ -55,7 +55,7 @@ describe('polymorphic custom names', () => {
         constructor(firstName?: string, lastName?: string, investAmount?: number) {
             super(firstName, lastName);
 
-            this.investAmount = investAmount || 0;
+            this.investAmount = investAmount ?? 0;
         }
     }
 

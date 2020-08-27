@@ -91,7 +91,7 @@ export class JsonObjectMetadata {
      */
     static getJsonObjectName(ctor: Function): string {
         const metadata = JsonObjectMetadata.getFromConstructor(ctor);
-        return metadata ? nameof(metadata.classType) : nameof(ctor);
+        return metadata === undefined ? nameof(ctor) : nameof(metadata.classType);
     }
 
     /**
@@ -100,18 +100,18 @@ export class JsonObjectMetadata {
      */
     static getFromConstructor<T>(ctor: Serializable<T>): JsonObjectMetadata | undefined {
         const prototype = ctor.prototype;
-        if (!prototype) {
+        if (prototype == null) {
             return;
         }
 
         let metadata: JsonObjectMetadata | undefined;
-        if (prototype.hasOwnProperty(METADATA_FIELD_KEY)) {
+        if (prototype.hasOwnProperty(METADATA_FIELD_KEY) === true) {
             // The class prototype contains own jsonObject metadata
             metadata = prototype[METADATA_FIELD_KEY];
         }
 
         // Ignore implicitly added jsonObject (through jsonMember)
-        if (metadata && metadata.isExplicitlyMarked) {
+        if (metadata?.isExplicitlyMarked === true) {
             return metadata;
         }
 
@@ -132,8 +132,8 @@ export class JsonObjectMetadata {
         const objectMetadata = new JsonObjectMetadata(prototype.constructor);
 
         // Inherit json members and known types from parent @jsonObject (if any).
-        const parentMetadata: JsonObjectMetadata = prototype[METADATA_FIELD_KEY];
-        if (parentMetadata) {
+        const parentMetadata: JsonObjectMetadata | undefined = prototype[METADATA_FIELD_KEY];
+        if (parentMetadata !== undefined) {
             parentMetadata.dataMembers.forEach((memberMetadata, propKey) => {
                 objectMetadata.dataMembers.set(propKey, memberMetadata);
             });
@@ -159,7 +159,7 @@ export class JsonObjectMetadata {
      */
     static getKnownTypeNameFromType(constructor: Function): string {
         const metadata = JsonObjectMetadata.getFromConstructor(constructor);
-        return metadata ? nameof(metadata.classType) : nameof(constructor);
+        return metadata === undefined ? nameof(constructor) : nameof(metadata.classType);
     }
 
     private static doesHandleWithoutAnnotation(ctor: Function): boolean {
@@ -182,19 +182,21 @@ export function injectMetadataInformation(
     // eslint-disable-next-line max-len
     // https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md#property-decorators
     // ... and static members are not supported here, so abort.
-    if (typeof prototype === 'function') {
+    if (typeof prototype as any === 'function') {
         logError(`${decoratorName}: cannot use a static property.`);
         return;
     }
 
     // Methods cannot be serialized.
-    // @ts-ignore symbol indexing is not supported by ts
-    if (typeof prototype[propKey] === 'function') {
+    // symbol indexing is not supported by ts
+    if (typeof prototype[propKey as string] === 'function') {
         logError(`${decoratorName}: cannot use a method property.`);
         return;
     }
 
-    if (!metadata || (!metadata.type && !metadata.deserializer)) {
+    // @todo check if metadata is ever undefined, if so, change parameter type
+    if (metadata as any === undefined
+        || (metadata.type === undefined && metadata.deserializer === undefined)) {
         logError(`${decoratorName}: JsonMemberMetadata has unknown type.`);
         return;
     }
@@ -204,9 +206,9 @@ export function injectMetadataInformation(
     // with '@jsonObject' as well.
     const objectMetadata = JsonObjectMetadata.ensurePresentInPrototype(prototype);
 
-    if (!metadata.deserializer) {
-        // @ts-ignore above is a check (!deser && !ctor)
-        metadata.type.getTypes().forEach(ctor => objectMetadata.knownTypes.add(ctor));
+    if (metadata.deserializer === undefined) {
+        // If deserializer is not present then type must be
+        metadata.type!.getTypes().forEach(ctor => objectMetadata.knownTypes.add(ctor));
     }
 
     // clear metadata of undefined properties to save memory

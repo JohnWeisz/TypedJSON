@@ -28,9 +28,7 @@ export function defaultTypeEmitter(
     // the required known-types are defined, and the object is a valid subtype of the expected
     // type).
     if (sourceObject.constructor !== expectedSourceType) {
-        targetObject.__type = sourceTypeMetadata && sourceTypeMetadata.name
-            ? sourceTypeMetadata.name
-            : nameof(sourceObject.constructor);
+        targetObject.__type = sourceTypeMetadata?.name ?? nameof(sourceObject.constructor);
     }
 }
 
@@ -94,7 +92,7 @@ export class Serializer {
     ]);
 
     setTypeHintEmitter(typeEmitterCallback: TypeHintEmitter) {
-        if (typeof typeEmitterCallback !== 'function') {
+        if (typeof typeEmitterCallback as any !== 'function') {
             throw new TypeError('\'typeEmitterCallback\' is not a function.');
         }
 
@@ -106,7 +104,7 @@ export class Serializer {
     }
 
     setErrorHandler(errorHandlerCallback: (error: Error) => void) {
-        if (typeof errorHandlerCallback !== 'function') {
+        if (typeof errorHandlerCallback as any !== 'function') {
             throw new TypeError('\'errorHandlerCallback\' is not a function.');
         }
 
@@ -150,7 +148,7 @@ export class Serializer {
         }
 
         const serializer = this.serializationStrategy.get(typeDescriptor.ctor);
-        if (serializer) {
+        if (serializer !== undefined) {
             return serializer(sourceObject, typeDescriptor, memberName, this, memberOptions);
         }
         // if not present in the strategy do property by property serialization
@@ -187,9 +185,15 @@ function convertAsObject(
         sourceTypeMetadata = JsonObjectMetadata.getFromConstructor(typeDescriptor.ctor);
     }
 
-    if (sourceTypeMetadata) {
+    if (sourceTypeMetadata === undefined) {
+        // Untyped serialization, "as-is", we'll just pass the object on.
+        // We'll clone the source object, because type hints are added to the object itself, and we
+        // don't want to modify
+        // to the original object.
+        targetObject = {...sourceObject};
+    } else {
         const beforeSerializationMethodName = sourceTypeMetadata.beforeSerializationMethodName;
-        if (beforeSerializationMethodName) {
+        if (beforeSerializationMethodName !== undefined) {
             if (typeof (sourceObject as any)[beforeSerializationMethodName] === 'function') {
                 // check for member first
                 (sourceObject as any)[beforeSerializationMethodName]();
@@ -215,41 +219,37 @@ function convertAsObject(
         targetObject = {};
 
         const classOptions = mergeOptions(serializer.options, sourceMeta.options);
-        if (sourceMeta.typeHintEmitter) {
+        if (sourceMeta.typeHintEmitter !== undefined) {
             typeHintEmitter = sourceMeta.typeHintEmitter;
         }
 
         sourceMeta.dataMembers.forEach((objMemberMetadata) => {
             const objMemberOptions = mergeOptions(classOptions, objMemberMetadata.options);
             let serialized;
-            if (objMemberMetadata.serializer) {
+            if (objMemberMetadata.serializer !== undefined) {
                 serialized = objMemberMetadata.serializer(sourceObject[objMemberMetadata.key]);
-            } else if (objMemberMetadata.type) {
+            } else if (objMemberMetadata.type === undefined) {
+                throw new TypeError(
+                    `Could not serialize ${objMemberMetadata.name}, there is`
+                    + ` no constructor nor serialization function to use.`,
+                );
+            } else {
                 serialized = serializer.convertSingleValue(
                     sourceObject[objMemberMetadata.key],
                     objMemberMetadata.type,
                     `${nameof(sourceMeta.classType)}.${objMemberMetadata.key}`,
                     objMemberOptions,
                 );
-            } else {
-                throw new TypeError(
-                    `Could not serialize ${objMemberMetadata.name}, there is`
-                    + ` no constructor nor serialization function to use.`,
-                );
             }
 
             if (isValueDefined(serialized)
+                // @todo check whether the or condition ever applies
+                // eslint-disable-next-line @typescript-eslint/tslint/config
                 || (serializer.retrievePreserveNull(objMemberOptions) && serialized === null)
             ) {
                 targetObject[objMemberMetadata.name] = serialized;
             }
         });
-    } else {
-        // Untyped serialization, "as-is", we'll just pass the object on.
-        // We'll clone the source object, because type hints are added to the object itself, and we
-        // don't want to modify
-        // to the original object.
-        targetObject = {...sourceObject};
     }
 
     // Add type-hint.
@@ -276,7 +276,7 @@ function convertAsArray(
             + ' use proper annotation or function for this type',
         );
     }
-    if (!typeDescriptor.elementType) {
+    if (typeDescriptor.elementType as any == null) {
         throw new TypeError(
             `Could not serialize ${memberName} as Array: missing element type definition.`,
         );
@@ -292,12 +292,15 @@ function convertAsArray(
             && !isInstanceOf(element, typeDescriptor.elementType.ctor)
         ) {
             const expectedTypeName = nameof(typeDescriptor.elementType.ctor);
+            // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
             const actualTypeName = element && nameof(element.constructor);
             throw new TypeError(`Could not serialize ${memberName}[${i}]:`
                 + ` expected '${expectedTypeName}', got '${actualTypeName}'.`);
         }
     });
 
+    // @todo, is this necessary?
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (memberName) {
         // Just for debugging purposes.
         memberName += '[]';
@@ -331,13 +334,15 @@ function convertAsSet(
             + ' use proper annotation or function for this type',
         );
     }
-    if (!typeDescriptor.elementType) {
+    if (typeDescriptor.elementType as any == null) {
         throw new TypeError(
             `Could not serialize ${memberName} as Set: missing element type definition.`,
         );
     }
 
     // For debugging and error tracking.
+    // @todo, is this necessary?
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (memberName) {
         memberName += '[]';
     }
@@ -384,18 +389,19 @@ function convertAsMap(
             + ' use proper annotation or function for this type',
         );
     }
-    if (!typeDescriptor.valueType) {
+    if (typeDescriptor.valueType as any == null) { // @todo Check type
         throw new TypeError(
             `Could not serialize ${memberName} as Map: missing value type definition.`,
         );
     }
 
-    if (!typeDescriptor.keyType) {
+    if (typeDescriptor.keyType as any == null) { // @todo Check type
         throw new TypeError(
             `Could not serialize ${memberName} as Map: missing key type definition.`,
         );
     }
 
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (memberName) {
         memberName += '[]';
     }
@@ -425,6 +431,8 @@ function convertAsMap(
         // We are not going to emit entries with undefined keys OR undefined values.
         const keyDefined = isValueDefined(resultKeyValuePairObj.key);
         const valueDefined = isValueDefined(resultKeyValuePairObj.value)
+            // @todo check
+            // eslint-disable-next-line @typescript-eslint/tslint/config
             || (resultKeyValuePairObj.value === null && preserveNull);
         if (keyDefined && valueDefined) {
             if (resultShape === MapShape.OBJECT) {

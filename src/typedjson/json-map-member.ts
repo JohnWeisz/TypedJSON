@@ -67,7 +67,7 @@ export function jsonMapMember(
             isRequired: options.isRequired,
             options: extractOptionBase(options),
             key: propKey.toString(),
-            name: options.name || propKey.toString(),
+            name: options.name ?? propKey.toString(),
             deserializer: options.deserializer,
             serializer: options.serializer,
         });

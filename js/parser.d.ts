@@ -36,6 +36,22 @@ export interface ITypedJSONSettings extends OptionsBase {
     knownTypes?: Array<Constructor<any>>;
 }
 export declare class TypedJSON<T> {
+    private static _globalConfig;
+    private serializer;
+    private deserializer;
+    private globalKnownTypes;
+    private indent;
+    private rootConstructor;
+    private errorHandler;
+    private nameResolver;
+    private replacer?;
+    /**
+     * Creates a new TypedJSON instance to serialize (stringify) and deserialize (parse) object
+     *     instances of the specified root class type.
+     * @param rootConstructor The constructor of the root class type.
+     * @param settings Additional configuration settings.
+     */
+    constructor(rootConstructor: Serializable<T>, settings?: ITypedJSONSettings);
     static parse<T>(object: any, rootType: Serializable<T>, settings?: ITypedJSONSettings): T | undefined;
     static parseAsArray<T>(object: any, elementType: Serializable<T>, settings?: ITypedJSONSettings, dimensions?: 1): Array<T>;
     static parseAsArray<T>(object: any, elementType: Serializable<T>, settings: ITypedJSONSettings | undefined, dimensions: 2): Array<Array<T>>;
@@ -65,23 +81,7 @@ export declare class TypedJSON<T> {
     static stringifyAsArray<T>(object: Array<any>, elementType: Serializable<T>, dimensions: number, settings?: ITypedJSONSettings): string;
     static stringifyAsSet<T>(object: Set<T>, elementType: Serializable<T>, settings?: ITypedJSONSettings): string;
     static stringifyAsMap<K, V>(object: Map<K, V>, keyCtor: Serializable<K>, valueCtor: Serializable<V>, settings?: ITypedJSONSettings): string;
-    private static _globalConfig;
     static setGlobalConfig(config: ITypedJSONSettings): void;
-    private serializer;
-    private deserializer;
-    private globalKnownTypes;
-    private indent;
-    private rootConstructor;
-    private errorHandler;
-    private nameResolver;
-    private replacer?;
-    /**
-     * Creates a new TypedJSON instance to serialize (stringify) and deserialize (parse) object
-     *     instances of the specified root class type.
-     * @param rootConstructor The constructor of the root class type.
-     * @param settings Additional configuration settings.
-     */
-    constructor(rootConstructor: Serializable<T>, settings?: ITypedJSONSettings);
     /**
      * Configures TypedJSON through a settings object.
      * @param settings The configuration settings object.

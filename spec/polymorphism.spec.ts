@@ -13,7 +13,7 @@ describe('polymorphism', () => {
         constructor();
         constructor(firstName: string, lastName: string);
         constructor(firstName?: string, lastName?: string) {
-            if (firstName && lastName) {
+            if (firstName !== undefined && lastName !== undefined) {
                 this.firstName = firstName;
                 this.lastName = lastName;
             }
@@ -34,7 +34,7 @@ describe('polymorphism', () => {
         constructor(firstName?: string, lastName?: string, salary?: number, joined?: Date) {
             super(firstName, lastName);
 
-            if (salary && joined) {
+            if (salary !== undefined && joined !== undefined) {
                 this.salary = salary;
                 this.joined = joined;
             }
@@ -57,7 +57,7 @@ describe('polymorphism', () => {
         constructor(firstName?: string, lastName?: string, investAmount?: number) {
             super(firstName, lastName);
 
-            this.investAmount = investAmount || 0;
+            this.investAmount = investAmount ?? 0;
         }
     }
 

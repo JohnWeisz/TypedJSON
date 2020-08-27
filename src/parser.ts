@@ -49,7 +49,7 @@ export interface ITypedJSONSettings extends OptionsBase {
 
 export class TypedJSON<T> {
 
-    private static _globalConfig: ITypedJSONSettings;
+    private static _globalConfig: ITypedJSONSettings | undefined;
 
     private serializer: Serializer = new Serializer();
     private deserializer: Deserializer<T> = new Deserializer<T>();
@@ -69,7 +69,7 @@ export class TypedJSON<T> {
     constructor(rootConstructor: Serializable<T>, settings?: ITypedJSONSettings) {
         const rootMetadata = JsonObjectMetadata.getFromConstructor(rootConstructor);
 
-        if (!rootMetadata
+        if (rootMetadata === undefined
             || (!rootMetadata.isExplicitlyMarked && !rootMetadata.isHandledWithoutAnnotation)) {
             throw new TypeError(
                 'The TypedJSON root data type must have the @jsonObject decorator used.',
@@ -80,9 +80,9 @@ export class TypedJSON<T> {
         this.rootConstructor = rootConstructor;
         this.errorHandler = (error) => logError(error);
 
-        if (settings) {
+        if (settings !== undefined) {
             this.config(settings);
-        } else if (TypedJSON._globalConfig) {
+        } else if (TypedJSON._globalConfig !== undefined) {
             this.config({});
         }
     }
@@ -290,10 +290,10 @@ export class TypedJSON<T> {
     }
 
     static setGlobalConfig(config: ITypedJSONSettings) {
-        if (this._globalConfig) {
-            Object.assign(this._globalConfig, config);
-        } else {
+        if (this._globalConfig === undefined) {
             this._globalConfig = config;
+        } else {
+            Object.assign(this._globalConfig, config);
         }
     }
 
@@ -302,13 +302,14 @@ export class TypedJSON<T> {
      * @param settings The configuration settings object.
      */
     config(settings: ITypedJSONSettings) {
-        if (TypedJSON._globalConfig) {
+        if (TypedJSON._globalConfig !== undefined) {
             settings = {
                 ...TypedJSON._globalConfig,
                 ...settings,
             };
 
-            if (settings.knownTypes && TypedJSON._globalConfig.knownTypes) {
+            if (settings.knownTypes !== undefined
+                && TypedJSON._globalConfig.knownTypes !== undefined) {
                 // Merge known-types (also de-duplicate them, so Array -> Set -> Array).
                 settings.knownTypes = Array.from(new Set(
                     settings.knownTypes.concat(TypedJSON._globalConfig.knownTypes),
@@ -320,34 +321,34 @@ export class TypedJSON<T> {
         this.serializer.options = options;
         this.deserializer.options = options;
 
-        if (settings.errorHandler) {
+        if (settings.errorHandler !== undefined) {
             this.errorHandler = settings.errorHandler;
             this.deserializer.setErrorHandler(settings.errorHandler);
             this.serializer.setErrorHandler(settings.errorHandler);
         }
 
-        if (settings.replacer) {
+        if (settings.replacer !== undefined) {
             this.replacer = settings.replacer;
         }
-        if (settings.typeResolver) {
+        if (settings.typeResolver !== undefined) {
             this.deserializer.setTypeResolver(settings.typeResolver);
         }
-        if (settings.typeHintEmitter) {
+        if (settings.typeHintEmitter !== undefined) {
             this.serializer.setTypeHintEmitter(settings.typeHintEmitter);
         }
-        if (settings.indent) {
+        if (settings.indent !== undefined) {
             this.indent = settings.indent;
         }
 
-        if (settings.nameResolver) {
+        if (settings.nameResolver !== undefined) {
             this.nameResolver = settings.nameResolver;
             this.deserializer.setNameResolver(settings.nameResolver);
             // this.serializer.set
         }
 
-        if (settings.knownTypes) {
+        if (settings.knownTypes !== undefined) {
             // Type-check knownTypes elements to recognize errors in advance.
-            settings.knownTypes.forEach((knownType, i) => {
+            settings.knownTypes.forEach((knownType: any, i) => {
                 // tslint:disable-next-line:no-null-keyword
                 if (typeof knownType === 'undefined' || knownType === null) {
                     logWarning(
@@ -378,7 +379,7 @@ export class TypedJSON<T> {
             knownTypes.set(this.nameResolver(knownTypeCtor), knownTypeCtor);
         });
 
-        if (rootMetadata) {
+        if (rootMetadata !== undefined) {
             rootMetadata.knownTypes.forEach(knownTypeCtor => {
                 knownTypes.set(this.nameResolver(knownTypeCtor), knownTypeCtor);
             });
