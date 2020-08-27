@@ -70,7 +70,7 @@ export class Deserializer<T> {
     }
 
     setTypeResolver(typeResolverCallback: TypeResolver) {
-        if (typeof typeResolverCallback !== 'function') {
+        if (typeof typeResolverCallback as any !== 'function') {
             throw new TypeError('\'typeResolverCallback\' is not a function.');
         }
 
@@ -82,7 +82,7 @@ export class Deserializer<T> {
     }
 
     setErrorHandler(errorHandlerCallback: (error: Error) => void) {
-        if (typeof errorHandlerCallback !== 'function') {
+        if (typeof errorHandlerCallback as any !== 'function') {
             throw new TypeError('\'errorHandlerCallback\' is not a function.');
         }
 
@@ -225,7 +225,7 @@ function convertAsObject<T>(
     memberName: string,
     deserializer: Deserializer<any>,
 ): IndexedObject | T | undefined {
-    if (typeof sourceObject !== 'object' || sourceObject === null) {
+    if (typeof sourceObject as any !== 'object' || sourceObject as any === null) {
         deserializer.getErrorHandler()(new TypeError(
             `Cannot deserialize ${memberName}: 'sourceObject' must be a defined object.`,
         ));
