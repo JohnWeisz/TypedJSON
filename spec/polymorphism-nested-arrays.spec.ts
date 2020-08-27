@@ -60,10 +60,10 @@ describe('polymorphism in nested arrays', () => {
     function test(log: boolean) {
         const graph = new Graph();
 
-        for (var i = 0; i < 20; i++) {
+        for (let i = 0; i < 20; i++) {
             graph.smallItems.push([]);
 
-            for (var j = 0; j < 8; j++) {
+            for (let j = 0; j < 8; j++) {
                 const node = new SmallNode();
 
                 node.name = `smallnode_${i}_${j}`;
@@ -74,10 +74,10 @@ describe('polymorphism in nested arrays', () => {
             }
         }
 
-        for (var i = 0; i < 20; i++) {
+        for (let i = 0; i < 20; i++) {
             graph.items.push([]);
 
-            for (var j = 0; j < 8; j++) {
+            for (let j = 0; j < 8; j++) {
                 let node: Node;
 
                 if (Math.random() < 0.25) {
