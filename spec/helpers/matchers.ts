@@ -102,7 +102,7 @@ beforeEach(() => {
         if (firstAsInt8Array.length !== secondAsInt8Array.length) {
             return false;
         }
-        return firstAsInt8Array.every((num, i) => num == secondAsInt8Array[i]);
+        return firstAsInt8Array.every((num, i) => num === secondAsInt8Array[i]);
     });
 });
 
