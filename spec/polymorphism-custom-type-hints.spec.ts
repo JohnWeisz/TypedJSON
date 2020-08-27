@@ -3,8 +3,6 @@ import {IndexedObject} from '../src/typedjson/types';
 
 describe('polymorphism custom type hints', () => {
     describe('should work for a base class', () => {
-        let TYPE_MAP: IndexedObject;
-
         @jsonObject({
             typeHintEmitter: (targetObject, sourceObject) => {
                 return targetObject.personType = `${sourceObject.constructor.name}Type`;
@@ -64,7 +62,7 @@ describe('polymorphism custom type hints', () => {
             }
         }
 
-        TYPE_MAP = {
+        const TYPE_MAP: IndexedObject = {
             EmployeeType: Employee,
             PartTimeEmployeeType: PartTimeEmployee,
             InvestorType: Investor,
