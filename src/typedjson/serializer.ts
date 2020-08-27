@@ -132,11 +132,11 @@ export class Serializer {
         memberOptions?: OptionsBase,
     ): any {
         if (this.retrievePreserveNull(memberOptions) && sourceObject === null) {
-return null;
-}
+            return null;
+        }
         if (!isValueDefined(sourceObject)) {
-return;
-}
+            return;
+        }
 
         if (!isInstanceOf(sourceObject, typeDescriptor.ctor)) {
             const expectedName = nameof(typeDescriptor.ctor);
@@ -377,7 +377,7 @@ function convertAsMap(
     memberName: string,
     serializer: Serializer,
     memberOptions?: OptionsBase,
-): IndexedObject | Array<{ key: any; value: any }> {
+): IndexedObject | Array<{key: any; value: any}> {
     if (!(typeDescriptor instanceof MapTypeDescriptor)) {
         throw new TypeError(
             `Could not serialize ${memberName} as Map: incorrect TypeDescriptor detected, please`

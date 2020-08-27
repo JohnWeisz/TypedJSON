@@ -51,9 +51,9 @@ describe('parse To Object', () => {
     });
 
     it('should passthrough builtins', () => {
-      const date = new Date();
-      expect(parseToJSObject(date, Date)).toBe(date);
-      const buffer = new ArrayBuffer(3);
-      expect(parseToJSObject(buffer, ArrayBuffer)).toBe(buffer);
+        const date = new Date();
+        expect(parseToJSObject(date, Date)).toBe(date);
+        const buffer = new ArrayBuffer(3);
+        expect(parseToJSObject(buffer, ArrayBuffer)).toBe(buffer);
     });
 });

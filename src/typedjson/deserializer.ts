@@ -123,7 +123,7 @@ export class Deserializer<T> {
         }
         this.errorHandler(new TypeError(
             `Could not deserialize '${memberName}': don't know how to deserialize this type'.`,
-));
+        ));
     }
 
     instantiateType(ctor: any) {
@@ -170,7 +170,7 @@ export class Deserializer<T> {
 
     private isExpectedMapShape(source: any, expectedShape: MapShape): boolean {
         return (expectedShape === MapShape.ARRAY && Array.isArray(source))
-        || (expectedShape === MapShape.OBJECT && typeof source === 'object');
+            || (expectedShape === MapShape.OBJECT && typeof source === 'object');
     }
 }
 

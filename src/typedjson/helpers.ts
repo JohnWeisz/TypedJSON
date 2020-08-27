@@ -55,8 +55,8 @@ function shouldOmitParseString(jsonStr: string, expectedType: Function): boolean
 }
 
 export function parseToJSObject<T>(json: any, expectedType: Serializable<T>): Object {
-    if (typeof json !== 'string' || shouldOmitParseString(json, expectedType)) {
-      return json;
+    if (typeof json !== 'string' || shouldOmitParseString(json, expectedType)) {
+        return json;
     }
     return JSON.parse(json);
 }
@@ -121,7 +121,7 @@ export const isReflectMetadataSupported =
  * Gets the name of a function.
  * @param fn The function whose name to get.
  */
-export function nameof(fn: Function & { name?: string }) {
+export function nameof(fn: Function & {name?: string}) {
     if (typeof fn.name === 'string') {
         return fn.name;
     }

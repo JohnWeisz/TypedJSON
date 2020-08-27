@@ -42,8 +42,8 @@ export function getOptionValue<K extends keyof OptionsBase>(
     options?: OptionsBase,
 ): Required<OptionsBase>[K] {
     if (options && options[key] != null) {
-return options[key]!;
-}
+        return options[key]!;
+    }
     return getDefaultOptionOf(key);
 }
 

@@ -12,7 +12,8 @@ describe('json (without automatic stringify)', () => {
             try {
                 expect(TypedJSON.parse('"sdfs"fdsf"', String)).toEqual(undefined);
                 fail();
-            } catch (e) {}
+            } catch (e) {
+            }
         });
 
         it('should serialize', () => {
@@ -94,7 +95,7 @@ describe('json (without automatic stringify)', () => {
         });
 
         it('should serialize', () => {
-          expect(TypedJSON.toPlainArray(['alas', 'dfsd'], String)).toEqual(['alas', 'dfsd']);
+            expect(TypedJSON.toPlainArray(['alas', 'dfsd'], String)).toEqual(['alas', 'dfsd']);
         });
     });
 });
