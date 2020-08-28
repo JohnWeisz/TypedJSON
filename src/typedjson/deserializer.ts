@@ -613,9 +613,18 @@ function deserializeDate(
     // the Epoch).
     // ISO 8601 spec.: https://www.w3.org/TR/NOTE-datetime
 
-    if (typeof sourceObject === 'string'
-        || (typeof sourceObject === 'number' && sourceObject > 0)) {
-        return new Date(sourceObject as any);
+    if (typeof sourceObject === 'number') {
+        const isInteger = sourceObject % 1 === 0;
+        if (!isInteger) {
+            throw new TypeError(
+                `Could not deserialize ${memberName} as Date:`
+                + ` expected an integer, got a number with decimal places.`,
+            );
+        }
+
+        return new Date(sourceObject);
+    } else if (typeof sourceObject === 'string') {
+        return new Date(sourceObject);
     } else if (sourceObject instanceof Date) {
         return sourceObject;
     } else {
