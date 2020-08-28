@@ -11,7 +11,7 @@ export interface ITypedJSONSettings extends OptionsBase {
      * Re-throwing errors in this function will halt serialization/deserialization.
      * The default behavior is to log errors to the console.
      */
-    errorHandler?: (e: Error) => void;
+    errorHandler?: ((e: Error) => void) | null;
     /**
      * Sets a callback that determines the constructor of the correct sub-type of polymorphic
      * objects while deserializing.
@@ -19,21 +19,21 @@ export interface ITypedJSONSettings extends OptionsBase {
      * and look it up in 'knownTypes'.
      * The constructor of the sub-type should be returned.
      */
-    typeResolver?: TypeResolver;
-    nameResolver?: (ctor: Function) => string;
+    typeResolver?: TypeResolver | null;
+    nameResolver?: ((ctor: Function) => string) | null;
     /**
      * Sets a callback that writes type-hints to serialized objects.
      * The default behavior is to write the type-name to the '__type' property, if a derived type
      * is present in place of a base type.
      */
-    typeHintEmitter?: TypeHintEmitter;
+    typeHintEmitter?: TypeHintEmitter | null;
     /**
      * Sets the amount of indentation to use in produced JSON strings.
      * Default value is 0, or no indentation.
      */
-    indent?: number;
-    replacer?: (key: string, value: any) => any;
-    knownTypes?: Array<Constructor<any>>;
+    indent?: number | null;
+    replacer?: ((key: string, value: any) => any) | null;
+    knownTypes?: Array<Constructor<any>> | null;
 }
 export declare class TypedJSON<T> {
     private static _globalConfig;

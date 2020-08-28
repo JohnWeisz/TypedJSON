@@ -195,7 +195,7 @@ export function injectMetadataInformation(
     }
 
     // @todo check if metadata is ever undefined, if so, change parameter type
-    if (metadata as any === undefined
+    if (metadata as any == null
         || (metadata.type === undefined && metadata.deserializer === undefined)) {
         logError(`${decoratorName}: JsonMemberMetadata has unknown type.`);
         return;
