@@ -48,10 +48,14 @@ export function shouldOmitParseString(jsonStr: string, expectedType: Function): 
     const hasQuotes = jsonStr.length >= 2
         && jsonStr[0] === '"'
         && jsonStr[jsonStr.length - 1] === '"';
-    const isInteger = /^\d+$/.test(jsonStr.trim());
 
-    return (expectsTypesSerializedAsStrings && !hasQuotes)
-        || ((!hasQuotes && !isInteger) && expectedType === Date);
+    if (expectedType === Date) {
+        // Date can both have strings and numbers as input
+        const isNumber = !isNaN(Number(jsonStr.trim()));
+        return !hasQuotes && !isNumber;
+    }
+
+    return expectsTypesSerializedAsStrings && !hasQuotes;
 }
 
 export function parseToJSObject<T>(json: any, expectedType: Serializable<T>): Object {
