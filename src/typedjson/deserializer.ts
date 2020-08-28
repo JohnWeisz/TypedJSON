@@ -324,7 +324,7 @@ function convertAsObject<T>(
                 );
 
                 // Check the validity of user-defined initializer callback.
-                if (targetObject as any === undefined) {
+                if (targetObject as any == null) {
                     throw new TypeError(
                         `Cannot deserialize ${memberName}:`
                         + ` 'initializer' function returned undefined/null`

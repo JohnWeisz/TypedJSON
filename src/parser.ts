@@ -16,7 +16,7 @@ export interface ITypedJSONSettings extends OptionsBase {
      * Re-throwing errors in this function will halt serialization/deserialization.
      * The default behavior is to log errors to the console.
      */
-    errorHandler?: (e: Error) => void;
+    errorHandler?: ((e: Error) => void) | null;
 
     /**
      * Sets a callback that determines the constructor of the correct sub-type of polymorphic
@@ -25,31 +25,31 @@ export interface ITypedJSONSettings extends OptionsBase {
      * and look it up in 'knownTypes'.
      * The constructor of the sub-type should be returned.
      */
-    typeResolver?: TypeResolver;
+    typeResolver?: TypeResolver | null;
 
-    nameResolver?: (ctor: Function) => string;
+    nameResolver?: ((ctor: Function) => string) | null;
 
     /**
      * Sets a callback that writes type-hints to serialized objects.
      * The default behavior is to write the type-name to the '__type' property, if a derived type
      * is present in place of a base type.
      */
-    typeHintEmitter?: TypeHintEmitter;
+    typeHintEmitter?: TypeHintEmitter | null;
 
     /**
      * Sets the amount of indentation to use in produced JSON strings.
      * Default value is 0, or no indentation.
      */
-    indent?: number;
+    indent?: number | null;
 
-    replacer?: (key: string, value: any) => any;
+    replacer?: ((key: string, value: any) => any) | null;
 
-    knownTypes?: Array<Constructor<any>>;
+    knownTypes?: Array<Constructor<any>> | null;
 }
 
 export class TypedJSON<T> {
 
-    private static _globalConfig: ITypedJSONSettings | undefined;
+    private static _globalConfig: ITypedJSONSettings | null | undefined;
 
     private serializer: Serializer = new Serializer();
     private deserializer: Deserializer<T> = new Deserializer<T>();
@@ -290,7 +290,7 @@ export class TypedJSON<T> {
     }
 
     static setGlobalConfig(config: ITypedJSONSettings) {
-        if (this._globalConfig === undefined) {
+        if (this._globalConfig == null) {
             this._globalConfig = config;
         } else {
             Object.assign(this._globalConfig, config);
@@ -302,14 +302,14 @@ export class TypedJSON<T> {
      * @param settings The configuration settings object.
      */
     config(settings: ITypedJSONSettings) {
-        if (TypedJSON._globalConfig !== undefined) {
+        if (TypedJSON._globalConfig != null) {
             settings = {
                 ...TypedJSON._globalConfig,
                 ...settings,
             };
 
-            if (settings.knownTypes !== undefined
-                && TypedJSON._globalConfig.knownTypes !== undefined) {
+            if (settings.knownTypes != null
+                && TypedJSON._globalConfig.knownTypes != null) {
                 // Merge known-types (also de-duplicate them, so Array -> Set -> Array).
                 settings.knownTypes = Array.from(new Set(
                     settings.knownTypes.concat(TypedJSON._globalConfig.knownTypes),
@@ -321,32 +321,32 @@ export class TypedJSON<T> {
         this.serializer.options = options;
         this.deserializer.options = options;
 
-        if (settings.errorHandler !== undefined) {
+        if (settings.errorHandler != null) {
             this.errorHandler = settings.errorHandler;
             this.deserializer.setErrorHandler(settings.errorHandler);
             this.serializer.setErrorHandler(settings.errorHandler);
         }
 
-        if (settings.replacer !== undefined) {
+        if (settings.replacer != null) {
             this.replacer = settings.replacer;
         }
-        if (settings.typeResolver !== undefined) {
+        if (settings.typeResolver != null) {
             this.deserializer.setTypeResolver(settings.typeResolver);
         }
-        if (settings.typeHintEmitter !== undefined) {
+        if (settings.typeHintEmitter != null) {
             this.serializer.setTypeHintEmitter(settings.typeHintEmitter);
         }
-        if (settings.indent !== undefined) {
+        if (settings.indent != null) {
             this.indent = settings.indent;
         }
 
-        if (settings.nameResolver !== undefined) {
+        if (settings.nameResolver != null) {
             this.nameResolver = settings.nameResolver;
             this.deserializer.setNameResolver(settings.nameResolver);
             // this.serializer.set
         }
 
-        if (settings.knownTypes !== undefined) {
+        if (settings.knownTypes != null) {
             // Type-check knownTypes elements to recognize errors in advance.
             settings.knownTypes.forEach((knownType: any, i) => {
                 // tslint:disable-next-line:no-null-keyword
