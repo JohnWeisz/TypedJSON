@@ -19,7 +19,7 @@ export type TypeHintEmitter
 
 export interface JsonMemberMetadata {
     /** If set, a default value will be emitted for uninitialized members. */
-    emitDefaultValue?: boolean;
+    emitDefaultValue?: boolean | null;
 
     /** Member name as it appears in the serialized JSON. */
     name: string;
@@ -28,18 +28,18 @@ export interface JsonMemberMetadata {
     key: string;
 
     /** Type descriptor of the member. */
-    type?: TypeDescriptor;
+    type?: TypeDescriptor | null;
 
     /** If set, indicates that the member must be present when deserializing. */
-    isRequired?: boolean;
+    isRequired?: boolean | null;
 
-    options?: OptionsBase;
+    options?: OptionsBase | null;
 
     /** Custom deserializer to use. */
-    deserializer?: (json: any) => any;
+    deserializer?: ((json: any) => any) | null;
 
     /** Custom serializer to use. */
-    serializer?: (value: any) => any;
+    serializer?: ((value: any) => any) | null;
 }
 
 export class JsonObjectMetadata {
@@ -50,9 +50,9 @@ export class JsonObjectMetadata {
     knownTypes = new Set<Serializable<any>>();
 
     /** If present override the global function */
-    typeHintEmitter?: TypeHintEmitter;
+    typeHintEmitter?: TypeHintEmitter | null;
     /** If present override the global function */
-    typeResolver?: TypeResolver;
+    typeResolver?: TypeResolver | null;
     /** Gets or sets the constructor function for the jsonObject. */
     classType: Function;
 
@@ -69,15 +69,15 @@ export class JsonObjectMetadata {
     isHandledWithoutAnnotation: boolean = false;
 
     /** Name used to encode polymorphic type */
-    name?: string;
+    name?: string | null;
 
-    options?: OptionsBase;
+    options?: OptionsBase | null;
 
-    onDeserializedMethodName?: string;
+    onDeserializedMethodName?: string | null;
 
-    beforeSerializationMethodName?: string;
+    beforeSerializationMethodName?: string | null;
 
-    initializerCallback?: (sourceObject: Object, rawSourceObject: Object) => Object;
+    initializerCallback?: ((sourceObject: Object, rawSourceObject: Object) => Object) | null;
 
     constructor(
         classType: Function,
