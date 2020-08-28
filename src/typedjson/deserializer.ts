@@ -245,7 +245,7 @@ function convertAsObject<T>(
             knownTypeConstructors,
             deserializer.createKnownTypesMap(sourceObjectMetadata.knownTypes),
         );
-        if (sourceObjectMetadata.typeResolver !== undefined) {
+        if (sourceObjectMetadata.typeResolver != null) {
             typeResolver = sourceObjectMetadata.typeResolver;
         }
     }
@@ -285,9 +285,9 @@ function convertAsObject<T>(
             const objMemberOptions = mergeOptions(classOptions, objMemberMetadata.options);
 
             let revivedValue;
-            if (objMemberMetadata.deserializer !== undefined) {
+            if (objMemberMetadata.deserializer != null) {
                 revivedValue = objMemberMetadata.deserializer(objMemberValue);
-            } else if (objMemberMetadata.type === undefined) {
+            } else if (objMemberMetadata.type == null) {
                 throw new TypeError(
                     `Cannot deserialize ${objMemberDebugName} there is`
                     + ` no constructor nor deserialization function to use.`,
@@ -354,7 +354,7 @@ function convertAsObject<T>(
 
         // Call onDeserialized method (if any).
         const methodName = sourceObjectMetadata.onDeserializedMethodName;
-        if (methodName !== undefined) {
+        if (methodName != null) {
             if (typeof (targetObject as any)[methodName] === 'function') {
                 // check for member first
                 (targetObject as any)[methodName]();

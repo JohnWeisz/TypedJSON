@@ -6,29 +6,29 @@ export declare type TypeResolver = (sourceObject: IndexedObject, knownTypes: Map
 export declare type TypeHintEmitter = (targetObject: IndexedObject, sourceObject: IndexedObject, expectedSourceType: Function, sourceTypeMetadata?: JsonObjectMetadata) => void;
 export interface JsonMemberMetadata {
     /** If set, a default value will be emitted for uninitialized members. */
-    emitDefaultValue?: boolean;
+    emitDefaultValue?: boolean | null;
     /** Member name as it appears in the serialized JSON. */
     name: string;
     /** Property or field key of the json member. */
     key: string;
     /** Type descriptor of the member. */
-    type?: TypeDescriptor;
+    type?: TypeDescriptor | null;
     /** If set, indicates that the member must be present when deserializing. */
-    isRequired?: boolean;
-    options?: OptionsBase;
+    isRequired?: boolean | null;
+    options?: OptionsBase | null;
     /** Custom deserializer to use. */
-    deserializer?: (json: any) => any;
+    deserializer?: ((json: any) => any) | null;
     /** Custom serializer to use. */
-    serializer?: (value: any) => any;
+    serializer?: ((value: any) => any) | null;
 }
 export declare class JsonObjectMetadata {
     dataMembers: Map<string, JsonMemberMetadata>;
     /** Set of known types used for polymorphic deserialization */
     knownTypes: Set<Serializable<any>>;
     /** If present override the global function */
-    typeHintEmitter?: TypeHintEmitter;
+    typeHintEmitter?: TypeHintEmitter | null;
     /** If present override the global function */
-    typeResolver?: TypeResolver;
+    typeResolver?: TypeResolver | null;
     /** Gets or sets the constructor function for the jsonObject. */
     classType: Function;
     /**
@@ -42,11 +42,11 @@ export declare class JsonObjectMetadata {
      */
     isHandledWithoutAnnotation: boolean;
     /** Name used to encode polymorphic type */
-    name?: string;
-    options?: OptionsBase;
-    onDeserializedMethodName?: string;
-    beforeSerializationMethodName?: string;
-    initializerCallback?: (sourceObject: Object, rawSourceObject: Object) => Object;
+    name?: string | null;
+    options?: OptionsBase | null;
+    onDeserializedMethodName?: string | null;
+    beforeSerializationMethodName?: string | null;
+    initializerCallback?: ((sourceObject: Object, rawSourceObject: Object) => Object) | null;
     constructor(classType: Function);
     /**
      * Gets the name of a class as it appears in a serialized JSON string.

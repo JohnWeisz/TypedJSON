@@ -193,7 +193,7 @@ function convertAsObject(
         targetObject = {...sourceObject};
     } else {
         const beforeSerializationMethodName = sourceTypeMetadata.beforeSerializationMethodName;
-        if (beforeSerializationMethodName !== undefined) {
+        if (beforeSerializationMethodName != null) {
             if (typeof (sourceObject as any)[beforeSerializationMethodName] === 'function') {
                 // check for member first
                 (sourceObject as any)[beforeSerializationMethodName]();
@@ -219,16 +219,16 @@ function convertAsObject(
         targetObject = {};
 
         const classOptions = mergeOptions(serializer.options, sourceMeta.options);
-        if (sourceMeta.typeHintEmitter !== undefined) {
+        if (sourceMeta.typeHintEmitter != null) {
             typeHintEmitter = sourceMeta.typeHintEmitter;
         }
 
         sourceMeta.dataMembers.forEach((objMemberMetadata) => {
             const objMemberOptions = mergeOptions(classOptions, objMemberMetadata.options);
             let serialized;
-            if (objMemberMetadata.serializer !== undefined) {
+            if (objMemberMetadata.serializer != null) {
                 serialized = objMemberMetadata.serializer(sourceObject[objMemberMetadata.key]);
-            } else if (objMemberMetadata.type === undefined) {
+            } else if (objMemberMetadata.type == null) {
                 throw new TypeError(
                     `Could not serialize ${objMemberMetadata.name}, there is`
                     + ` no constructor nor serialization function to use.`,

@@ -6,31 +6,31 @@ export interface IJsonObjectOptionsBase extends OptionsBase {
     /**
      * An array of known types to recognize when encountering type-hints.
      */
-    knownTypes?: Array<Function>;
+    knownTypes?: Array<Function> | null;
     /**
      * A function that will emit a type hint on the resulting JSON. It will override the global
      * typeEmitter.
      */
-    typeHintEmitter?: TypeHintEmitter;
+    typeHintEmitter?: TypeHintEmitter | null;
     /**
      * A function that given a source object will resolve the type that should be instantiated.
      * It will override the global type resolver.
      */
-    typeResolver?: TypeResolver;
+    typeResolver?: TypeResolver | null;
     /**
      * The name of a static or instance method to call when deserialization
      * of the object is completed.
      */
-    onDeserialized?: string;
+    onDeserialized?: string | null;
     /**
      * The name of a static or instance method to call before the serialization
      * of the typed object is started.
      */
-    beforeSerialization?: string;
+    beforeSerialization?: string | null;
     /**
      * The name used to differentiate between different polymorphic types.
      */
-    name?: string;
+    name?: string | null;
 }
 export interface IJsonObjectOptionsWithInitializer<T> extends IJsonObjectOptionsBase {
     /**
@@ -48,7 +48,7 @@ export interface IJsonObjectOptions<T> extends IJsonObjectOptionsBase {
      *   (2) rawSourceObject, a raw 'Object' instance representation of the current object in
      *       the serialized JSON (i.e. without deserialized properties).
      */
-    initializer?: InitializerCallback<T>;
+    initializer?: InitializerCallback<T> | null;
 }
 /**
  * Marks that a class with a parameterized constructor is serializable using TypedJSON, with

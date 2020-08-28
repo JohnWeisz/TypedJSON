@@ -1,18 +1,18 @@
 import { OptionsBase } from './options-base';
 export interface IJsonSetMemberOptions extends OptionsBase {
     /** When set, indicates that the member must be present when deserializing. */
-    isRequired?: boolean;
+    isRequired?: boolean | null;
     /** When set, a default value is emitted for each uninitialized json member. */
-    emitDefaultValue?: boolean;
+    emitDefaultValue?: boolean | null;
     /** When set, the key on the JSON that should be used instead of the class property name */
-    name?: string;
+    name?: string | null;
     /**
      * When set, this deserializer will be used to deserialize the member. The callee must assure
      * the correct type.
      */
-    deserializer?: (json: any) => any;
+    deserializer?: ((json: any) => any) | null;
     /** When set, this serializer will be used to serialize the member. */
-    serializer?: (value: any) => any;
+    serializer?: ((value: any) => any) | null;
 }
 /**
  * Specifies that the property is part of the object when serializing.

@@ -21,6 +21,10 @@ export declare function isSubtypeOf(A: Function, B: Function): boolean;
 export declare function logError(message?: any, ...optionalParams: Array<any>): void;
 export declare function logMessage(message?: any, ...optionalParams: Array<any>): void;
 export declare function logWarning(message?: any, ...optionalParams: Array<any>): void;
+export declare type NotNull<T> = T extends null ? never : T;
+export declare type RequiredNoNull<T> = {
+    [P in keyof T]-?: NotNull<T[P]>;
+};
 /**
  * Checks if the value is considered defined (not undefined and not null).
  * @param value

@@ -14,25 +14,25 @@ declare abstract class Reflect {
 
 export interface IJsonArrayMemberOptions extends OptionsBase {
     /** When set, indicates that the member must be present when deserializing. */
-    isRequired?: boolean;
+    isRequired?: boolean | null;
 
     /** When set, an empty array is emitted if the property is undefined/uninitialized. */
-    emitDefaultValue?: boolean;
+    emitDefaultValue?: boolean | null;
 
     /** Sets array dimensions (e.g. 1 for 'number[]' or 2 for 'number[][]'). Defaults to 1. */
-    dimensions?: number;
+    dimensions?: number | null;
 
     /** When set, the key on the JSON that should be used instead of the class property name */
-    name?: string;
+    name?: string | null;
 
     /**
      * When set, this deserializer will be used to deserialize the member. The callee must assure
      * the correct type.
      */
-    deserializer?: (json: any) => any;
+    deserializer?: ((json: any) => any) | null;
 
     /** When set, this serializer will be used to serialize the member. */
-    serializer?: (value: any) => any;
+    serializer?: ((value: any) => any) | null;
 }
 
 /**
@@ -56,7 +56,7 @@ export function jsonArrayMember(
             return;
         }
 
-        const dimensions = options.dimensions === undefined ? 1 : options.dimensions;
+        const dimensions = options.dimensions == null ? 1 : options.dimensions;
         if (!isNaN(dimensions) && dimensions < 1) {
             logError(`${decoratorName}: 'dimensions' option must be at least 1.`);
             return;
