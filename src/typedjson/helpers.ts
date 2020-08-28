@@ -40,7 +40,7 @@ export function isObject(value: any): value is Object {
     return typeof value === 'object';
 }
 
-function shouldOmitParseString(jsonStr: string, expectedType: Function): boolean {
+export function shouldOmitParseString(jsonStr: string, expectedType: Function): boolean {
     const expectsTypesSerializedAsStrings = expectedType === String
         || expectedType === ArrayBuffer
         || expectedType === DataView;
