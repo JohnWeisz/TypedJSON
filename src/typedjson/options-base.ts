@@ -1,3 +1,5 @@
+import {RequiredNoNull} from './helpers';
+
 /**
  * This options cascade through the annotations. Options set
  * in the more specific place override the previous option.
@@ -9,7 +11,7 @@ export interface OptionsBase {
      * will not emit nor store the property if its value is null.
      * Default: false.
      */
-    preserveNull?: boolean;
+    preserveNull?: boolean | null;
 }
 
 const kAllOptions: Array<keyof OptionsBase> = [
@@ -28,7 +30,9 @@ export function extractOptionBase(
     return Object.keys(options).length > 0 ? options : undefined;
 }
 
-export function getDefaultOptionOf<K extends keyof OptionsBase>(key: K): Required<OptionsBase>[K] {
+export function getDefaultOptionOf<K extends keyof OptionsBase>(
+    key: K,
+): RequiredNoNull<OptionsBase>[K] {
     switch (key) {
         case 'preserveNull':
             return false;
@@ -39,19 +43,20 @@ export function getDefaultOptionOf<K extends keyof OptionsBase>(key: K): Require
 
 export function getOptionValue<K extends keyof OptionsBase>(
     key: K,
-    options?: OptionsBase,
-): Required<OptionsBase>[K] {
-    if (options?.[key] !== undefined) {
+    options?: OptionsBase | null,
+): RequiredNoNull<OptionsBase>[K] {
+    if (options != null && options[key] as any != null) {
         return options[key]!;
     }
+
     return getDefaultOptionOf(key);
 }
 
 export function mergeOptions(
     existing?: OptionsBase,
-    moreSpecific?: OptionsBase,
+    moreSpecific?: OptionsBase | null,
 ): OptionsBase | undefined {
-    return moreSpecific === undefined
+    return moreSpecific == null
         ? existing
         : {
 
