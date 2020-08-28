@@ -25,9 +25,32 @@ overrides:
       project:
         - tsconfig/tsconfig.lint.json
       sourceType: module
+
+    plugins:
+      - jasmine
+
     rules:
       '@typescript-eslint/no-use-before-define': off
       func-names: off
+      jasmine/expect-matcher: error
+      jasmine/expect-single-argument: error
+      jasmine/missing-expect: error
+      jasmine/named-spy: off # We might consider this
+      jasmine/no-assign-spyon: error
+      jasmine/no-describe-variables: error
+      jasmine/no-disabled-tests: error
+      jasmine/no-expect-in-setup-teardown: error
+      jasmine/no-focused-tests: error
+      jasmine/no-global-setup: error
+      jasmine/no-pending-tests: warn
+      jasmine/no-promise-without-done-fail: error
+      jasmine/no-spec-dupes:
+        - error
+        - branch
+      jasmine/no-suite-callback-args: error
+      jasmine/no-suite-dupes: error
+      jasmine/no-unsafe-spy: error
+      jasmine/prefer-jasmine-matcher: error
 
   -
     files:
