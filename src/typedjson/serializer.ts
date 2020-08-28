@@ -297,13 +297,6 @@ function convertAsArray(
         }
     });
 
-    // @todo, is this necessary?
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-    if (memberName) {
-        // Just for debugging purposes.
-        memberName += '[]';
-    }
-
     return sourceObject.map(element => {
         return serializer.convertSingleValue(
             element,
@@ -336,13 +329,6 @@ function convertAsSet(
         throw new TypeError(
             `Could not serialize ${memberName} as Set: missing element type definition.`,
         );
-    }
-
-    // For debugging and error tracking.
-    // @todo, is this necessary?
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-    if (memberName) {
-        memberName += '[]';
     }
 
     const resultArray: Array<any> = [];
@@ -397,11 +383,6 @@ function convertAsMap(
         throw new TypeError(
             `Could not serialize ${memberName} as Map: missing key type definition.`,
         );
-    }
-
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-    if (memberName) {
-        memberName += '[]';
     }
 
     // const resultArray: Array<{ key: any, value: any }> = [];
