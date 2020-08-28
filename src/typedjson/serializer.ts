@@ -242,10 +242,8 @@ function convertAsObject(
                 );
             }
 
-            if (isValueDefined(serialized)
-                // @todo check whether the or condition ever applies
-                // eslint-disable-next-line @typescript-eslint/tslint/config
-                || (serializer.retrievePreserveNull(objMemberOptions) && serialized === null)
+            if ((serializer.retrievePreserveNull(objMemberOptions) && serialized === null)
+                || isValueDefined(serialized)
             ) {
                 targetObject[objMemberMetadata.name] = serialized;
             }
@@ -430,10 +428,8 @@ function convertAsMap(
 
         // We are not going to emit entries with undefined keys OR undefined values.
         const keyDefined = isValueDefined(resultKeyValuePairObj.key);
-        const valueDefined = isValueDefined(resultKeyValuePairObj.value)
-            // @todo check
-            // eslint-disable-next-line @typescript-eslint/tslint/config
-            || (resultKeyValuePairObj.value === null && preserveNull);
+        const valueDefined = (resultKeyValuePairObj.value === null && preserveNull)
+            || isValueDefined(resultKeyValuePairObj.value);
         if (keyDefined && valueDefined) {
             if (resultShape === MapShape.OBJECT) {
                 result[resultKeyValuePairObj.key] = resultKeyValuePairObj.value;
