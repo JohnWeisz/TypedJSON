@@ -343,13 +343,11 @@ export class TypedJSON<T> {
         if (settings.nameResolver != null) {
             this.nameResolver = settings.nameResolver;
             this.deserializer.setNameResolver(settings.nameResolver);
-            // this.serializer.set
         }
 
         if (settings.knownTypes != null) {
             // Type-check knownTypes elements to recognize errors in advance.
             settings.knownTypes.forEach((knownType: any, i) => {
-                // tslint:disable-next-line:no-null-keyword
                 if (typeof knownType === 'undefined' || knownType === null) {
                     logWarning(
                         `TypedJSON.config: 'knownTypes' contains an undefined/null value`
