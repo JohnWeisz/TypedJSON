@@ -92,6 +92,9 @@ export function logWarning(message?: any, ...optionalParams: Array<any>) {
     }
 }
 
+export type NotNull<T> = T extends null ? never : T;
+export type RequiredNoNull<T> = {[P in keyof T]-?: NotNull<T[P]>};
+
 /**
  * Checks if the value is considered defined (not undefined and not null).
  * @param value
