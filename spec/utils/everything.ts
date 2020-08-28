@@ -66,15 +66,14 @@ export interface IEverything {
 export class Everything implements IEverything {
     @jsonMember
     strProp: string;
-
     @jsonMember
     numProp: number;
-
     @jsonMember
     boolProp: boolean;
     @jsonMember
     dateProp: Date;
     // @jsonMember
+    // nullable: {}|null;
     @jsonMember
     optional?: {};
     @jsonMember
@@ -96,13 +95,14 @@ export class Everything implements IEverything {
     // @jsonMember
     // constHeteroEnum2: ConstHeteroEnum;
     // @jsonMember
+    // [symbolProp]: string;
+
     constructor(init?: IEverything) {
         if (init !== undefined) {
             Object.assign(this, init);
         }
     }
 
-    // [symbolProp]: string;
     static create(): IEverything {
         return {
             strProp: 'string',
@@ -123,7 +123,6 @@ export class Everything implements IEverything {
         };
     }
 
-    // nullable: {}|null;
     static expected(): Everything {
         const obj = Everything.create();
         // properties that are undefined are not serialized
