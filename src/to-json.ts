@@ -1,4 +1,4 @@
-import {TypedJSON} from '../parser';
+import {TypedJSON} from './parser';
 
 /**
  * Options for the @toJson decorator.

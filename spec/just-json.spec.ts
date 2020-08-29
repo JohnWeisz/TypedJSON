@@ -1,4 +1,4 @@
-import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src/typedjson';
+import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
 
 describe('json (without automatic stringify)', () => {
     describe('string', () => {

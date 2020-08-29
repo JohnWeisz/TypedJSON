@@ -1,4 +1,4 @@
-import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src/typedjson';
+import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
 import {isEqual} from './utils/object-compare';
 
 describe('polymorphic interfaces', () => {

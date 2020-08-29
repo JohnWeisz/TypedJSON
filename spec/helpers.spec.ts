@@ -1,4 +1,4 @@
-import {shouldOmitParseString} from '../src/typedjson/helpers';
+import {shouldOmitParseString} from '../src/helpers';
 
 describe('helpers', () => {
     describe('shouldOmitParseString', () => {

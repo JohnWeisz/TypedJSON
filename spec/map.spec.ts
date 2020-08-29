@@ -1,8 +1,8 @@
+import {ArrayT, jsonMapMember} from '../src';
+import {jsonMember} from '../src/json-member';
+import {jsonObject} from '../src/json-object';
 import {TypedJSON} from '../src/parser';
-import {ArrayT, jsonMapMember} from '../src/typedjson';
-import {jsonMember} from '../src/typedjson/json-member';
-import {jsonObject} from '../src/typedjson/json-object';
-import {MapShape} from '../src/typedjson/type-descriptor';
+import {MapShape} from '../src/type-descriptor';
 
 describe('map dictionary shape', () => {
     @jsonObject

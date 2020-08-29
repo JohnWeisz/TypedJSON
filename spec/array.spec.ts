@@ -1,4 +1,4 @@
-import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src/typedjson';
+import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
 import {Everything, IEverything} from './utils/everything';
 
 describe('array of objects', () => {

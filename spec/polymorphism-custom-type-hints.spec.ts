@@ -1,5 +1,5 @@
-import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src/typedjson';
-import {IndexedObject} from '../src/typedjson/types';
+import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
+import {IndexedObject} from '../src/types';
 
 describe('polymorphism custom type hints', () => {
     describe('should work for a base class', () => {

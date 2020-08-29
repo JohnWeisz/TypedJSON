@@ -1,9 +1,6 @@
 {
-  "extends": "./tsconfig.base.json",
+  "extends": "./tsconfig.app-base.json",
   "compilerOptions": {
-    "outDir": "../js"
-  },
-  "files": [
-    "../src/typedjson.ts"
-  ]
+    "noEmit": true
+  }
 }

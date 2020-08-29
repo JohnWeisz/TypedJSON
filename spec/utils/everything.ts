@@ -1,4 +1,4 @@
-import {jsonMember, jsonObject} from '../../src/typedjson';
+import {jsonMember, jsonObject} from '../../src';
 
 export enum JustEnum {
     One,

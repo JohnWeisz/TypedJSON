@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.app-base.json",
+  "compilerOptions": {
+    "importHelpers": true,
+    "module": "es2020",
+    "outDir": "../lib/esm",
+    "target": "es2015"
+  }
+}

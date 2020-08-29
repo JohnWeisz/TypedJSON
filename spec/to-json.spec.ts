@@ -1,4 +1,4 @@
-import {jsonMember, jsonObject, toJson} from '../src/typedjson';
+import {jsonMember, jsonObject, toJson} from '../src';
 
 describe('toJson decorator', () => {
     it('should work with JSON.stringify', () => {

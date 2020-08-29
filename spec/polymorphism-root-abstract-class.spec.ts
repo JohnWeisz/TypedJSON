@@ -1,4 +1,4 @@
-import {jsonMember, jsonObject, TypedJSON} from '../src/typedjson';
+import {jsonMember, jsonObject, TypedJSON} from '../src';
 
 describe('single class', () => {
     abstract class Person {

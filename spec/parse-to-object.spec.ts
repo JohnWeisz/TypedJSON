@@ -1,4 +1,4 @@
-import {parseToJSObject} from '../src/typedjson/helpers';
+import {parseToJSObject} from '../src/helpers';
 
 describe('parse To Object', () => {
     it('should passthrough objects', () => {

@@ -2,6 +2,7 @@ bin
 node_modules
 packages
 coverage
+/lib
 nuget
 nupkg
 obj
@@ -27,4 +28,3 @@ temp
 **\nuget
 **\nupkg
 __*
-
