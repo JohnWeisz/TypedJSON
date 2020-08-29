@@ -1,11 +1,11 @@
-import {defaultTypeResolver, Deserializer} from './typedjson/deserializer';
-import {logError, logWarning, nameof, parseToJSObject} from './typedjson/helpers';
-import {createArrayType} from './typedjson/json-array-member';
-import {JsonObjectMetadata, TypeHintEmitter, TypeResolver} from './typedjson/metadata';
-import {extractOptionBase, OptionsBase} from './typedjson/options-base';
-import {defaultTypeEmitter, Serializer} from './typedjson/serializer';
-import {ensureTypeDescriptor, MapT, SetT} from './typedjson/type-descriptor';
-import {Constructor, IndexedObject, Serializable} from './typedjson/types';
+import {defaultTypeResolver, Deserializer} from './deserializer';
+import {logError, logWarning, nameof, parseToJSObject} from './helpers';
+import {createArrayType} from './json-array-member';
+import {JsonObjectMetadata, TypeHintEmitter, TypeResolver} from './metadata';
+import {extractOptionBase, OptionsBase} from './options-base';
+import {defaultTypeEmitter, Serializer} from './serializer';
+import {ensureTypeDescriptor, MapT, SetT} from './type-descriptor';
+import {Constructor, IndexedObject, Serializable} from './types';
 
 export type JsonTypes = Object | boolean | string | number | null | undefined;
 export {defaultTypeResolver, defaultTypeEmitter};

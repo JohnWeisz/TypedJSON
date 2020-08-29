@@ -1,12 +1,18 @@
 {
   "compilerOptions": {
-    "target": "ES5",                       /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', or 'ESNEXT'. */
-    "lib": ["es7", "dom"],
-    "module": "es2015",                    /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', or 'ESNext'. */
-    "declaration": true,                   /* Generates corresponding '.d.ts' file. */
-    "sourceMap": true,                     /* Generates corresponding '.map' file. */
+    "declaration": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "lib": [
+      "dom",
+      "es5",
+      "es2015"
+    ],
+    "module": "es2015",
+    "moduleResolution": "Node",
+    "removeComments": true,
+    "sourceMap": true,
     "strict": true,
-    "experimentalDecorators": true,        /* Enables experimental support for ES7 decorators. */
-    "emitDecoratorMetadata": true          /* Enables experimental support for emitting type metadata for decorators. */
+    "target": "ES5"
   }
 }

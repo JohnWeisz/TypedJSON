@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.bundle.esm.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationDir": "../lib/types",
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
+    "module": "es2015",
+    "removeComments": false,
+    "target": "es2020"
+  }
+}

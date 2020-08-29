@@ -1,4 +1,4 @@
-import {jsonArrayMember, jsonMapMember, jsonMember, jsonObject, TypedJSON} from '../src/typedjson';
+import {jsonArrayMember, jsonMapMember, jsonMember, jsonObject, TypedJSON} from '../src';
 
 describe('preserveNull', () => {
     it('should work globally', () => {

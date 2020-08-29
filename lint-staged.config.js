@@ -4,6 +4,7 @@ function mapFilenames(filenames) {
 
 module.exports = {
     '*': () => [
+        'tsc -p tsconfig/tsconfig.app.json',
         'npm run test',
     ],
     '*.ts': (filenames) => [

@@ -2,21 +2,26 @@
   "name": "typedjson",
   "version": "1.6.0-rc2",
   "description": "Typed JSON parsing and serializing for TypeScript that preserves type information, using decorators. Parse JSON into actual class instances.",
-  "main": "./js/typedjson.js",
-  "typings": "./js/typedjson.d.ts",
+  "main": "./lib/cjs/index.js",
+  "module": "./lib/esm5/index.js",
+  "es2015": "./lib/esm/index.js",
+  "types": "./lib/types/index.d.ts",
+  "sideEffects": false,
   "size-limit": [
     {
-      "path": "js/typedjson.js",
+      "path": "./lib/esm/index.js",
       "limit": "6.5 KB"
     }
   ],
   "scripts": {
+    "build": "run-s build:*",
+    "build:clean": "rimraf ./lib",
+    "build:ts": "tsc --build ./tsconfig/tsconfig.bundle.*.json",
     "lint": "eslint \"spec/**/*.ts\" \"src/**/*.ts\"",
-    "test": "yarn run build && nyc ts-node --project tsconfig/tsconfig.spec.json node_modules/jasmine/bin/jasmine.js",
-    "build": "webpack",
-    "preversion": "yarn test",
-    "version": "yarn run build && git add -A js",
-    "size": "size-limit"
+    "preversion": "yarn run test",
+    "size": "size-limit",
+    "test": "nyc ts-node-transpile-only --project tsconfig/tsconfig.spec.json node_modules/jasmine/bin/jasmine.js",
+    "version": "yarn run build"
   },
   "repository": {
     "type": "git",
@@ -28,6 +33,9 @@
     "url": "https://github.com/JohnWhiteTB/TypedJSON/issues"
   },
   "homepage": "https://github.com/JohnWhiteTB/TypedJSON",
+  "dependencies": {
+    "tslib": "^2.0.1"
+  },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@matthiaskunnen/eslint-config-typescript": "^1.2.0",
@@ -37,17 +45,13 @@
     "husky": "^4.2.5",
     "jasmine": "^3.5.0",
     "lint-staged": "^10.2.13",
+    "npm-run-all": "^4.1.5",
     "nyc": "^15.0.0",
     "reflect-metadata": "^0.1.13",
+    "rimraf": "^3.0.2",
     "size-limit": "^4.5.7",
-    "source-map-support": "^0.5.16",
-    "ts-loader": "^6.2.1",
     "ts-node": "^8.10.2",
-    "typescript": "^3.9.7",
-    "uglifyjs-webpack-plugin": "^2.2.0",
-    "webpack": "^4.41.5",
-    "webpack-auto-inject-version": "^1.2.2",
-    "webpack-cli": "^3.3.10"
+    "typescript": "^3.9.7"
   },
   "husky": {
     "hooks": {
@@ -55,6 +59,7 @@
     }
   },
   "files": [
-    "js"
+    "lib/**/!(*.tsbuildinfo)",
+    "src"
   ]
 }
