@@ -297,11 +297,11 @@ function convertAsArray(
         }
     });
 
-    return sourceObject.map(element => {
+    return sourceObject.map((element, i) => {
         return serializer.convertSingleValue(
             element,
             typeDescriptor.elementType,
-            memberName,
+            `${memberName}[${i}]`,
             memberOptions,
         );
     });
@@ -331,12 +331,13 @@ function convertAsSet(
         );
     }
 
+    memberName += '[]';
     const resultArray: Array<any> = [];
 
     // Convert each element of the set, and put it into an output array.
     // The output array is the one serialized, as JSON.stringify does not support Set serialization.
     // (TODO: clarification needed)
-    sourceObject.forEach(element => {
+    sourceObject.forEach((element) => {
         const resultElement = serializer.convertSingleValue(
             element,
             typeDescriptor.elementType,
@@ -346,8 +347,7 @@ function convertAsSet(
 
         // Add to output if the source element was undefined, OR the converted element is defined.
         // This will add intentionally undefined values to output, but not values that became
-        // undefined
-        // DURING serializing (usually because of a type-error).
+        // undefined DURING serializing (usually because of a type-error).
         if (!isValueDefined(element) || isValueDefined(resultElement)) {
             resultArray.push(resultElement);
         }
@@ -385,7 +385,8 @@ function convertAsMap(
         );
     }
 
-    // const resultArray: Array<{ key: any, value: any }> = [];
+    const keyMemberName = `${memberName}[].key`;
+    const valueMemberName = `${memberName}[].value`;
     const resultShape = typeDescriptor.getCompleteOptions().shape;
     const result = resultShape === MapShape.OBJECT ? ({} as IndexedObject) : [];
     const preserveNull = serializer.retrievePreserveNull(memberOptions);
@@ -396,13 +397,13 @@ function convertAsMap(
             key: serializer.convertSingleValue(
                 key,
                 typeDescriptor.keyType,
-                memberName,
+                keyMemberName,
                 memberOptions,
             ),
             value: serializer.convertSingleValue(
                 value,
                 typeDescriptor.valueType,
-                memberName,
+                valueMemberName,
                 memberOptions,
             ),
         };

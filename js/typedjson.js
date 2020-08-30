@@ -1,4 +1,4 @@
-// [typedjson]  Version: 1.6.0-rc2 - 2020-08-28  
+// [typedjson]  Version: 1.6.0-rc2 - 2020-08-30  
  (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -810,12 +810,12 @@ function convertAsArray(sourceObject, typeDescriptor, knownTypes, memberName, de
             + " Array elements."));
         return [];
     }
-    return sourceObject.map(function (element) {
+    return sourceObject.map(function (element, i) {
         // If an array element fails to deserialize, substitute with undefined. This is so that the
         // original ordering is not interrupted by faulty
         // entries, as an Array is ordered.
         try {
-            return deserializer.convertSingleValue(element, typeDescriptor.elementType, knownTypes, memberName + "[]", memberOptions);
+            return deserializer.convertSingleValue(element, typeDescriptor.elementType, knownTypes, memberName + "[" + i + "]", memberOptions);
         }
         catch (e) {
             deserializer.getErrorHandler()(e);
@@ -875,13 +875,15 @@ function convertAsMap(sourceObject, typeDescriptor, knownTypes, memberName, dese
         deserializer.getErrorHandler()(new TypeError("Could not deserialize " + memberName + " as Map: missing value constructor."));
         return new Map();
     }
+    var keyMemberName = memberName + "[].key";
+    var valueMemberName = memberName + "[].value";
     var resultMap = new Map();
     if (expectedShape === 1 /* OBJECT */) {
         Object.keys(sourceObject).forEach(function (key) {
             try {
-                var resultKey = deserializer.convertSingleValue(key, typeDescriptor.keyType, knownTypes, memberName, memberOptions);
+                var resultKey = deserializer.convertSingleValue(key, typeDescriptor.keyType, knownTypes, keyMemberName, memberOptions);
                 if (isValueDefined(resultKey)) {
-                    resultMap.set(resultKey, deserializer.convertSingleValue(sourceObject[key], typeDescriptor.valueType, knownTypes, memberName + "[" + resultKey + "]", memberOptions));
+                    resultMap.set(resultKey, deserializer.convertSingleValue(sourceObject[key], typeDescriptor.valueType, knownTypes, valueMemberName, memberOptions));
                 }
             }
             catch (e) {
@@ -894,10 +896,10 @@ function convertAsMap(sourceObject, typeDescriptor, knownTypes, memberName, dese
     else {
         sourceObject.forEach(function (element) {
             try {
-                var key = deserializer.convertSingleValue(element.key, typeDescriptor.keyType, knownTypes, memberName, memberOptions);
+                var key = deserializer.convertSingleValue(element.key, typeDescriptor.keyType, knownTypes, keyMemberName, memberOptions);
                 // Undefined/null keys not supported, skip if so.
                 if (isValueDefined(key)) {
-                    resultMap.set(key, deserializer.convertSingleValue(element.value, typeDescriptor.valueType, knownTypes, memberName + "[" + key + "]", memberOptions));
+                    resultMap.set(key, deserializer.convertSingleValue(element.value, typeDescriptor.valueType, knownTypes, valueMemberName, memberOptions));
                 }
             }
             catch (e) {
@@ -1233,8 +1235,8 @@ function serializer_convertAsArray(sourceObject, typeDescriptor, memberName, ser
                 + (" expected '" + expectedTypeName + "', got '" + actualTypeName + "'."));
         }
     });
-    return sourceObject.map(function (element) {
-        return serializer.convertSingleValue(element, typeDescriptor.elementType, memberName, memberOptions);
+    return sourceObject.map(function (element, i) {
+        return serializer.convertSingleValue(element, typeDescriptor.elementType, memberName + "[" + i + "]", memberOptions);
     });
 }
 /**
@@ -1250,6 +1252,7 @@ function serializer_convertAsSet(sourceObject, typeDescriptor, memberName, seria
     if (typeDescriptor.elementType == null) {
         throw new TypeError("Could not serialize " + memberName + " as Set: missing element type definition.");
     }
+    memberName += '[]';
     var resultArray = [];
     // Convert each element of the set, and put it into an output array.
     // The output array is the one serialized, as JSON.stringify does not support Set serialization.
@@ -1258,8 +1261,7 @@ function serializer_convertAsSet(sourceObject, typeDescriptor, memberName, seria
         var resultElement = serializer.convertSingleValue(element, typeDescriptor.elementType, memberName, memberOptions);
         // Add to output if the source element was undefined, OR the converted element is defined.
         // This will add intentionally undefined values to output, but not values that became
-        // undefined
-        // DURING serializing (usually because of a type-error).
+        // undefined DURING serializing (usually because of a type-error).
         if (!isValueDefined(element) || isValueDefined(resultElement)) {
             resultArray.push(resultElement);
         }
@@ -1281,15 +1283,16 @@ function serializer_convertAsMap(sourceObject, typeDescriptor, memberName, seria
     if (typeDescriptor.keyType == null) { // @todo Check type
         throw new TypeError("Could not serialize " + memberName + " as Map: missing key type definition.");
     }
-    // const resultArray: Array<{ key: any, value: any }> = [];
+    var keyMemberName = memberName + "[].key";
+    var valueMemberName = memberName + "[].value";
     var resultShape = typeDescriptor.getCompleteOptions().shape;
     var result = resultShape === 1 /* OBJECT */ ? {} : [];
     var preserveNull = serializer.retrievePreserveNull(memberOptions);
     // Convert each *entry* in the map to a simple javascript object with key and value properties.
     sourceObject.forEach(function (value, key) {
         var resultKeyValuePairObj = {
-            key: serializer.convertSingleValue(key, typeDescriptor.keyType, memberName, memberOptions),
-            value: serializer.convertSingleValue(value, typeDescriptor.valueType, memberName, memberOptions),
+            key: serializer.convertSingleValue(key, typeDescriptor.keyType, keyMemberName, memberOptions),
+            value: serializer.convertSingleValue(value, typeDescriptor.valueType, valueMemberName, memberOptions),
         };
         // We are not going to emit entries with undefined keys OR undefined values.
         var keyDefined = isValueDefined(resultKeyValuePairObj.key);

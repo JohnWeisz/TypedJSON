@@ -418,7 +418,7 @@ function convertAsArray(
         return [];
     }
 
-    return sourceObject.map(element => {
+    return sourceObject.map((element, i) => {
         // If an array element fails to deserialize, substitute with undefined. This is so that the
         // original ordering is not interrupted by faulty
         // entries, as an Array is ordered.
@@ -427,7 +427,7 @@ function convertAsArray(
                 element,
                 typeDescriptor.elementType,
                 knownTypes,
-                `${memberName}[]`,
+                `${memberName}[${i}]`,
                 memberOptions,
             );
         } catch (e) {
@@ -536,6 +536,8 @@ function convertAsMap(
         return new Map<any, any>();
     }
 
+    const keyMemberName = `${memberName}[].key`;
+    const valueMemberName = `${memberName}[].value`;
     const resultMap = new Map<any, any>();
 
     if (expectedShape === MapShape.OBJECT) {
@@ -545,7 +547,7 @@ function convertAsMap(
                     key,
                     typeDescriptor.keyType,
                     knownTypes,
-                    memberName,
+                    keyMemberName,
                     memberOptions,
                 );
                 if (isValueDefined(resultKey)) {
@@ -555,7 +557,7 @@ function convertAsMap(
                             sourceObject[key],
                             typeDescriptor.valueType,
                             knownTypes,
-                            `${memberName}[${resultKey}]`,
+                            valueMemberName,
                             memberOptions,
                         ),
                     );
@@ -573,7 +575,7 @@ function convertAsMap(
                     element.key,
                     typeDescriptor.keyType,
                     knownTypes,
-                    memberName,
+                    keyMemberName,
                     memberOptions,
                 );
 
@@ -585,7 +587,7 @@ function convertAsMap(
                             element.value,
                             typeDescriptor.valueType,
                             knownTypes,
-                            `${memberName}[${key}]`,
+                            valueMemberName,
                             memberOptions,
                         ),
                     );
