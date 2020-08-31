@@ -17,11 +17,17 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: npm install, lint, build, and test
+    - name: npm install
+      run: npm ci
+    - uses: andresz1/size-limit-action@v1.4.0
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        skip_step: install
+    - name: npm lint, build, test, and size
       run: |
-        npm ci
         npm run lint
         npm run build --if-present
         npm test
+        npm run size
       env:
         CI: true

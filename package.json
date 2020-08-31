@@ -4,12 +4,19 @@
   "description": "Typed JSON parsing and serializing for TypeScript that preserves type information, using decorators. Parse JSON into actual class instances.",
   "main": "./js/typedjson.js",
   "typings": "./js/typedjson.d.ts",
+  "size-limit": [
+    {
+      "path": "js/typedjson.js",
+      "limit": "6.5 KB"
+    }
+  ],
   "scripts": {
     "lint": "eslint \"spec/**/*.ts\" \"src/**/*.ts\"",
     "test": "npm run build && nyc ts-node --project tsconfig/tsconfig.spec.json node_modules/jasmine/bin/jasmine.js",
     "build": "webpack",
     "preversion": "npm test",
-    "version": "npm run build && git add -A js"
+    "version": "npm run build && git add -A js",
+    "size": "size-limit"
   },
   "repository": {
     "type": "git",
@@ -24,6 +31,7 @@
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@matthiaskunnen/eslint-config-typescript": "^1.2.0",
+    "@size-limit/preset-small-lib": "^4.5.7",
     "@types/jasmine": "^3.5.3",
     "eslint-plugin-jasmine": "^4.1.1",
     "husky": "^4.2.5",
@@ -31,6 +39,7 @@
     "lint-staged": "^10.2.13",
     "nyc": "^15.0.0",
     "reflect-metadata": "^0.1.13",
+    "size-limit": "^4.5.7",
     "source-map-support": "^0.5.16",
     "ts-loader": "^6.2.1",
     "ts-node": "^8.10.2",
