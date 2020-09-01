@@ -1,4 +1,8 @@
-[![Build Status](https://github.com/JohnWeisz/TypedJSON/workflows/Node%20CI/badge.svg)](https://github.com/JohnWeisz/TypedJSON/actions)
+[![npm version](https://img.shields.io/npm/v/typedjson.svg?logo=npm&style=for-the-badge)](https://www.npmjs.com/package/typedjson)
+[![Build Status](https://img.shields.io/github/workflow/status/JohnWeisz/TypedJSON/Node%20CI?label=CI&logo=github&style=for-the-badge)
+](https://github.com/JohnWeisz/TypedJSON/actions)
+[![Build Status](https://img.shields.io/npm/l/typedjson?&style=for-the-badge&color=green)
+](https://github.com/JohnWeisz/typedjson/blob/master/LICENSE)
 
 Typed JSON parsing and serializing for TypeScript with [decorators](https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Decorators.md). Annotate your data-classes with simple-to-use decorators and parse standard JSON into actual class instances. For more type-safety and less syntax, recommended to be used with [reflect-metadata](https://github.com/rbuckton/reflect-metadata), a prototype for an ES7 Reflection API for Decorator Metadata.
 
