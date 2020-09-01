@@ -9,6 +9,13 @@ jobs:
       CI_JOB_NUMBER: 1
     steps:
       - uses: actions/checkout@v1
+      -
+        name: yarn install
+        run: |
+          yarn install --frozen-lockfile
+        env:
+          CI: true
       - uses: andresz1/size-limit-action@v1.4.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          skip_step: install
