@@ -12,10 +12,10 @@
   ],
   "scripts": {
     "lint": "eslint \"spec/**/*.ts\" \"src/**/*.ts\"",
-    "test": "npm run build && nyc ts-node --project tsconfig/tsconfig.spec.json node_modules/jasmine/bin/jasmine.js",
+    "test": "yarn run build && nyc ts-node --project tsconfig/tsconfig.spec.json node_modules/jasmine/bin/jasmine.js",
     "build": "webpack",
-    "preversion": "npm test",
-    "version": "npm run build && git add -A js",
+    "preversion": "yarn test",
+    "version": "yarn run build && git add -A js",
     "size": "size-limit"
   },
   "repository": {
