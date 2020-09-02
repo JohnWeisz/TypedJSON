@@ -6,10 +6,26 @@ export {
     defaultTypeEmitter,
 } from './parser';
 export {TypeResolver, TypeHintEmitter, JsonObjectMetadata} from './metadata';
-export {jsonObject} from './json-object';
-export {jsonMember} from './json-member';
-export {jsonArrayMember} from './json-array-member';
-export {jsonSetMember} from './json-set-member';
-export {jsonMapMember} from './json-map-member';
-export {toJson} from './to-json';
-export {ArrayT, SetT, MapT} from './type-descriptor';
+export {
+    jsonObject,
+    IJsonObjectOptions,
+    InitializerCallback,
+    IJsonObjectOptionsWithInitializer,
+    IJsonObjectOptionsBase,
+} from './json-object';
+export {jsonMember, IJsonMemberOptions} from './json-member';
+export {jsonArrayMember, IJsonArrayMemberOptions} from './json-array-member';
+export {jsonSetMember, IJsonSetMemberOptions} from './json-set-member';
+export {jsonMapMember, IJsonMapMemberOptions} from './json-map-member';
+export {toJson, IToJsonOptions} from './to-json';
+export {
+    ArrayT,
+    SetT,
+    MapT,
+    Typelike,
+    MapOptions,
+    SetTypeDescriptor,
+    ArrayTypeDescriptor,
+    MapTypeDescriptor,
+} from './type-descriptor';
+export * from './types';
