@@ -1,0 +1,120 @@
+import {jsonMember, jsonObject, TypedJSON} from '../src';
+
+TypedJSON.setGlobalConfig({
+    errorHandler: e => {
+        throw e;
+    },
+});
+
+describe('mapped types', () => {
+    class CustomType {
+        value: any;
+
+        constructor(value: any) {
+            this.value = value;
+        }
+
+        hasSucceeded(): boolean {
+            return this.value != null;
+        }
+    }
+
+    @jsonObject
+    class MappedTypesSpec {
+
+        @jsonMember
+        one: CustomType;
+
+        @jsonMember
+        two: CustomType;
+    }
+
+    const testData = {
+        one: 1,
+        two: 2,
+    };
+
+    describe('global', () => {
+        TypedJSON.mapType(CustomType, {
+            deserializer: json => new CustomType(json),
+            serializer: value => value.value,
+        });
+
+        it('deserializes', () => {
+            const result = TypedJSON.parse(testData, MappedTypesSpec);
+
+            expect(result.one).toBeInstanceOf(CustomType);
+            expect(result.one.hasSucceeded()).toBeTrue();
+            expect(result.two).toBeInstanceOf(CustomType);
+            expect(result.two.hasSucceeded()).toBeTrue();
+        });
+
+        it('serializes', () => {
+            const test = new MappedTypesSpec();
+            test.one = new CustomType(1);
+            test.two = new CustomType(2);
+            const result = TypedJSON.toPlainJson(test, MappedTypesSpec);
+
+            expect(result).toEqual(testData);
+        });
+    });
+
+    describe('instance', () => {
+        const typedJson = new TypedJSON(MappedTypesSpec);
+        typedJson.mapType(CustomType, {
+            deserializer: json => new CustomType(json),
+            serializer: value => value.value,
+        });
+
+        it('deserializes', () => {
+            const result = typedJson.parse(testData);
+
+            expect(result.one).toBeInstanceOf(CustomType);
+            expect(result.one.hasSucceeded()).toBeTrue();
+            expect(result.two).toBeInstanceOf(CustomType);
+            expect(result.two.hasSucceeded()).toBeTrue();
+        });
+
+        it('serializes', () => {
+            const test = new MappedTypesSpec();
+            test.one = new CustomType(1);
+            test.two = new CustomType(2);
+            const result = typedJson.toPlainJson(test);
+
+            expect(result).toEqual(testData);
+        });
+    });
+
+    describe('works with constructor,', () => {
+        @jsonObject
+        class MappedTypeWithConstructor {
+
+            @jsonMember({constructor: CustomType})
+            nullable: any;
+        }
+
+        const typedJson = new TypedJSON(MappedTypeWithConstructor);
+        const CustomTypeMap = {
+            deserializer: json => new CustomType(json),
+            serializer: value => value.value,
+        };
+        typedJson.mapType(CustomType, CustomTypeMap);
+
+        it('deserializes', () => {
+            spyOn(CustomTypeMap, 'deserializer').and.callThrough();
+            const result = typedJson.parse({nullable: 5});
+            expect(result.nullable?.hasSucceeded()).toBeTrue();
+            expect(result.nullable?.value).toBe(5);
+            expect(CustomTypeMap.deserializer).toHaveBeenCalled();
+        });
+
+        it('serializes', () => {
+            spyOn(CustomTypeMap, 'serializer').and.callThrough();
+            const object = new MappedTypeWithConstructor();
+            object.nullable = new CustomType(5);
+            const result = typedJson.toPlainJson(object);
+            expect(CustomTypeMap.serializer).toHaveBeenCalled();
+            expect(result).toEqual({nullable: 5});
+        });
+    });
+});

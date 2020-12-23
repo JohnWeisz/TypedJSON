@@ -1,3 +1,4 @@
+import {DeserializerFn} from './deserializer';
 import {
     identity,
     isInstanceOf,
@@ -90,6 +91,13 @@ export class Serializer {
         [Int32Array, convertAsTypedArray],
         [Uint32Array, convertAsTypedArray],
     ]);
+
+    setSerializationStrategy(
+        type: Serializable<any>,
+        serializer: SerializerFn<any, TypeDescriptor, any>,
+    ) {
+        this.serializationStrategy.set(type, serializer);
+    }
 
     setTypeHintEmitter(typeEmitterCallback: TypeHintEmitter) {
         if (typeof typeEmitterCallback as any !== 'function') {
