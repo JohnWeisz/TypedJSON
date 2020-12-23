@@ -10,6 +10,19 @@ import {Constructor, IndexedObject, Serializable} from './types';
 export type JsonTypes = Object | boolean | string | number | null | undefined;
 export {defaultTypeResolver, defaultTypeEmitter};
 
+export interface MappedTypeSerializer<T> {
+
+    /**
+     * Use this deserializer to convert a JSON value to the type.
+     */
+    deserializer: (json: any) => T | null | undefined;
+
+    /**
+     * Use this serializer to convert a type back to JSON.
+     */
+    serializer: (value: T | null | undefined) => any;
+}
+
 export interface ITypedJSONSettings extends OptionsBase {
     /**
      * Sets the handler callback to invoke on errors during serializing and deserializing.
@@ -17,6 +30,12 @@ export interface ITypedJSONSettings extends OptionsBase {
      * The default behavior is to log errors to the console.
      */
     errorHandler?: ((e: Error) => void) | null;
+
+    /**
+     * Maps a type to their respective serializer. Prevents you from having to repeat serializers.
+     * Register additional types with `TypedJSON.mapType`.
+     */
+    mappedTypes?: Map<any, MappedTypeSerializer<any>> | null;
 
     /**
      * Sets a callback that determines the constructor of the correct sub-type of polymorphic
@@ -55,6 +74,7 @@ export class TypedJSON<T> {
     private deserializer: Deserializer<T> = new Deserializer<T>();
     private globalKnownTypes: Array<Constructor<any>> = [];
     private indent: number = 0;
+    private mappedTypes = new Map<any, MappedTypeSerializer<any>>();
     private rootConstructor: Serializable<T>;
     private errorHandler: (e: Error) => void;
     private nameResolver: (ctor: Function) => string;
@@ -298,6 +318,21 @@ export class TypedJSON<T> {
     }
 
     /**
+     * Map a type to its (de)serializer.
+     */
+    static mapType<T, R = T>(type: Serializable<T>, serializer: MappedTypeSerializer<R>): void {
+        if (this._globalConfig == null) {
+            this._globalConfig = {};
+        }
+
+        if (this._globalConfig.mappedTypes == null) {
+            this._globalConfig.mappedTypes = new Map<any, any>();
+        }
+
+        this._globalConfig.mappedTypes.set(type, serializer);
+    }
+
+    /**
      * Configures TypedJSON through a settings object.
      * @param settings The configuration settings object.
      */
@@ -340,6 +375,13 @@ export class TypedJSON<T> {
             this.indent = settings.indent;
         }
 
+        if (settings.mappedTypes != null) {
+            this.mappedTypes = settings.mappedTypes;
+            settings.mappedTypes.forEach((upDown, type) => {
+                this.setSerializationStrategies(type, upDown);
+            });
+        }
+
         if (settings.nameResolver != null) {
             this.nameResolver = settings.nameResolver;
             this.deserializer.setNameResolver(settings.nameResolver);
@@ -358,6 +400,11 @@ export class TypedJSON<T> {
 
             this.globalKnownTypes = settings.knownTypes;
         }
+    }
+
+    mapType<T, R = T>(type: Serializable<T>, serializer: MappedTypeSerializer<R>): void {
+        this.mappedTypes.set(type, serializer);
+        this.setSerializationStrategies(type, serializer);
     }
 
     /**
@@ -527,5 +574,17 @@ export class TypedJSON<T> {
         constructors.filter(ctor => ctor).forEach(ctor => map.set(this.nameResolver(ctor), ctor));
 
         return map;
+    }
+
+    private setSerializationStrategies<T, R = T>(
+        type: Serializable<T>,
+        serializer: MappedTypeSerializer<R>,
+    ): void {
+        this.deserializer.setDeserializationStrategy(type, (value) => {
+            return serializer.deserializer(value);
+        });
+        this.serializer.setSerializationStrategy(type, (value) => {
+            return serializer.serializer(value);
+        });
     }
 }

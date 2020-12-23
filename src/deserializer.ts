@@ -65,6 +65,13 @@ export class Deserializer<T> {
         [Uint32Array, convertAsUintArray],
     ]);
 
+    setDeserializationStrategy(
+        type: Serializable<any>,
+        deserializer: DeserializerFn<any, TypeDescriptor, any>,
+    ) {
+        this.deserializationStrategy.set(type, deserializer);
+    }
+
     setNameResolver(nameResolverCallback: (ctor: Function) => string) {
         this.nameResolver = nameResolverCallback;
     }
