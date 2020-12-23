@@ -121,9 +121,14 @@ export class Deserializer<T> {
         if (typeof sourceObject === 'object') {
             return convertAsObject(sourceObject, typeDescriptor, knownTypes, memberName, this);
         }
-        this.errorHandler(new TypeError(
-            `Could not deserialize '${memberName}': don't know how to deserialize this type'.`,
-        ));
+
+        let error = `Could not deserialize '${memberName}'; don't know how to deserialize type`;
+
+        if (typeDescriptor.hasFriendlyName()) {
+            error += ` '${typeDescriptor.ctor.name}'`;
+        }
+
+        this.errorHandler(new TypeError(`${error}.`));
     }
 
     instantiateType(ctor: any) {

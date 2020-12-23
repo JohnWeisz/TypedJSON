@@ -155,9 +155,14 @@ export class Serializer {
         if (typeof sourceObject === 'object') {
             return convertAsObject(sourceObject, typeDescriptor, memberName, this, memberOptions);
         }
-        this.errorHandler(new TypeError(
-            `Could not serialize '${memberName}': don't know how to serialize this type'.`,
-        ));
+
+        let error = `Could not serialize '${memberName}'; don't know how to serialize type`;
+
+        if (typeDescriptor.hasFriendlyName()) {
+            error += ` '${typeDescriptor.ctor.name}'`;
+        }
+
+        this.errorHandler(new TypeError(`${error}.`));
     }
 }
 

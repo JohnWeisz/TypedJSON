@@ -5,6 +5,10 @@ export abstract class TypeDescriptor {
     getTypes(): Array<Function> {
         return [this.ctor];
     }
+
+    hasFriendlyName(): boolean {
+        return this.ctor.name !== 'Object';
+    }
 }
 
 export type Typelike = TypeDescriptor | Function;
