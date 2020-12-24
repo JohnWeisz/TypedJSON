@@ -22,7 +22,7 @@ jobs:
         yarn install --frozen-lockfile
         yarn run lint
         yarn run build
-        yarn run test
+        yarn run coverage
         yarn run size
       env:
         CI: true

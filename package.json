@@ -17,10 +17,13 @@
     "build": "run-s build:*",
     "build:clean": "rimraf ./lib",
     "build:ts": "tsc --build ./tsconfig/tsconfig.bundle.*.json",
+    "coverage": "nyc yarn run test",
     "lint": "eslint \"spec/**/*.ts\" \"src/**/*.ts\"",
-    "preversion": "yarn run test",
+    "preversion": "yarn run coverage",
     "size": "size-limit",
-    "test": "nyc ts-node-transpile-only --project tsconfig/tsconfig.spec.json node_modules/jasmine/bin/jasmine.js",
+    "test": "yarn run test:base node_modules/jasmine/bin/jasmine.js",
+    "test:base": "TS_NODE_PROJECT=tsconfig/tsconfig.spec.json node -r ts-node/register",
+    "test:inspect": "yarn run test:base --inspect-brk node_modules/jasmine/bin/jasmine.js",
     "version": "yarn run build"
   },
   "repository": {
