@@ -1,4 +1,4 @@
-import {jsonMember, jsonObject, TypedJSON} from '../src';
+import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
 
 TypedJSON.setGlobalConfig({
     errorHandler: e => {
@@ -157,5 +157,31 @@ describe('mapped types', () => {
         expect(jsonMemberOptions.serializer).toHaveBeenCalledTimes(1);
         expect(plain.overwritten).toBe(1);
         expect(plain.simple).toBe(5);
+    });
+
+    it('works on arrays', () => {
+        @jsonObject
+        class MappedTypeWithArray {
+
+            @jsonArrayMember(CustomType)
+            array: Array<CustomType>;
+        }
+
+        const typedJson = new TypedJSON(MappedTypeWithArray);
+        const CustomTypeMap = {
+            deserializer: json => new CustomType(json),
+            serializer: value => value.value,
+        };
+        typedJson.mapType(CustomType, CustomTypeMap);
+
+        spyOn(CustomTypeMap, 'serializer').and.callThrough();
+        spyOn(CustomTypeMap, 'deserializer').and.callThrough();
+        const parsed = typedJson.parse({array: [1, 5]});
+        expect(CustomTypeMap.deserializer).toHaveBeenCalled();
+        expect(parsed.array.map(c => c.value)).toEqual([1, 5]);
+
+        const plain: any = typedJson.toPlainJson(parsed);
+        expect(CustomTypeMap.serializer).toHaveBeenCalled();
+        expect(plain.array).toEqual([1, 5]);
     });
 });
