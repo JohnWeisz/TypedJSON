@@ -117,4 +117,45 @@ describe('mapped types', () => {
             expect(result).toEqual({nullable: 5});
         });
     });
+
+    it('can be overwritten with deserializer/serializer prop', () => {
+        const jsonMemberOptions = {
+            deserializer: json => new CustomType(0),
+            serializer: value => 1,
+        };
+
+        const CustomTypeMap = {
+            deserializer: json => new CustomType(json),
+            serializer: value => value.value,
+        };
+
+        spyOn(CustomTypeMap, 'serializer').and.callThrough();
+        spyOn(jsonMemberOptions, 'serializer').and.callThrough();
+        spyOn(CustomTypeMap, 'deserializer').and.callThrough();
+        spyOn(jsonMemberOptions, 'deserializer').and.callThrough();
+
+        @jsonObject
+        class OverriddenSerializer {
+            @jsonMember(jsonMemberOptions)
+            overwritten: CustomType;
+
+            @jsonMember
+            simple: CustomType;
+        }
+
+        const typedJson = new TypedJSON(OverriddenSerializer);
+        typedJson.mapType(CustomType, CustomTypeMap);
+
+        const parsed = typedJson.parse({data: 5, simple: 5});
+        expect(CustomTypeMap.deserializer).toHaveBeenCalledTimes(1);
+        expect(jsonMemberOptions.deserializer).toHaveBeenCalledTimes(1);
+        expect(parsed.overwritten.value).toBe(0);
+        expect(parsed.simple.value).toBe(5);
+
+        const plain: any = typedJson.toPlainJson(parsed);
+        expect(CustomTypeMap.serializer).toHaveBeenCalledTimes(1);
+        expect(jsonMemberOptions.serializer).toHaveBeenCalledTimes(1);
+        expect(plain.overwritten).toBe(1);
+        expect(plain.simple).toBe(5);
+    });
 });
