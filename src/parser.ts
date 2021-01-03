@@ -68,7 +68,7 @@ export interface ITypedJSONSettings extends OptionsBase {
 
 export class TypedJSON<T> {
 
-    private static _globalConfig: ITypedJSONSettings | null | undefined;
+    private static _globalConfig: ITypedJSONSettings = {};
 
     private serializer: Serializer = new Serializer();
     private deserializer: Deserializer<T> = new Deserializer<T>();
@@ -99,11 +99,7 @@ export class TypedJSON<T> {
         this.rootConstructor = rootConstructor;
         this.errorHandler = (error) => logError(error);
 
-        if (settings !== undefined) {
-            this.config(settings);
-        } else if (TypedJSON._globalConfig !== undefined) {
-            this.config({});
-        }
+        this.config(settings);
     }
 
     static parse<T>(
@@ -309,21 +305,13 @@ export class TypedJSON<T> {
     }
 
     static setGlobalConfig(config: ITypedJSONSettings) {
-        if (this._globalConfig == null) {
-            this._globalConfig = config;
-        } else {
-            Object.assign(this._globalConfig, config);
-        }
+        Object.assign(this._globalConfig, config);
     }
 
     /**
      * Map a type to its (de)serializer.
      */
     static mapType<T, R = T>(type: Serializable<T>, serializer: MappedTypeSerializer<R>): void {
-        if (this._globalConfig == null) {
-            this._globalConfig = {};
-        }
-
         if (this._globalConfig.mappedTypes == null) {
             this._globalConfig.mappedTypes = new Map<any, any>();
         }
@@ -335,20 +323,18 @@ export class TypedJSON<T> {
      * Configures TypedJSON through a settings object.
      * @param settings The configuration settings object.
      */
-    config(settings: ITypedJSONSettings) {
-        if (TypedJSON._globalConfig != null) {
-            settings = {
-                ...TypedJSON._globalConfig,
-                ...settings,
-            };
+    config(settings?: ITypedJSONSettings) {
+        settings = {
+            ...TypedJSON._globalConfig,
+            ...settings,
+        };
 
-            if (settings.knownTypes != null
-                && TypedJSON._globalConfig.knownTypes != null) {
-                // Merge known-types (also de-duplicate them, so Array -> Set -> Array).
-                settings.knownTypes = Array.from(new Set(
-                    settings.knownTypes.concat(TypedJSON._globalConfig.knownTypes),
-                ));
-            }
+        if (settings.knownTypes != null
+            && TypedJSON._globalConfig.knownTypes != null) {
+            // Merge known-types (also de-duplicate them, so Array -> Set -> Array).
+            settings.knownTypes = Array.from(new Set(
+                settings.knownTypes.concat(TypedJSON._globalConfig.knownTypes),
+            ));
         }
 
         const options = extractOptionBase(settings);
