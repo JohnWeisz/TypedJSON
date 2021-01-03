@@ -74,7 +74,6 @@ export class TypedJSON<T> {
     private deserializer: Deserializer<T> = new Deserializer<T>();
     private globalKnownTypes: Array<Constructor<any>> = [];
     private indent: number = 0;
-    private mappedTypes = new Map<any, MappedTypeSerializer<any>>();
     private rootConstructor: Serializable<T>;
     private errorHandler: (e: Error) => void;
     private nameResolver: (ctor: Function) => string;
@@ -376,7 +375,6 @@ export class TypedJSON<T> {
         }
 
         if (settings.mappedTypes != null) {
-            this.mappedTypes = settings.mappedTypes;
             settings.mappedTypes.forEach((upDown, type) => {
                 this.setSerializationStrategies(type, upDown);
             });
@@ -403,7 +401,6 @@ export class TypedJSON<T> {
     }
 
     mapType<T, R = T>(type: Serializable<T>, serializer: MappedTypeSerializer<R>): void {
-        this.mappedTypes.set(type, serializer);
         this.setSerializationStrategies(type, serializer);
     }
 
