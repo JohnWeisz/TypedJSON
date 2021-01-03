@@ -201,6 +201,33 @@ describe('mapped types', () => {
         expect(typedJson.parse({date: date2000}).date.toISOString()).toEqual(date2000);
     });
 
+    it('should handle mapping arrays', () => {
+        @jsonObject
+        class MappedTypeWithArray {
+
+            @jsonArrayMember(String)
+            array: Array<string>;
+        }
+
+        const typedJson = new TypedJSON(MappedTypeWithArray);
+        const ArrayTypeMap = {
+            deserializer: json => ['deserialized'],
+            serializer: value => ['serialized'],
+        };
+
+        typedJson.mapType(Array, ArrayTypeMap);
+
+        spyOn(ArrayTypeMap, 'serializer').and.callThrough();
+        spyOn(ArrayTypeMap, 'deserializer').and.callThrough();
+        const parsed = typedJson.parse({array: ['hello']});
+        expect(ArrayTypeMap.deserializer).toHaveBeenCalled();
+        expect(parsed.array).toEqual(['deserialized']);
+
+        const plain: any = typedJson.toPlainJson(parsed);
+        expect(ArrayTypeMap.serializer).toHaveBeenCalled();
+        expect(plain.array).toEqual(['serialized']);
+    });
+
     it('works on arrays', () => {
         @jsonObject
         class MappedTypeWithArray {
