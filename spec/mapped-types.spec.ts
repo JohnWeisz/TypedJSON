@@ -185,3 +185,8 @@ describe('mapped types', () => {
         expect(plain.array).toEqual([1, 5]);
     });
 });
+
+TypedJSON.setGlobalConfig({
+    errorHandler: () => undefined,
+});
+
