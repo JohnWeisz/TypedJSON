@@ -10,7 +10,7 @@
   "size-limit": [
     {
       "path": "./lib/esm/index.js",
-      "limit": "6.5 KB"
+      "limit": "8 KB"
     }
   ],
   "scripts": {
