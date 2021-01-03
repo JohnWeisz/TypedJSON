@@ -10,7 +10,7 @@ import {Constructor, IndexedObject, Serializable} from './types';
 export type JsonTypes = Object | boolean | string | number | null | undefined;
 export {defaultTypeResolver, defaultTypeEmitter};
 
-export interface MappedTypeSerializer<T> {
+export interface MappedTypeConverters<T> {
 
     /**
      * Use this deserializer to convert a JSON value to the type.
@@ -32,10 +32,10 @@ export interface ITypedJSONSettings extends OptionsBase {
     errorHandler?: ((e: Error) => void) | null;
 
     /**
-     * Maps a type to their respective serializer. Prevents you from having to repeat serializers.
-     * Register additional types with `TypedJSON.mapType`.
+     * Maps a type to their respective (de)serializer. Prevents you from having to repeat
+     * (de)serializers. Register additional types with `TypedJSON.mapType`.
      */
-    mappedTypes?: Map<Serializable<any>, MappedTypeSerializer<any>> | null;
+    mappedTypes?: Map<Serializable<any>, MappedTypeConverters<any>> | null;
 
     /**
      * Sets a callback that determines the constructor of the correct sub-type of polymorphic
@@ -311,12 +311,12 @@ export class TypedJSON<T> {
     /**
      * Map a type to its (de)serializer.
      */
-    static mapType<T, R = T>(type: Serializable<T>, serializer: MappedTypeSerializer<R>): void {
+    static mapType<T, R = T>(type: Serializable<T>, converters: MappedTypeConverters<R>): void {
         if (this._globalConfig.mappedTypes == null) {
             this._globalConfig.mappedTypes = new Map<any, any>();
         }
 
-        this._globalConfig.mappedTypes.set(type, serializer);
+        this._globalConfig.mappedTypes.set(type, converters);
     }
 
     /**
@@ -386,8 +386,8 @@ export class TypedJSON<T> {
         }
     }
 
-    mapType<T, R = T>(type: Serializable<T>, serializer: MappedTypeSerializer<R>): void {
-        this.setSerializationStrategies(type, serializer);
+    mapType<T, R = T>(type: Serializable<T>, converters: MappedTypeConverters<R>): void {
+        this.setSerializationStrategies(type, converters);
     }
 
     /**
@@ -561,13 +561,13 @@ export class TypedJSON<T> {
 
     private setSerializationStrategies<T, R = T>(
         type: Serializable<T>,
-        serializer: MappedTypeSerializer<R>,
+        converters: MappedTypeConverters<R>,
     ): void {
         this.deserializer.setDeserializationStrategy(type, (value) => {
-            return serializer.deserializer(value);
+            return converters.deserializer(value);
         });
         this.serializer.setSerializationStrategy(type, (value) => {
-            return serializer.serializer(value);
+            return converters.serializer(value);
         });
     }
 }
