@@ -6,6 +6,9 @@ TypedJSON.setGlobalConfig({
     },
 });
 
+const date2000 = '2000-01-01T00:00:00.000Z';
+const date3000 = '3000-01-01T00:00:00.000Z';
+
 describe('mapped types', () => {
     class CustomType {
         value: any;
@@ -157,6 +160,45 @@ describe('mapped types', () => {
         expect(jsonMemberOptions.serializer).toHaveBeenCalledTimes(1);
         expect(plain.overwritten).toBe(1);
         expect(plain.simple).toBe(5);
+    });
+
+    it('should use default when only mapping deserializer', () => {
+        @jsonObject
+        class OnlyDeSerializer {
+            @jsonMember
+            date: Date;
+        }
+
+        const typedJson = new TypedJSON(OnlyDeSerializer);
+        typedJson.mapType<Date, Date>(Date, {
+            deserializer: value => new Date(new Date(value).setFullYear(3000)),
+        });
+
+        const parsed = typedJson.parse({date: date2000});
+
+        expect(parsed.date.toISOString()).toEqual(date3000);
+        expect((typedJson.toPlainJson(parsed) as any).date.toString())
+            .toEqual(new Date(date3000).toString());
+    });
+
+    it('should use default when only mapping serializer', () => {
+        @jsonObject
+        class OnlySerializer {
+            @jsonMember
+            date: Date;
+        }
+
+        const typedJson = new TypedJSON(OnlySerializer);
+        typedJson.mapType(Date, {
+            serializer: value => new Date(value.setFullYear(3000)).toISOString(),
+        });
+
+        const test = new OnlySerializer();
+        test.date = new Date(date2000);
+        const result = typedJson.toPlainJson(test);
+
+        expect(result).toEqual({date: date3000});
+        expect(typedJson.parse({date: date2000}).date.toISOString()).toEqual(date2000);
     });
 
     it('works on arrays', () => {

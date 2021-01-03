@@ -15,12 +15,12 @@ export interface MappedTypeConverters<T> {
     /**
      * Use this deserializer to convert a JSON value to the type.
      */
-    deserializer: (json: any) => T | null | undefined;
+    deserializer?: ((json: any) => T | null | undefined) | null;
 
     /**
      * Use this serializer to convert a type back to JSON.
      */
-    serializer: (value: T | null | undefined) => any;
+    serializer?: ((value: T | null | undefined) => any) | null;
 }
 
 export interface ITypedJSONSettings extends OptionsBase {
@@ -563,11 +563,16 @@ export class TypedJSON<T> {
         type: Serializable<T>,
         converters: MappedTypeConverters<R>,
     ): void {
-        this.deserializer.setDeserializationStrategy(type, (value) => {
-            return converters.deserializer(value);
-        });
-        this.serializer.setSerializationStrategy(type, (value) => {
-            return converters.serializer(value);
-        });
+        if (converters.deserializer != null) {
+            this.deserializer.setDeserializationStrategy(type, (value) => {
+                return converters.deserializer!(value);
+            });
+        }
+
+        if (converters.serializer != null) {
+            this.serializer.setSerializationStrategy(type, (value) => {
+                return converters.serializer!(value);
+            });
+        }
     }
 }
