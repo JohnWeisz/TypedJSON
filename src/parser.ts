@@ -35,7 +35,7 @@ export interface ITypedJSONSettings extends OptionsBase {
      * Maps a type to their respective serializer. Prevents you from having to repeat serializers.
      * Register additional types with `TypedJSON.mapType`.
      */
-    mappedTypes?: Map<any, MappedTypeSerializer<any>> | null;
+    mappedTypes?: Map<Serializable<any>, MappedTypeSerializer<any>> | null;
 
     /**
      * Sets a callback that determines the constructor of the correct sub-type of polymorphic
