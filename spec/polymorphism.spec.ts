@@ -66,7 +66,7 @@ describe('polymorphism', () => {
         @jsonMember
         name: string;
 
-        @jsonArrayMember(Employee)
+        @jsonArrayMember(() => Employee)
         employees: Array<Employee>;
 
         @jsonMember

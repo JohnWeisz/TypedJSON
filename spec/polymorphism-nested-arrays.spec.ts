@@ -18,10 +18,10 @@ describe('polymorphism in nested arrays', () => {
 
     @jsonObject
     class BigNode extends Node {
-        @jsonArrayMember(String)
+        @jsonArrayMember(() => String)
         inputs: Array<string>;
 
-        @jsonArrayMember(String)
+        @jsonArrayMember(() => String)
         outputs: Array<string>;
 
         constructor() {
@@ -33,10 +33,10 @@ describe('polymorphism in nested arrays', () => {
 
     @jsonObject({knownTypes: [BigNode, SmallNode]})
     class Graph {
-        @jsonArrayMember(Node, {dimensions: 2})
+        @jsonArrayMember(() => Node, {dimensions: 2})
         items: Array<Array<Node>>;
 
-        @jsonArrayMember(SmallNode, {dimensions: 2})
+        @jsonArrayMember(() => SmallNode, {dimensions: 2})
         smallItems: Array<Array<SmallNode>>;
 
         constructor() {

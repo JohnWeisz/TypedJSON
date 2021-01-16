@@ -73,7 +73,7 @@ describe('polymorphism custom type hints', () => {
             @jsonMember
             name: string;
 
-            @jsonArrayMember(Employee)
+            @jsonArrayMember(() => Employee)
             employees: Array<Employee> = [];
 
             @jsonMember

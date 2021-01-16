@@ -78,13 +78,13 @@ import { jsonObject, jsonArrayMember, jsonSetMember, jsonMapMember, TypedJSON } 
 @jsonObject
 class MyDataClass
 {
-    @jsonArrayMember(Number)
+    @jsonArrayMember(() => Number)
     public prop1: number[];
 
-    @jsonSetMember(String)
+    @jsonSetMember(() => String)
     public prop2: Set<string>;
     
-    @jsonMapMember(Number, MySecondDataClass)
+    @jsonMapMember(() => Number, () => MySecondDataClass)
     public prop3: Map<number, MySecondDataClass>;
 }
 ```
@@ -117,11 +117,24 @@ class MyDataClass
     @jsonMember
     public prop1: MySecondDataClass;
     
-    @jsonArrayMember(MySecondDataClass)
+    @jsonArrayMember(() => MySecondDataClass)
     public arrayProp: MySecondDataClass[];
 
-    @jsonMapMember(Number, MySecondDataClass)
+    @jsonMapMember(() => Number, () => MySecondDataClass)
     public mapProp: Map<number, MySecondDataClass>;
+}
+```
+
+### Any type
+In case you don't want TypedJSON to make any conversion the `Any` type can be used. 
+
+```typescript
+import {Any, jsonObject, jsonMember} from 'typedjson';
+
+@jsonObject
+class Something {
+    @jsonMember(() => Any)
+    anythingGoes: any;
 }
 ```
 
@@ -137,11 +150,11 @@ Without ReflectDecorators, `@jsonMember` requires an additional type argument, b
   class MyDataClass
   {
 -     @jsonMember
-+     @jsonMember({ constructor: Number })
++     @jsonMember(() => Number)
       public prop1: number;
 
 -     @jsonMember
-+     @jsonMember({ constructor: MySecondDataClass })
++     @jsonMember(() => MySecondDataClass)
       public prop2: MySecondDataClass;
   }
 ```
@@ -254,34 +267,11 @@ import { jsonObject, jsonArrayMember, TypedJSON } from 'typedjson';
 @jsonObject
 class MyDataClass
 {
-    @jsonArrayMember(Number, { dimensions: 2 })
+    @jsonArrayMember(() => Number, { dimensions: 2 })
     public prop1: number[][];
 
-    @jsonArrayMember(Number, { dimensions: 3 })
+    @jsonArrayMember(() => Number, { dimensions: 3 })
     public prop2: number[][][];
-}
-```
-
-### Class declaration order matters
-
-When referencing a class in a nested object structure, the referenced class must be declared in advance, e.g.:
-
-```typescript
-import 'reflect-metadata';
-import { jsonObject, jsonMember, jsonArrayMember, TypedJSON } from 'typedjson';
-
-@jsonObject
-class Employee
-{
-    @jsonMember
-    public name: string;
-}
-
-@jsonObject
-class Company
-{
-    @jsonArrayMember(Employee)
-    public employees: Employee[];
 }
 ```
 

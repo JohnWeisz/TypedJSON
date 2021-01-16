@@ -92,7 +92,7 @@ describe('mapped types', () => {
         @jsonObject
         class MappedTypeWithConstructor {
 
-            @jsonMember({constructor: CustomType})
+            @jsonMember(() => CustomType)
             nullable: any;
         }
 
@@ -205,7 +205,7 @@ describe('mapped types', () => {
         @jsonObject
         class MappedTypeWithArray {
 
-            @jsonArrayMember(String)
+            @jsonArrayMember(() => String)
             array: Array<string>;
         }
 
@@ -232,7 +232,7 @@ describe('mapped types', () => {
         @jsonObject
         class MappedTypeWithArray {
 
-            @jsonArrayMember(CustomType)
+            @jsonArrayMember(() => CustomType)
             array: Array<CustomType>;
         }
 

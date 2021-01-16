@@ -156,7 +156,7 @@ describe('preserveNull', () => {
     it('should preserve nulls in array', () => {
         @jsonObject
         class Person {
-            @jsonArrayMember(String, {preserveNull: true})
+            @jsonArrayMember(() => String, {preserveNull: true})
             names: Array<string | null>;
         }
 
@@ -171,7 +171,7 @@ describe('preserveNull', () => {
     it('should preserve nulls in maps', () => {
         @jsonObject
         class Person {
-            @jsonMapMember(String, String, {preserveNull: true})
+            @jsonMapMember(() => String, () => String, {preserveNull: true})
             map: Map<string, string | null>;
         }
 

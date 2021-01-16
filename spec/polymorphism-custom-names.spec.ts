@@ -64,7 +64,7 @@ describe('polymorphic custom names', () => {
         @jsonMember
         name: string;
 
-        @jsonArrayMember(Employee, {name: 'company-employees'})
+        @jsonArrayMember(() => Employee, {name: 'company-employees'})
         employees: Array<Employee>;
 
         @jsonMember

@@ -1,4 +1,4 @@
-import {ArrayT, jsonMember, jsonObject, jsonSetMember, SetT, TypedJSON} from '../src';
+import {Any, ArrayT, jsonMember, jsonObject, jsonSetMember, SetT, TypedJSON} from '../src';
 import {Everything} from './utils/everything';
 
 describe('set of objects', () => {
@@ -67,7 +67,7 @@ describe('set of objects', () => {
 describe('set member', () => {
     @jsonObject
     class WithSet {
-        @jsonSetMember(Everything)
+        @jsonSetMember(() => Everything)
         prop: Set<Everything>;
 
         getSetSize() {
@@ -119,7 +119,7 @@ describe('set array member', () => {
 
     @jsonObject
     class WithSet {
-        @jsonMember({constructor: SetT(ArrayT(Simple))})
+        @jsonMember(() => SetT(ArrayT(Simple)))
         prop: Set<Array<Simple>>;
 
         getSetSize() {
@@ -202,7 +202,7 @@ describe('set array member', () => {
 describe('set of raw objects', () => {
     @jsonObject
     class WithRawSet {
-        @jsonSetMember(Object)
+        @jsonSetMember(() => Any)
         rawSet: Set<any>;
     }
 

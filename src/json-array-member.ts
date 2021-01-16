@@ -7,6 +7,7 @@ import {
     isTypelike,
     TypeDescriptor,
 } from './type-descriptor';
+import {TypeThunk} from './types';
 
 declare abstract class Reflect {
     static getMetadata(metadataKey: string, target: any, targetKey: string | symbol): any;
@@ -37,24 +38,17 @@ export interface IJsonArrayMemberOptions extends OptionsBase {
 
 /**
  * Specifies that a property, of type array, is part of an object when serializing.
- * @param elementConstructor Constructor of array elements (e.g. 'Number' for 'number[]', or 'Date'
+ * @param typeThunk Constructor of array elements (e.g. 'Number' for 'number[]', or 'Date'
  * for 'Date[]').
  * @param options Additional options.
  */
 export function jsonArrayMember(
-    elementConstructor: Function | TypeDescriptor,
+    typeThunk: TypeThunk,
     options: IJsonArrayMemberOptions = {},
 ) {
     return (target: Object, propKey: string | symbol) => {
         const decoratorName =
             `@jsonArrayMember on ${nameof(target.constructor)}.${String(propKey)}`;
-
-        if (!isTypelike(elementConstructor)) {
-            logError(
-                `${decoratorName}: could not resolve constructor of array elements at runtime.`,
-            );
-            return;
-        }
 
         const dimensions = options.dimensions == null ? 1 : options.dimensions;
         if (!isNaN(dimensions) && dimensions < 1) {
@@ -71,7 +65,7 @@ export function jsonArrayMember(
         }
 
         injectMetadataInformation(target, propKey, {
-            type: createArrayType(ensureTypeDescriptor(elementConstructor), dimensions),
+            type: () => createArrayType(ensureTypeDescriptor(typeThunk()), dimensions),
             emitDefaultValue: options.emitDefaultValue,
             isRequired: options.isRequired,
             options: extractOptionBase(options),

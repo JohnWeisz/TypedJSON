@@ -9,6 +9,7 @@ import {
 import {JsonObjectMetadata, TypeHintEmitter} from './metadata';
 import {getOptionValue, mergeOptions, OptionsBase} from './options-base';
 import {
+    Any,
     ArrayTypeDescriptor,
     ConcreteTypeDescriptor,
     MapShape,
@@ -68,6 +69,7 @@ export class Serializer {
         SerializerFn<any, TypeDescriptor, any>
     >([
         // primitives
+        [Any, identity],
         [Date, identity],
         [Number, identity],
         [String, identity],
@@ -249,7 +251,7 @@ function convertAsObject(
             } else {
                 serialized = serializer.convertSingleValue(
                     sourceObject[objMemberMetadata.key],
-                    objMemberMetadata.type,
+                    objMemberMetadata.type(),
                     `${nameof(sourceMeta.classType)}.${objMemberMetadata.key}`,
                     objMemberOptions,
                 );

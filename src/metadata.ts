@@ -1,7 +1,7 @@
 import {isDirectlySerializableNativeType, isTypeTypedArray, logError, nameof} from './helpers';
 import {OptionsBase} from './options-base';
 import {TypeDescriptor} from './type-descriptor';
-import {IndexedObject, Serializable} from './types';
+import {IndexedObject, Serializable, TypeThunk} from './types';
 
 export const METADATA_FIELD_KEY = '__typedJsonJsonObjectMetadataInformation__';
 
@@ -28,7 +28,7 @@ export interface JsonMemberMetadata {
     key: string;
 
     /** Type descriptor of the member. */
-    type?: TypeDescriptor | null;
+    type?: (() => TypeDescriptor) | null;
 
     /** If set, indicates that the member must be present when deserializing. */
     isRequired?: boolean | null;
@@ -48,6 +48,9 @@ export class JsonObjectMetadata {
 
     /** Set of known types used for polymorphic deserialization */
     knownTypes = new Set<Serializable<any>>();
+
+    /** Known types to be evaluated when (de)serialization occurs */
+    knownTypesDeferred: Array<() => TypeDescriptor> = [];
 
     /** If present override the global function */
     typeHintEmitter?: TypeHintEmitter | null;
@@ -208,11 +211,11 @@ export function injectMetadataInformation(
 
     if (metadata.deserializer === undefined) {
         // If deserializer is not present then type must be
-        metadata.type!.getTypes().forEach(ctor => objectMetadata.knownTypes.add(ctor));
+        objectMetadata.knownTypesDeferred.push(metadata.type!);
     }
 
     // clear metadata of undefined properties to save memory
-    (Object.keys(metadata) as [keyof JsonMemberMetadata])
+    (Object.keys(metadata) as Array<keyof JsonMemberMetadata>)
         .forEach((key) => (metadata[key] === undefined) && delete metadata[key]);
     objectMetadata.dataMembers.set(metadata.name, metadata);
 }
