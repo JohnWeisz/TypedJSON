@@ -1,9 +1,6 @@
 import {
     isReflectMetadataSupported,
-    isSubtypeOf,
-    isValueDefined,
     logError,
-    logWarning,
     MISSING_REFLECT_CONF_MSG,
     nameof,
 } from './helpers';
@@ -16,19 +13,13 @@ import {
     SetTypeDescriptor,
     TypeDescriptor,
 } from './type-descriptor';
-import {IndexedObject} from './types';
+import {IndexedObject, TypeThunk} from './types';
 
 declare abstract class Reflect {
     static getMetadata(metadataKey: string, target: any, targetKey: string | symbol): any;
 }
 
 export interface IJsonMemberOptions extends OptionsBase {
-    /**
-     * Sets the constructor of the property.
-     * Optional with ReflectDecorators.
-     */
-    constructor?: Function | TypeDescriptor | null;
-
     /** When set, indicates that the member must be present when deserializing. */
     isRequired?: boolean | null;
 
@@ -49,34 +40,39 @@ export interface IJsonMemberOptions extends OptionsBase {
 }
 
 /**
- * Specifies that a property is part of the object when serializing, with additional options.
- * Omitting the 'constructor' option requires ReflectDecorators and that the property type is always
- * explicitly declared.
- * @param options Additional options.
- */
-export function jsonMember(options: IJsonMemberOptions): PropertyDecorator;
-
-/**
  * Specifies that a property is part of the object when serializing.
- * This call signature requires ReflectDecorators and that the property type is always explicitly
- * declared.
+ * Requires ReflectDecorators.
  */
 export function jsonMember<T extends Function>(
     prototype: IndexedObject,
     propertyKey: string | symbol,
 ): void;
 
+/**
+ * Specifies that a property is part of the object when serializing, with additional options.
+ * Requires ReflectDecorators.
+ */
+export function jsonMember(options: IJsonMemberOptions): PropertyDecorator;
+
+/**
+ * Specifies that a property is part of the object when serializing, with a defined type and extra
+ * options.
+ */
+export function jsonMember(
+    type: TypeThunk,
+    options?: IJsonMemberOptions,
+): PropertyDecorator;
+
 export function jsonMember<T extends Function>(
-    optionsOrPrototype?: IJsonMemberOptions | IndexedObject,
-    propKey?: string | symbol,
+    optionsOrPrototype?: IndexedObject | IJsonMemberOptions | TypeThunk,
+    propertyKeyOrOptions?: string | symbol | IJsonMemberOptions,
 ): PropertyDecorator | void {
-    // @todo, why do we check if propkey is string or symbol? the type only allows symbol/string
-    //    The check is not required.
-    if (propKey !== undefined
-        && (typeof propKey === 'string' || typeof propKey as any === 'symbol')) {
+    if (propertyKeyOrOptions !== undefined
+        && (typeof propertyKeyOrOptions === 'string' || typeof propertyKeyOrOptions === 'symbol')) {
+        const property = propertyKeyOrOptions as string;
         const prototype = optionsOrPrototype as IndexedObject;
         // For error messages.
-        const decoratorName = `@jsonMember on ${nameof(prototype.constructor)}.${String(propKey)}`;
+        const decoratorName = `@jsonMember on ${nameof(prototype.constructor)}.${String(property)}`;
 
         // jsonMember used directly, no additional information directly available besides target and
         // propKey.
@@ -90,7 +86,7 @@ export function jsonMember<T extends Function>(
         }
 
         const reflectPropCtor: Function | null | undefined =
-            Reflect.getMetadata('design:type', prototype, propKey);
+            Reflect.getMetadata('design:type', prototype, property);
 
         if (reflectPropCtor == null) {
             logError(
@@ -105,79 +101,68 @@ export function jsonMember<T extends Function>(
             return;
         }
 
-        injectMetadataInformation(prototype, propKey, {
-            type: typeDescriptor,
-            key: propKey.toString(),
-            name: propKey.toString(),
+        injectMetadataInformation(prototype, property, {
+            type: () => typeDescriptor,
+            key: propertyKeyOrOptions.toString(),
+            name: propertyKeyOrOptions.toString(),
         });
-    } else {
-        // jsonMember used as a decorator factory.
-        return (target: Object, _propKey: string | symbol) => {
-            const options: IJsonMemberOptions = optionsOrPrototype as IJsonMemberOptions ?? {};
-            let typeDescriptor: TypeDescriptor | undefined;
-            const decoratorName =
-                `@jsonMember on ${nameof(target.constructor)}.${String(_propKey)}`;
+        return;
+    }
 
-            if (options.hasOwnProperty('constructor')) {
-                if (!isValueDefined(options.constructor)) {
-                    logError(
-                        `${decoratorName}: cannot resolve specified property constructor at`
-                        + ' runtime.',
-                    );
-                    return;
-                }
+    // jsonMember used as a decorator factory.
+    return (target: Object, _propKey: string | symbol) => {
+        const hasTypeThunk = typeof optionsOrPrototype === 'function';
+        const typeThunk = hasTypeThunk ? optionsOrPrototype as TypeThunk : undefined;
+        const options = (hasTypeThunk
+            ? propertyKeyOrOptions
+            : optionsOrPrototype) as IJsonMemberOptions ?? {};
+        let typeDescriptor: TypeDescriptor | TypeThunk | undefined;
+        const decoratorName =
+            `@jsonMember on ${nameof(target.constructor)}.${String(_propKey)}`;
 
-                // Property constructor has been specified. Use ReflectDecorators (if available) to
-                // check whether that constructor is correct. Warn if not.
-                typeDescriptor = ensureTypeDescriptor(options.constructor);
-                if (isReflectMetadataSupported && !isSubtypeOf(
-                    typeDescriptor.ctor,
-                    Reflect.getMetadata('design:type', target, _propKey),
-                )) {
-                    logWarning(
-                        `${decoratorName}: detected property type does not match`
-                        + ` 'constructor' option.`,
-                    );
-                }
-            } else if (isReflectMetadataSupported) {
-                const reflectCtor = Reflect.getMetadata(
-                    'design:type',
-                    target,
-                    _propKey,
-                ) as Function | null | undefined;
+        if (hasTypeThunk) {
+            typeDescriptor = typeThunk;
+        } else if (isReflectMetadataSupported) {
+            const reflectCtor = Reflect.getMetadata(
+                'design:type',
+                target,
+                _propKey,
+            ) as Function | null | undefined;
 
-                if (reflectCtor == null) {
-                    logError(
-                        `${decoratorName}: cannot resolve detected property constructor at`
-                        + ` runtime.`,
-                    );
-                    return;
-                }
-                typeDescriptor = ensureTypeDescriptor(reflectCtor);
-            } else if (options.deserializer === undefined) {
+            if (reflectCtor == null) {
                 logError(
-                    `${decoratorName}: ReflectDecorators is required if no 'constructor' option`
-                    + ` is specified.`,
+                    `${decoratorName}: cannot resolve detected property constructor at`
+                    + ` runtime.`,
                 );
                 return;
             }
+            typeDescriptor = ensureTypeDescriptor(reflectCtor);
+        } else if (options.deserializer === undefined) {
+            logError(`${decoratorName}: Cannot determine type`);
+            return;
+        }
 
-            if (typeDescriptor !== undefined
-                && isSpecialPropertyType(decoratorName, typeDescriptor)) {
-                return;
-            }
-            injectMetadataInformation(target, _propKey, {
-                type: typeDescriptor,
-                emitDefaultValue: options.emitDefaultValue,
-                isRequired: options.isRequired,
-                options: extractOptionBase(options),
-                key: _propKey.toString(),
-                name: options.name ?? _propKey.toString(),
-                deserializer: options.deserializer,
-                serializer: options.serializer,
-            });
-        };
-    }
+        if (typeDescriptor !== undefined
+            && typeDescriptor instanceof TypeDescriptor
+            && isSpecialPropertyType(decoratorName, typeDescriptor)) {
+            return;
+        }
+
+        injectMetadataInformation(target, _propKey, {
+            type: typeDescriptor === undefined
+                ? undefined
+                : () => typeDescriptor instanceof TypeDescriptor
+                    ? typeDescriptor
+                    : ensureTypeDescriptor(typeDescriptor!()),
+            emitDefaultValue: options.emitDefaultValue,
+            isRequired: options.isRequired,
+            options: extractOptionBase(options),
+            key: _propKey.toString(),
+            name: options.name ?? _propKey.toString(),
+            deserializer: options.deserializer,
+            serializer: options.serializer,
+        });
+    };
 }
 
 function isSpecialPropertyType(decoratorName: string, typeDescriptor: TypeDescriptor) {

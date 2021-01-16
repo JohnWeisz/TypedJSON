@@ -1,4 +1,8 @@
+import {TypeDescriptor} from './type-descriptor';
+
 export type IndexedObject = Object & {[key: string]: any};
+
+export type TypeThunk = () => Serializable<any> | TypeDescriptor;
 
 export interface AbstractType<T> extends Function {
     prototype: T;

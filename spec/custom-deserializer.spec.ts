@@ -41,7 +41,7 @@ describe('custom member deserializer', () => {
 describe('custom array member deserializer', () => {
     @jsonObject
     class Obj {
-        @jsonArrayMember(Number, {
+        @jsonArrayMember(() => Number, {
             deserializer: (json: any) => json.split(',').map((v) => parseInt(v, 10)),
         })
         nums: Array<number>;
@@ -103,7 +103,7 @@ describe('custom delegating array member serializer', () => {
 
     @jsonObject
     class Obj {
-        @jsonArrayMember(Inner, {deserializer: objArrayDeserializer})
+        @jsonArrayMember(() => Inner, {deserializer: objArrayDeserializer})
         inners: Array<Inner>;
 
         @jsonMember

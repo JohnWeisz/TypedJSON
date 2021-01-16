@@ -1,4 +1,4 @@
-import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
+import {Any, jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
 import {Everything, IEverything} from './utils/everything';
 
 describe('array of objects', () => {
@@ -73,16 +73,16 @@ describe('multidimensional arrays', () => {
 
     @jsonObject
     class WithArrays implements IWithArrays {
-        @jsonArrayMember(Everything)
+        @jsonArrayMember(() => Everything)
         one: Array<Everything>;
 
-        @jsonArrayMember(Everything, {dimensions: 2})
+        @jsonArrayMember(() => Everything, {dimensions: 2})
         two: Array<Array<Everything>>;
 
-        @jsonArrayMember(Everything, {dimensions: 6})
+        @jsonArrayMember(() => Everything, {dimensions: 6})
         deep: Array<Array<Array<Array<Array<Array<Everything>>>>>>;
 
-        @jsonArrayMember(WithArrays, {dimensions: 2})
+        @jsonArrayMember(() => WithArrays, {dimensions: 2})
         arrayWithArray?: Array<Array<WithArrays>>;
 
         constructor(init?: IWithArrays) {
@@ -170,7 +170,7 @@ describe('multidimensional arrays', () => {
 describe('array of raw objects', () => {
     @jsonObject
     class Translations {
-        @jsonArrayMember(Object)
+        @jsonArrayMember(() => Any)
         localization: Array<any>;
     }
 

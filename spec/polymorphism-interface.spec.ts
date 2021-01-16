@@ -1,4 +1,4 @@
-import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
+import {Any, jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
 import {isEqual} from './utils/object-compare';
 
 describe('polymorphic interfaces', () => {
@@ -30,10 +30,10 @@ describe('polymorphic interfaces', () => {
         @jsonMember
         y: number;
 
-        @jsonArrayMember(String)
+        @jsonArrayMember(() => String)
         inputs: Array<string>;
 
-        @jsonArrayMember(String)
+        @jsonArrayMember(() => String)
         outputs: Array<string>;
 
         constructor() {
@@ -46,7 +46,7 @@ describe('polymorphic interfaces', () => {
         knownTypes: [BigNode, SmallNode],
     })
     class GraphGrid {
-        @jsonArrayMember(Object)
+        @jsonArrayMember(() => Any)
         points: Array<Point>;
 
         @jsonMember

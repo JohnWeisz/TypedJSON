@@ -2,6 +2,7 @@ import {isSubtypeOf, isValueDefined, logError, nameof} from './helpers';
 import {JsonObjectMetadata, TypeResolver} from './metadata';
 import {getOptionValue, mergeOptions, OptionsBase} from './options-base';
 import {
+    Any,
     ArrayTypeDescriptor,
     ConcreteTypeDescriptor,
     MapShape,
@@ -44,6 +45,7 @@ export class Deserializer<T> {
         DeserializerFn<any, TypeDescriptor, any>
     >([
         // primitives
+        [Any, (sourceObject) => sourceObject],
         [Number, deserializeDirectly],
         [String, deserializeDirectly],
         [Boolean, deserializeDirectly],
@@ -252,6 +254,11 @@ function convertAsObject<T>(
     let typeResolver = deserializer.getTypeResolver();
 
     if (sourceObjectMetadata !== undefined) {
+        sourceObjectMetadata.knownTypesDeferred.forEach(typeThunk => {
+            typeThunk().getTypes().forEach(ctor => sourceObjectMetadata!.knownTypes.add(ctor));
+        });
+        sourceObjectMetadata.knownTypesDeferred = [];
+
         // Merge known types received from "above" with known types defined on the current type.
         knownTypeConstructors = deserializer.mergeKnownTypes(
             knownTypeConstructors,
@@ -307,7 +314,7 @@ function convertAsObject<T>(
             } else {
                 revivedValue = deserializer.convertSingleValue(
                     objMemberValue,
-                    objMemberMetadata.type,
+                    objMemberMetadata.type(),
                     knownTypeConstructors,
                     objMemberDebugName,
                     objMemberOptions,

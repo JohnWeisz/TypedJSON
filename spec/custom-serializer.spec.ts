@@ -39,7 +39,7 @@ describe('custom member serializer', () => {
 describe('custom array member serializer', () => {
     @jsonObject
     class Obj {
-        @jsonArrayMember(Number, {serializer: (values: Array<number>) => values.join(',')})
+        @jsonArrayMember(() => Number, {serializer: (values: Array<number>) => values.join(',')})
         nums: Array<number>;
 
         @jsonMember
@@ -97,7 +97,7 @@ describe('custom delegating array member serializer', () => {
 
     @jsonObject
     class Obj {
-        @jsonArrayMember(Inner, {serializer: objArraySerializer})
+        @jsonArrayMember(() => Inner, {serializer: objArraySerializer})
         inners: Array<Inner>;
 
         @jsonMember

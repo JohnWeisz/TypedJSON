@@ -18,10 +18,10 @@ describe('polymorphic abstract classes', () => {
 
     @jsonObject
     class BigNode extends Node {
-        @jsonArrayMember(String)
+        @jsonArrayMember(() => String)
         inputs: Array<string>;
 
-        @jsonArrayMember(String)
+        @jsonArrayMember(() => String)
         outputs: Array<string>;
 
         constructor() {
@@ -35,7 +35,7 @@ describe('polymorphic abstract classes', () => {
         knownTypes: [BigNode, SmallNode],
     })
     class Graph {
-        @jsonArrayMember(Node)
+        @jsonArrayMember(() => Node)
         nodes: Array<Node>;
 
         @jsonMember
