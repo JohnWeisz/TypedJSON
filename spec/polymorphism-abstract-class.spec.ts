@@ -46,6 +46,8 @@ describe('polymorphic abstract classes', () => {
         }
     }
 
+    let portTypeIndex = 0;
+
     function randPortType() {
         const types = [
             'string',
@@ -55,7 +57,7 @@ describe('polymorphic abstract classes', () => {
             'void',
         ];
 
-        return types[Math.floor(Math.random() * types.length)];
+        return types[portTypeIndex++ % types.length];
     }
 
     function test(log: boolean) {
@@ -64,7 +66,7 @@ describe('polymorphic abstract classes', () => {
         for (let i = 0; i < 20; i++) {
             let node: Node;
 
-            if (Math.random() < 0.25) {
+            if (i % 2 === 0) {
                 const bigNode = new BigNode();
 
                 bigNode.inputs = [
