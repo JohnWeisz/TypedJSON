@@ -45,6 +45,8 @@ describe('polymorphism in nested arrays', () => {
         }
     }
 
+    let portTypeIndex = 0;
+
     function randPortType() {
         const types = [
             'string',
@@ -54,7 +56,7 @@ describe('polymorphism in nested arrays', () => {
             'void',
         ];
 
-        return types[Math.floor(Math.random() * types.length)];
+        return types[portTypeIndex++ % types.length];
     }
 
     function test(log: boolean) {
@@ -80,7 +82,7 @@ describe('polymorphism in nested arrays', () => {
             for (let j = 0; j < 8; j++) {
                 let node: Node;
 
-                if (Math.random() < 0.25) {
+                if (j % 2 === 0) {
                     const bigNode = new BigNode();
 
                     bigNode.inputs = [

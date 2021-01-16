@@ -57,6 +57,8 @@ describe('polymorphic interfaces', () => {
         }
     }
 
+    let portTypeIndex = 0;
+
     function randPortType() {
         const types = [
             'string',
@@ -66,7 +68,7 @@ describe('polymorphic interfaces', () => {
             'void',
         ];
 
-        return types[Math.floor(Math.random() * types.length)];
+        return types[portTypeIndex++ % types.length];
     }
 
     function test(log: boolean) {
@@ -75,7 +77,7 @@ describe('polymorphic interfaces', () => {
         for (let i = 0; i < 20; i++) {
             let point: Point;
 
-            if (Math.random() < 0.25) {
+            if (i % 2 === 0) {
                 const bigNode = new BigNode();
 
                 bigNode.inputs = [
