@@ -1,3 +1,4 @@
+import {JsonObjectMetadata} from './metadata';
 import {Serializable} from './types';
 
 export interface ObjectInheritanceOptions {
@@ -10,6 +11,8 @@ export interface ObjectInheritanceOptions {
 
 export function jsonObjectInheritance(options: ObjectInheritanceOptions) {
     return (target: Serializable<any>) => {
-        // @todo Implement inheritance
+        const objectMetadata = JsonObjectMetadata.ensurePresentInPrototype(target.prototype);
+
+        objectMetadata.resolveType = options.resolveType;
     };
 }

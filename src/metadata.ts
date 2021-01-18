@@ -60,6 +60,12 @@ export class JsonObjectMetadata {
 
     initializerCallback?: ((sourceObject: Object, rawSourceObject: Object) => Object) | null;
 
+    /**
+     * Given the data to be parsed, return the matching subtype. Used in conjunction with
+     * `subTypes`.
+     */
+    resolveType?: (type: any) => Serializable<any> | undefined;
+
     constructor(
         classType: Function,
     ) {
@@ -103,6 +109,33 @@ export class JsonObjectMetadata {
             // we do not store the metadata here to not modify builtin prototype
             return primitiveMeta;
         }
+    }
+
+    static getSubTypeMetadata<T>(
+        ctor: Serializable<T>,
+        data: IndexedObject,
+    ): JsonObjectMetadata | undefined {
+        const metadata = this.getFromConstructor(ctor);
+
+        if (metadata === undefined) {
+            return undefined;
+        }
+
+        if (metadata.resolveType === undefined) {
+            return metadata;
+        }
+
+        const resolvedType = metadata.resolveType(data);
+
+        if (resolvedType === ctor) {
+            return metadata;
+        }
+
+        if (resolvedType === undefined) {
+            throw new Error(`No matching subtype returned for ${ctor.constructor.name}`);
+        }
+
+        return this.getSubTypeMetadata(resolvedType, data);
     }
 
     static ensurePresentInPrototype(prototype: IndexedObject): JsonObjectMetadata {

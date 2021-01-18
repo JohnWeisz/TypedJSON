@@ -1,7 +1,7 @@
 import {jsonArrayMember, jsonMember, jsonObject, jsonObjectInheritance, TypedJSON} from '../src';
 import {isEqual} from './utils/object-compare';
 
-xdescribe('polymorphic custom names', () => {
+describe('polymorphic custom names', () => {
     @jsonObjectInheritance({
         resolveType: data => {
             if ('invest-amount' in data) {

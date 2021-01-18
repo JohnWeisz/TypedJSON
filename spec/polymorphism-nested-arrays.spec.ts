@@ -1,7 +1,7 @@
 import {jsonArrayMember, jsonMember, jsonObject, jsonObjectInheritance, TypedJSON} from '../src';
 import {isEqual} from './utils/object-compare';
 
-xdescribe('polymorphism in nested arrays', () => {
+describe('polymorphism in nested arrays', () => {
     @jsonObjectInheritance({
         resolveType: data => {
             if ('inputType' in data) {

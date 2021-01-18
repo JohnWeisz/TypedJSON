@@ -1,6 +1,6 @@
 import {jsonMember, jsonObject, jsonObjectInheritance, TypedJSON} from '../src';
 
-xdescribe('single class', () => {
+describe('single class', () => {
     @jsonObjectInheritance({
         resolveType: data => {
             return Bob;
@@ -32,7 +32,7 @@ xdescribe('single class', () => {
     describe('deserialized', () => {
         beforeAll(function () {
             this.person = TypedJSON.parse(
-                '{ "__type": "Bob", "firstName": "John", "lastName": "Doe", "pounds": 40 }',
+                '{ "firstName": "John", "lastName": "Doe", "pounds": 40 }',
                 Person,
             );
         });
@@ -55,7 +55,7 @@ xdescribe('single class', () => {
             person.pounds = 30;
             // todo fix types so they accept abstract
             expect(TypedJSON.stringify(person, Person))
-                .toBe('{"firstName":"John","lastName":"Doe","pounds":30,"__type":"Bob"}');
+                .toBe('{"firstName":"John","lastName":"Doe","pounds":30}');
         });
     });
 });

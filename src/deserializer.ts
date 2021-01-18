@@ -182,21 +182,21 @@ function convertAsObject<T>(
         return undefined;
     }
 
-    const expectedSelfType = typeDescriptor.ctor;
-    const sourceObjectMetadata = JsonObjectMetadata.getFromConstructor(expectedSelfType);
+    const sourceObjectMetadata = JsonObjectMetadata.getSubTypeMetadata(
+        typeDescriptor.ctor,
+        sourceObject,
+    );
 
     if (sourceObjectMetadata?.isExplicitlyMarked === true) {
-        const sourceMetadata = sourceObjectMetadata;
         // Strong-typed deserialization available, get to it.
         // First deserialize properties into a temporary object.
         const sourceObjectWithDeserializedProperties = {} as IndexedObject;
-
-        const classOptions = mergeOptions(deserializer.options, sourceMetadata.options);
+        const classOptions = mergeOptions(deserializer.options, sourceObjectMetadata.options);
 
         // Deserialize by expected properties.
-        sourceMetadata.dataMembers.forEach((objMemberMetadata, propKey) => {
+        sourceObjectMetadata.dataMembers.forEach((objMemberMetadata, propKey) => {
             const objMemberValue = sourceObject[propKey];
-            const objMemberDebugName = `${nameof(sourceMetadata.classType)}.${propKey}`;
+            const objMemberDebugName = `${nameof(sourceObjectMetadata.classType)}.${propKey}`;
             const objMemberOptions = mergeOptions(classOptions, objMemberMetadata.options);
 
             let revivedValue;
@@ -260,7 +260,7 @@ function convertAsObject<T>(
                 return undefined;
             }
         } else {
-            targetObject = deserializer.instantiateType(expectedSelfType);
+            targetObject = deserializer.instantiateType(sourceObjectMetadata.classType);
         }
 
         // Finally, assign deserialized properties to target object.
