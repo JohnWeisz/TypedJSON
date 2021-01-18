@@ -1,5 +1,4 @@
-import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../../src';
-import {IndexedObject} from '../../src/types';
+import {IndexedObject, jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../../src';
 
 describe('lazy, polymorphism custom type hints', () => {
     describe('should work for a base class', () => {

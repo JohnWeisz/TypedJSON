@@ -1,6 +1,12 @@
-import {jsonMember, jsonObject, TypedJSON} from '../src';
+import {jsonMember, jsonObject, jsonObjectInheritance, TypedJSON} from '../src';
 
 describe('single class', () => {
+    @jsonObjectInheritance({
+        resolveType: data => {
+            return Bob;
+        },
+    })
+    @jsonObject
     abstract class Person {
         @jsonMember
         firstName?: string;
@@ -22,9 +28,6 @@ describe('single class', () => {
             return `${super.getFullName()} weighing ${this.pounds}`;
         }
     }
-
-    // todo we need something better
-    jsonObject({knownTypes: [Bob]})(Person);
 
     describe('deserialized', () => {
         beforeAll(function () {

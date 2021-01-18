@@ -1,7 +1,16 @@
-import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
+import {jsonArrayMember, jsonMember, jsonObject, jsonObjectInheritance, TypedJSON} from '../src';
 import {isEqual} from './utils/object-compare';
 
 describe('polymorphism', () => {
+    @jsonObjectInheritance({
+        resolveType: data => {
+            if ('investAmount' in data) {
+                return Investor;
+            }
+
+            return Employee;
+        },
+    })
     @jsonObject
     class Person {
         @jsonMember
@@ -20,6 +29,15 @@ describe('polymorphism', () => {
         }
     }
 
+    @jsonObjectInheritance({
+        resolveType: data => {
+            if ('workHours' in data) {
+                return PartTimeEmployee;
+            } else {
+                return Employee;
+            }
+        },
+    })
     @jsonObject
     class Employee extends Person {
         @jsonMember
@@ -61,7 +79,7 @@ describe('polymorphism', () => {
         }
     }
 
-    @jsonObject({knownTypes: [PartTimeEmployee, Investor]})
+    @jsonObject()
     class Company {
         @jsonMember
         name: string;

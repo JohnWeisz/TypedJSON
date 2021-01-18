@@ -1,7 +1,17 @@
-import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
+import {jsonArrayMember, jsonMember, jsonObject, jsonObjectInheritance, TypedJSON} from '../src';
 import {isEqual} from './utils/object-compare';
 
 describe('polymorphic abstract classes', () => {
+    @jsonObjectInheritance({
+        resolveType: data => {
+            if ('inputType' in data) {
+                return SmallNode;
+            } else {
+                return BigNode;
+            }
+        },
+    })
+    @jsonObject()
     abstract class Node {
         @jsonMember
         name: string;
@@ -31,9 +41,7 @@ describe('polymorphic abstract classes', () => {
         }
     }
 
-    @jsonObject({
-        knownTypes: [BigNode, SmallNode],
-    })
+    @jsonObject()
     class Graph {
         @jsonArrayMember(Node)
         nodes: Array<Node>;
