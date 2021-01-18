@@ -36,8 +36,6 @@ export interface ITypedJSONSettings extends OptionsBase {
      */
     mappedTypes?: Map<Serializable<any>, MappedTypeConverters<any>> | null;
 
-    nameResolver?: ((ctor: Function) => string) | null;
-
     /**
      * Sets the amount of indentation to use in produced JSON strings.
      * Default value is 0, or no indentation.
@@ -56,7 +54,6 @@ export class TypedJSON<T> {
     private indent: number = 0;
     private rootConstructor: Serializable<T>;
     private errorHandler: (e: Error) => void;
-    private nameResolver: (ctor: Function) => string;
     private replacer?: (key: string, value: any) => any;
 
     /**
@@ -75,7 +72,6 @@ export class TypedJSON<T> {
             );
         }
 
-        this.nameResolver = (ctor) => nameof(ctor);
         this.rootConstructor = rootConstructor;
         this.errorHandler = (error) => logError(error);
 
@@ -331,11 +327,6 @@ export class TypedJSON<T> {
             settings.mappedTypes.forEach((upDown, type) => {
                 this.setSerializationStrategies(type, upDown);
             });
-        }
-
-        if (settings.nameResolver != null) {
-            this.nameResolver = settings.nameResolver;
-            this.deserializer.setNameResolver(settings.nameResolver);
         }
     }
 

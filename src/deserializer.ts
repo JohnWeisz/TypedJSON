@@ -27,7 +27,6 @@ export type DeserializerFn<T, TD extends TypeDescriptor, Raw> = (
 export class Deserializer<T> {
     options?: OptionsBase;
 
-    private nameResolver?: (ctor: Function) => string;
     private errorHandler: (error: Error) => void = logError;
     private deserializationStrategy = new Map<
         Serializable<any>,
@@ -61,10 +60,6 @@ export class Deserializer<T> {
         deserializer: DeserializerFn<any, TypeDescriptor, any>,
     ) {
         this.deserializationStrategy.set(type, deserializer);
-    }
-
-    setNameResolver(nameResolverCallback: (ctor: Function) => string) {
-        this.nameResolver = nameResolverCallback;
     }
 
     setErrorHandler(errorHandlerCallback: (error: Error) => void) {
