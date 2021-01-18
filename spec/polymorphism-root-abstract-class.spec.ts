@@ -1,6 +1,6 @@
 import {jsonMember, jsonObject, jsonObjectInheritance, TypedJSON} from '../src';
 
-describe('single class', () => {
+xdescribe('single class', () => {
     @jsonObjectInheritance({
         resolveType: data => {
             return Bob;

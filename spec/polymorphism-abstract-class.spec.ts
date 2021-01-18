@@ -1,7 +1,7 @@
 import {jsonArrayMember, jsonMember, jsonObject, jsonObjectInheritance, TypedJSON} from '../src';
 import {isEqual} from './utils/object-compare';
 
-describe('polymorphic abstract classes', () => {
+xdescribe('polymorphic abstract classes', () => {
     @jsonObjectInheritance({
         resolveType: data => {
             if ('inputType' in data) {

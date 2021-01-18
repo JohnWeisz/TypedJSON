@@ -5,7 +5,7 @@ import {
     logError,
     nameof,
 } from './helpers';
-import {JsonObjectMetadata, TypeHintEmitter} from './metadata';
+import {JsonObjectMetadata} from './metadata';
 import {getOptionValue, mergeOptions, OptionsBase} from './options-base';
 import {
     AnyT,
@@ -17,21 +17,6 @@ import {
     TypeDescriptor,
 } from './type-descriptor';
 import {IndexedObject, Serializable} from './types';
-
-export function defaultTypeEmitter(
-    targetObject: IndexedObject,
-    sourceObject: IndexedObject,
-    expectedSourceType: Function,
-    sourceTypeMetadata?: JsonObjectMetadata,
-) {
-    // By default, we put a "__type" property on the output object if the actual object is not the
-    // same as the expected one, so that deserialization will know what to deserialize into (given
-    // the required known-types are defined, and the object is a valid subtype of the expected
-    // type).
-    if (sourceObject.constructor !== expectedSourceType) {
-        targetObject.__type = sourceTypeMetadata?.name ?? nameof(sourceObject.constructor);
-    }
-}
 
 /**
  * @param sourceObject The original object that should be serialized.
@@ -61,7 +46,6 @@ export type SerializerFn<T, TD extends TypeDescriptor, Raw> = (
  */
 export class Serializer {
     options?: OptionsBase;
-    private typeHintEmitter: TypeHintEmitter = defaultTypeEmitter;
     private errorHandler: (error: Error) => void = logError;
     private serializationStrategy = new Map<
         Serializable<any>,
@@ -98,18 +82,6 @@ export class Serializer {
         serializer: SerializerFn<any, TypeDescriptor, any>,
     ) {
         this.serializationStrategy.set(type, serializer);
-    }
-
-    setTypeHintEmitter(typeEmitterCallback: TypeHintEmitter) {
-        if (typeof typeEmitterCallback as any !== 'function') {
-            throw new TypeError('\'typeEmitterCallback\' is not a function.');
-        }
-
-        this.typeHintEmitter = typeEmitterCallback;
-    }
-
-    getTypeHintEmitter(): TypeHintEmitter {
-        return this.typeHintEmitter;
     }
 
     setErrorHandler(errorHandlerCallback: (error: Error) => void) {
@@ -188,7 +160,6 @@ function convertAsObject(
 ) {
     let sourceTypeMetadata: JsonObjectMetadata | undefined;
     let targetObject: IndexedObject;
-    let typeHintEmitter = serializer.getTypeHintEmitter();
 
     if (sourceObject.constructor !== typeDescriptor.ctor
         && sourceObject instanceof typeDescriptor.ctor) {
@@ -233,9 +204,6 @@ function convertAsObject(
         targetObject = {};
 
         const classOptions = mergeOptions(serializer.options, sourceMeta.options);
-        if (sourceMeta.typeHintEmitter != null) {
-            typeHintEmitter = sourceMeta.typeHintEmitter;
-        }
 
         sourceMeta.dataMembers.forEach((objMemberMetadata) => {
             const objMemberOptions = mergeOptions(classOptions, objMemberMetadata.options);
@@ -263,9 +231,6 @@ function convertAsObject(
             }
         });
     }
-
-    // Add type-hint.
-    typeHintEmitter(targetObject, sourceObject, typeDescriptor.ctor, sourceTypeMetadata);
 
     return targetObject;
 }

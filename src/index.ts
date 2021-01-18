@@ -2,10 +2,8 @@ export {
     TypedJSON,
     ITypedJSONSettings,
     JsonTypes,
-    defaultTypeResolver,
-    defaultTypeEmitter,
 } from './parser';
-export {TypeResolver, TypeHintEmitter, JsonObjectMetadata} from './metadata';
+export {JsonObjectMetadata} from './metadata';
 export {
     jsonObject,
     IJsonObjectOptions,
