@@ -142,9 +142,13 @@ export function jsonMember<T extends Function>(
             return;
         }
 
-        if (typeDescriptor !== undefined
-            && typeDescriptor instanceof TypeDescriptor
-            && isSpecialPropertyType(decoratorName, typeDescriptor)) {
+        const typeToTest = typeDescriptor instanceof TypeDescriptor
+            ? typeDescriptor
+            : typeDescriptor?.();
+
+        if (typeToTest !== undefined
+            && typeToTest instanceof TypeDescriptor
+            && isSpecialPropertyType(decoratorName, typeToTest)) {
             return;
         }
 
