@@ -105,8 +105,8 @@ export function MapT(
     );
 }
 
-const anySymbol = Symbol('Any');
-export const Any = () => anySymbol; // It does not actually matter what this function returns
+export class Any extends TypeDescriptor {
+}
 
 // TODO support for dictionary types ie. maps that are plain objects
 // export class DictionaryTypeDescriptor extends GenericTypeDescriptor {
