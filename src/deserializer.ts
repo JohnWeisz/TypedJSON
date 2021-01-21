@@ -1,4 +1,4 @@
-import {isSubtypeOf, isValueDefined, logError, nameof} from './helpers';
+import {identity, isSubtypeOf, isValueDefined, logError, nameof} from './helpers';
 import {JsonObjectMetadata, TypeResolver} from './metadata';
 import {getOptionValue, mergeOptions, OptionsBase} from './options-base';
 import {
@@ -45,7 +45,7 @@ export class Deserializer<T> {
         DeserializerFn<any, TypeDescriptor, any>
     >([
         // primitives
-        [Any, (sourceObject) => sourceObject],
+        [Any, identity],
         [Number, deserializeDirectly],
         [String, deserializeDirectly],
         [Boolean, deserializeDirectly],
