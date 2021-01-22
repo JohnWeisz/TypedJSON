@@ -13,7 +13,7 @@ import {
     SetTypeDescriptor,
     TypeDescriptor,
 } from './type-descriptor';
-import {IndexedObject, TypeThunk} from './types';
+import {Constructor, IndexedObject, TypeThunk} from './types';
 
 declare abstract class Reflect {
     static getMetadata(metadataKey: string, target: any, targetKey: string | symbol): any;
@@ -144,9 +144,7 @@ export function jsonMember<T extends Function>(
 
         const typeToTest = typeDescriptor?.();
 
-        if (typeToTest !== undefined
-            && typeToTest instanceof TypeDescriptor
-            && isSpecialPropertyType(decoratorName, typeToTest)) {
+        if (typeToTest !== undefined && isSpecialPropertyType(decoratorName, typeToTest)) {
             return;
         }
 
@@ -165,20 +163,25 @@ export function jsonMember<T extends Function>(
     };
 }
 
-function isSpecialPropertyType(decoratorName: string, typeDescriptor: TypeDescriptor) {
-    if (!(typeDescriptor instanceof ArrayTypeDescriptor) && typeDescriptor.ctor === Array) {
+function isConstructorEqual(type: TypeDescriptor | Function, constructor: Constructor<any>) {
+    return type instanceof TypeDescriptor ? type.ctor === constructor : type === constructor;
+}
+
+function isSpecialPropertyType(decoratorName: string, typeDescriptor: TypeDescriptor | Function) {
+    if (!(typeDescriptor instanceof ArrayTypeDescriptor)
+        && isConstructorEqual(typeDescriptor, Array)) {
         logError(`${decoratorName}: property is an Array. Use the jsonArrayMember decorator to`
             + ` serialize this property.`);
         return true;
     }
 
-    if (!(typeDescriptor instanceof SetTypeDescriptor) && typeDescriptor.ctor === Set) {
+    if (!(typeDescriptor instanceof SetTypeDescriptor) && isConstructorEqual(typeDescriptor, Set)) {
         logError(`${decoratorName}: property is a Set. Use the jsonSetMember decorator to`
             + ` serialize this property.`);
         return true;
     }
 
-    if (!(typeDescriptor instanceof MapTypeDescriptor) && typeDescriptor.ctor === Map) {
+    if (!(typeDescriptor instanceof MapTypeDescriptor) && isConstructorEqual(typeDescriptor, Map)) {
         logError(`${decoratorName}: property is a Map. Use the jsonMapMember decorator to`
             + ` serialize this property.`);
         return true;
