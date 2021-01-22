@@ -67,6 +67,41 @@ const object3 = serializer.parse('{ "prop1": 1, "prop2": "2" }');
 object3 instanceof MyDataClass; // true
 ```
 
+### Mapping types
+
+At times, you might find yourself using a custom type such as `Point`, `Decimal`, or `BigInt`. In this case, `TypedJSON.mapType` can be used to define serialization and deserialization functions to prevent the need of repeating on each member. Example:
+
+```typescript
+import {jsonObject, jsonMember, TypedJSON} from 'typedjson';
+import * as Decimal from 'decimal.js'; // Or any other library your type originates from
+
+TypedJSON.mapType(BigInt, {
+    deserializer: json => new BigInt(json),
+    serializer: value => value.toString(),
+});
+
+TypedJSON.mapType(Decimal, {
+    deserializer: json => new Decimal(json),
+    serializer: value => value.toString(),
+});
+
+@jsonObject
+class MappedTypes {
+
+    @jsonMember
+    cryptoKey: BigInt;
+
+    @jsonMember
+    money: Decimal;
+}
+
+const result = TypedJSON.parse({cryptoKey: '1234567890123456789', money: '12345.67'}, MappedTypes);
+console.log(result.money instanceof Decimal); // true 
+console.log(typeof result.cryptoKey === 'bigint'); // true 
+```
+
+Do note that in order to prevent the values from being parsed as `Number`, losing precision in the process, they have to be strings.
+
 ### Collections
 
 Properties which are of type Array, Set, or Map require the special `@jsonArrayMember`, `@jsonSetMember` and `@jsonMapMember` property decorators (respectively), which require a type argument for members (and keys in case of Maps). For primitive types, the type arguments are the corresponding wrapper types, which the following example showcases. Everything else works the same way:
