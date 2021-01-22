@@ -116,7 +116,7 @@ export function jsonMember<T extends Function>(
         const options = (hasTypeThunk
             ? propertyKeyOrOptions
             : optionsOrPrototype) as IJsonMemberOptions ?? {};
-        let typeDescriptor: TypeDescriptor | TypeThunk | undefined;
+        let typeDescriptor: TypeThunk | undefined;
         const decoratorName =
             `@jsonMember on ${nameof(target.constructor)}.${String(_propKey)}`;
 
@@ -136,15 +136,13 @@ export function jsonMember<T extends Function>(
                 );
                 return;
             }
-            typeDescriptor = ensureTypeDescriptor(reflectCtor);
+            typeDescriptor = () => ensureTypeDescriptor(reflectCtor);
         } else if (options.deserializer === undefined) {
             logError(`${decoratorName}: Cannot determine type`);
             return;
         }
 
-        const typeToTest = typeDescriptor instanceof TypeDescriptor
-            ? typeDescriptor
-            : typeDescriptor?.();
+        const typeToTest = typeDescriptor?.();
 
         if (typeToTest !== undefined
             && typeToTest instanceof TypeDescriptor
@@ -155,9 +153,7 @@ export function jsonMember<T extends Function>(
         injectMetadataInformation(target, _propKey, {
             type: typeDescriptor === undefined
                 ? undefined
-                : () => typeDescriptor instanceof TypeDescriptor
-                    ? typeDescriptor
-                    : ensureTypeDescriptor(typeDescriptor!()),
+                : () => ensureTypeDescriptor(typeDescriptor!()),
             emitDefaultValue: options.emitDefaultValue,
             isRequired: options.isRequired,
             options: extractOptionBase(options),
