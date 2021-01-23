@@ -408,6 +408,7 @@ export class TypedJSON<T> {
         });
 
         if (rootMetadata !== undefined) {
+            rootMetadata.processDeferredKnownTypes();
             rootMetadata.knownTypes.forEach(knownTypeCtor => {
                 knownTypes.set(this.nameResolver(knownTypeCtor), knownTypeCtor);
             });

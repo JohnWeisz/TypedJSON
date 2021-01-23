@@ -169,6 +169,13 @@ export class JsonObjectMetadata {
         return isDirectlySerializableNativeType(ctor) || isTypeTypedArray(ctor)
             || ctor === DataView || ctor === ArrayBuffer;
     }
+
+    processDeferredKnownTypes(): void {
+        this.knownTypesDeferred.forEach(typeThunk => {
+            typeThunk().getTypes().forEach(ctor => this.knownTypes.add(ctor));
+        });
+        this.knownTypesDeferred = [];
+    }
 }
 
 export function injectMetadataInformation(
