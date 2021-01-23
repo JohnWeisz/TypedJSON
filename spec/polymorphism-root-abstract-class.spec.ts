@@ -1,7 +1,7 @@
-import {jsonMember, jsonObject, jsonObjectInheritance, TypedJSON} from '../src';
+import {jsonArrayMember, jsonInheritance, jsonMember, jsonObject, TypedJSON} from '../src';
 
 describe('single class', () => {
-    @jsonObjectInheritance({
+    @jsonInheritance({
         resolveType: data => {
             return Bob;
         },

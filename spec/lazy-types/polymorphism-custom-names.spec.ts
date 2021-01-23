@@ -1,8 +1,8 @@
-import {jsonArrayMember, jsonMember, jsonObject, jsonObjectInheritance, TypedJSON} from '../../src';
+import {jsonArrayMember, jsonInheritance, jsonMember, jsonObject, TypedJSON} from '../../src';
 import {isEqual} from '../utils/object-compare';
 
 describe('lazy, polymorphic custom names', () => {
-    @jsonObjectInheritance({
+    @jsonInheritance({
         resolveType: data => {
             if ('invest-amount' in data) {
                 return Investor;
@@ -27,7 +27,7 @@ describe('lazy, polymorphic custom names', () => {
         }
     }
 
-    @jsonObjectInheritance({
+    @jsonInheritance({
         resolveType: data => {
             if ('work-hours' in data) {
                 return PartTimeEmployee;

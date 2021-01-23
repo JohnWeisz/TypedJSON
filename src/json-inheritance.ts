@@ -9,7 +9,7 @@ export interface ObjectInheritanceOptions {
     resolveType: (type: any) => Serializable<any> | undefined;
 }
 
-export function jsonObjectInheritance(options: ObjectInheritanceOptions) {
+export function jsonInheritance(options: ObjectInheritanceOptions) {
     return (target: Serializable<any>) => {
         const objectMetadata = JsonObjectMetadata.ensurePresentInPrototype(target.prototype);
 
