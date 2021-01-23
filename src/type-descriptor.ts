@@ -105,8 +105,7 @@ export function MapT(
     );
 }
 
-export class Any extends TypeDescriptor {
-}
+export const AnyT = new ConcreteTypeDescriptor(() => undefined);
 
 // TODO support for dictionary types ie. maps that are plain objects
 // export class DictionaryTypeDescriptor extends GenericTypeDescriptor {

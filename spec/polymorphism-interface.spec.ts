@@ -1,4 +1,4 @@
-import {Any, jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
+import {AnyT, jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
 import {isEqual} from './utils/object-compare';
 
 describe('polymorphic interfaces', () => {
@@ -46,7 +46,7 @@ describe('polymorphic interfaces', () => {
         knownTypes: [BigNode, SmallNode],
     })
     class GraphGrid {
-        @jsonArrayMember(() => Any)
+        @jsonArrayMember(() => AnyT)
         points: Array<Point>;
 
         @jsonMember

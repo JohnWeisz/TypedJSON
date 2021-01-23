@@ -1,4 +1,4 @@
-import {Any} from './type-descriptor';
+import {AnyT} from './type-descriptor';
 import {Serializable} from './types';
 
 declare abstract class Reflect {
@@ -109,7 +109,7 @@ export function isValueDefined<T>(value: T): value is Exclude<T, undefined | nul
 }
 
 export function isInstanceOf<T>(value: any, constructor: Function): boolean {
-    if (constructor === Any) {
+    if (constructor === AnyT.ctor) {
         return true;
     } else if (typeof value === 'number') {
         return constructor === Number;

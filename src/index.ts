@@ -20,7 +20,7 @@ export {jsonMapMember, IJsonMapMemberOptions} from './json-map-member';
 export {toJson, IToJsonOptions} from './to-json';
 export {
     ArrayT,
-    Any,
+    AnyT,
     SetT,
     MapT,
     Typelike,
