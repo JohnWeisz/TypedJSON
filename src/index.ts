@@ -11,9 +11,13 @@ export {
     IJsonObjectOptionsWithInitializer,
     IJsonObjectOptionsBase,
 } from './json-object';
+export {
+    discriminatorProperty,
+    jsonInheritance,
+    ObjectInheritanceOptions,
+} from './json-inheritance';
 export {jsonMember, IJsonMemberOptions} from './json-member';
 export {jsonArrayMember, IJsonArrayMemberOptions} from './json-array-member';
-export {jsonInheritance} from './json-inheritance';
 export {jsonSetMember, IJsonSetMemberOptions} from './json-set-member';
 export {jsonMapMember, IJsonMapMemberOptions} from './json-map-member';
 export {toJson, IToJsonOptions} from './to-json';

@@ -230,6 +230,8 @@ function convertAsObject(
                 targetObject[objMemberMetadata.name] = serialized;
             }
         });
+
+        sourceMeta.onSerializeType?.(sourceObject, targetObject);
     }
 
     return targetObject;

@@ -56,6 +56,11 @@ export class JsonObjectMetadata {
 
     onDeserializedMethodName?: string | null;
 
+    /**
+     * Function to be used to mutate the resulting serialization given the source object.
+     */
+    onSerializeType?: (source: any, result: {[k: string]: any}) => void;
+
     beforeSerializationMethodName?: string | null;
 
     initializerCallback?: ((sourceObject: Object, rawSourceObject: Object) => Object) | null;
@@ -148,6 +153,7 @@ export class JsonObjectMetadata {
         // Inherit json members and known types from parent @jsonObject (if any).
         const parentMetadata: JsonObjectMetadata | undefined = prototype[METADATA_FIELD_KEY];
         if (parentMetadata !== undefined) {
+            objectMetadata.onSerializeType = parentMetadata.onSerializeType;
             parentMetadata.dataMembers.forEach((memberMetadata, propKey) => {
                 objectMetadata.dataMembers.set(propKey, memberMetadata);
             });
