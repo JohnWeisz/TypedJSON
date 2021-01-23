@@ -30,11 +30,33 @@ export interface DiscriminatorPropertyOptions {
     property: string;
 
     /**
-     * An arrow function returning an object matching a discriminator to its subtype.
+     * An arrow function returning an object with as key the discriminator and value the type to
+     * instantiate.
      */
     types: () => {[k: string]: Serializable<any>};
 }
 
+/**
+ * Handle subtype lookup by matching the value of the given property to the types map. e.g.
+ * ```
+ * discriminatorProperty({
+ *     property: 'type',
+ *     types: () => ({
+ *         foo: Foo,
+ *         bar: Bar,
+ *     }),
+ * })
+ * ```
+ * with the following data:
+ * ```
+ * {
+ *     "type": "foo"
+ * }
+ * ```
+ * This will result in TypedJSON looking up the value of `data.type`, here `foo`, in the map
+ * provided by `types`, resulting in an object of type `Foo`. When serializing `Foo`, the `type`
+ * property will be added with value `foo`.
+ */
 export function discriminatorProperty(
     {property, types}: DiscriminatorPropertyOptions,
 ): ObjectInheritanceOptions {
