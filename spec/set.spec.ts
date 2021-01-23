@@ -1,4 +1,4 @@
-import {Any, ArrayT, jsonMember, jsonObject, jsonSetMember, SetT, TypedJSON} from '../src';
+import {AnyT, ArrayT, jsonMember, jsonObject, jsonSetMember, SetT, TypedJSON} from '../src';
 import {Everything} from './utils/everything';
 
 describe('set of objects', () => {
@@ -202,7 +202,7 @@ describe('set array member', () => {
 describe('set of raw objects', () => {
     @jsonObject
     class WithRawSet {
-        @jsonSetMember(() => Any)
+        @jsonSetMember(() => AnyT)
         rawSet: Set<any>;
     }
 

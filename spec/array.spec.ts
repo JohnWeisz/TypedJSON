@@ -1,4 +1,4 @@
-import {Any, jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
+import {AnyT, jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
 import {Everything, IEverything} from './utils/everything';
 
 describe('array of objects', () => {
@@ -170,7 +170,7 @@ describe('multidimensional arrays', () => {
 describe('array of raw objects', () => {
     @jsonObject
     class Translations {
-        @jsonArrayMember(() => Any)
+        @jsonArrayMember(() => AnyT)
         localization: Array<any>;
     }
 

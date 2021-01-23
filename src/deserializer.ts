@@ -2,7 +2,7 @@ import {identity, isSubtypeOf, isValueDefined, logError, nameof} from './helpers
 import {JsonObjectMetadata, TypeResolver} from './metadata';
 import {getOptionValue, mergeOptions, OptionsBase} from './options-base';
 import {
-    Any,
+    AnyT,
     ArrayTypeDescriptor,
     ConcreteTypeDescriptor,
     MapShape,
@@ -45,7 +45,7 @@ export class Deserializer<T> {
         DeserializerFn<any, TypeDescriptor, any>
     >([
         // primitives
-        [Any, identity],
+        [AnyT.ctor, identity],
         [Number, deserializeDirectly],
         [String, deserializeDirectly],
         [Boolean, deserializeDirectly],

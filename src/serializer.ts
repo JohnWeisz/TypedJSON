@@ -9,7 +9,7 @@ import {
 import {JsonObjectMetadata, TypeHintEmitter} from './metadata';
 import {getOptionValue, mergeOptions, OptionsBase} from './options-base';
 import {
-    Any,
+    AnyT,
     ArrayTypeDescriptor,
     ConcreteTypeDescriptor,
     MapShape,
@@ -69,7 +69,7 @@ export class Serializer {
         SerializerFn<any, TypeDescriptor, any>
     >([
         // primitives
-        [Any, identity],
+        [AnyT.ctor, identity],
         [Date, identity],
         [Number, identity],
         [String, identity],
