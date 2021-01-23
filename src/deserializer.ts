@@ -254,10 +254,7 @@ function convertAsObject<T>(
     let typeResolver = deserializer.getTypeResolver();
 
     if (sourceObjectMetadata !== undefined) {
-        sourceObjectMetadata.knownTypesDeferred.forEach(typeThunk => {
-            typeThunk().getTypes().forEach(ctor => sourceObjectMetadata!.knownTypes.add(ctor));
-        });
-        sourceObjectMetadata.knownTypesDeferred = [];
+        sourceObjectMetadata.processDeferredKnownTypes();
 
         // Merge known types received from "above" with known types defined on the current type.
         knownTypeConstructors = deserializer.mergeKnownTypes(
