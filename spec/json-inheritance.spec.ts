@@ -68,58 +68,113 @@ describe('jsonInheritance', () => {
     });
 
     describe('with discriminator', () => {
-        @jsonInheritance(discriminatorProperty({
-            property: 'type',
-            types: () => ({
-                Employee: Employee,
-                Investor: Investor,
-                PartTimeEmployee: PartTimeEmployee,
-            }),
-        }))
-        @jsonObject
-        class Person {
-            name: string;
-        }
+        describe('and one jsonInheritance decorator', () => {
+            @jsonInheritance(discriminatorProperty({
+                property: 'type',
+                types: () => ({
+                    Employee: Employee,
+                    Investor: Investor,
+                    PartTimeEmployee: PartTimeEmployee,
+                }),
+            }))
+            @jsonObject
+            class Person {
+                name: string;
+            }
 
-        @jsonObject
-        class Employee extends Person {
-        }
+            @jsonObject
+            class Employee extends Person {
+            }
 
-        @jsonObject
-        class PartTimeEmployee extends Employee {
-        }
+            @jsonObject
+            class PartTimeEmployee extends Employee {
+            }
 
-        @jsonObject
-        class Investor extends Person {
-        }
+            @jsonObject
+            class Investor extends Person {
+            }
 
-        @jsonObject
-        class Company {
+            @jsonObject
+            class Company {
 
-            @jsonMember
-            owner: Person;
-        }
+                @jsonMember
+                owner: Person;
+            }
 
-        it('should deserialize into correct type', () => {
-            const result = TypedJSON.parse({
-                owner: {
-                    name: 'Jeff',
-                    type: 'Investor',
-                },
-            }, Company);
+            it('should deserialize into correct type', () => {
+                const result = TypedJSON.parse({
+                    owner: {
+                        name: 'Jeff',
+                        type: 'Investor',
+                    },
+                }, Company);
 
-            expect(result.owner).toBeInstanceOf(Investor);
+                expect(result.owner).toBeInstanceOf(Investor);
+            });
+
+            it('should have correct type property on serialization', () => {
+                const company = new Company();
+                company.owner = new Investor();
+
+                const result: any = TypedJSON.toPlainJson(company, Company);
+                expect(result.owner.type).toEqual('Investor');
+            });
+
+            describe('and nested inheritance', () => {
+                it('should deserialize into correct type', () => {
+                    const result = TypedJSON.parse({
+                        owner: {
+                            name: 'George',
+                            type: 'PartTimeEmployee',
+                        },
+                    }, Company);
+
+                    expect(result.owner).toBeInstanceOf(PartTimeEmployee);
+                });
+
+                it('should have correct type property on serialization', () => {
+                    const company = new Company();
+                    company.owner = new PartTimeEmployee();
+
+                    const result: any = TypedJSON.toPlainJson(company, Company);
+                    expect(result.owner.type).toEqual('PartTimeEmployee');
+                });
+            });
         });
 
-        it('should have correct type property on serialization', () => {
-            const company = new Company();
-            company.owner = new Investor();
+        describe('and multiple jsonInheritance decorators', () => {
+            @jsonInheritance(discriminatorProperty({
+                property: 'type',
+                types: () => ({
+                    Employee: Employee,
+                }),
+            }))
+            @jsonObject
+            class Person {
+                name: string;
+            }
 
-            const result: any = TypedJSON.toPlainJson(company, Company);
-            expect(result.owner.type).toEqual('Investor');
-        });
+            @jsonInheritance(discriminatorProperty({
+                property: 'type',
+                types: () => ({
+                    PartTimeEmployee: PartTimeEmployee,
+                }),
+            }))
+            @jsonObject
+            class Employee extends Person {
+            }
 
-        describe('and nested inheritance', () => {
+            @jsonObject
+            class PartTimeEmployee extends Employee {
+            }
+
+            @jsonObject
+            class Company {
+
+                @jsonMember
+                owner: Person;
+            }
+
             it('should deserialize into correct type', () => {
                 const result = TypedJSON.parse({
                     owner: {
