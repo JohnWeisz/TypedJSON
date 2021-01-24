@@ -137,7 +137,7 @@ export class JsonObjectMetadata {
         }
 
         if (resolvedType === undefined) {
-            throw new Error(`No matching subtype returned for ${ctor.constructor.name}`);
+            throw new Error(`No matching subtype returned for ${ctor.name}`);
         }
 
         return this.getSubTypeMetadata(resolvedType, data);
