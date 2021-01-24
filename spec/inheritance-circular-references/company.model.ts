@@ -1,5 +1,5 @@
 import {jsonMember, jsonObject} from '../../src';
-import {Person} from './person.model';
+import {Person} from './barrel';
 
 @jsonObject
 export class Company {
