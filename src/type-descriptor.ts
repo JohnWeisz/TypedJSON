@@ -1,3 +1,4 @@
+import {LAZY_TYPE_EXPLANATION, logError} from './helpers';
 import {MaybeTypeThunk, TypeThunk} from './types';
 
 export abstract class TypeDescriptor {
@@ -132,7 +133,14 @@ export function ensureTypeDescriptor(type: Typelike): TypeDescriptor {
     return type instanceof TypeDescriptor ? type : new ConcreteTypeDescriptor(type);
 }
 
-export function ensureTypeThunk(typeThunkOrSerializable: MaybeTypeThunk): TypeThunk {
+export function ensureTypeThunk(
+    typeThunkOrSerializable: MaybeTypeThunk | null | undefined,
+    decoratorName: string,
+): TypeThunk {
+    if (typeThunkOrSerializable == null) {
+        throw new Error(`No type given on ${decoratorName}. ${LAZY_TYPE_EXPLANATION}`);
+    }
+
     if (typeThunkOrSerializable instanceof TypeDescriptor) {
         return () => typeThunkOrSerializable;
     }

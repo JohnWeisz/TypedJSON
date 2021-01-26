@@ -2,6 +2,7 @@ import {
     isReflectMetadataSupported,
     isSubtypeOf,
     isValueDefined,
+    LAZY_TYPE_EXPLANATION,
     logError,
     logWarning,
     MISSING_REFLECT_CONF_MSG,
@@ -88,10 +89,8 @@ export function jsonMember<T extends Function>(
         // propKey.
         // Obtain property constructor through ReflectDecorators.
         if (!isReflectMetadataSupported) {
-            logError(
-                `${decoratorName}: ReflectDecorators is required if no 'constructor' option is`
-                + ` specified.`,
-            );
+            logError(`${decoratorName}: ReflectDecorators is required if the type is not \
+explicitly provided with e.g. @jsonMember(Number)`);
             return;
         }
 
@@ -99,10 +98,10 @@ export function jsonMember<T extends Function>(
             Reflect.getMetadata('design:type', prototype, property);
 
         if (reflectPropCtor == null) {
-            logError(
-                `${decoratorName}: could not resolve detected property constructor at runtime.${
-                    MISSING_REFLECT_CONF_MSG}`,
-            );
+            logError(`${decoratorName}: could not resolve detected property constructor at \
+runtime. Potential solutions:
+ - ${LAZY_TYPE_EXPLANATION}
+ - ${MISSING_REFLECT_CONF_MSG}`);
             return;
         }
 
@@ -121,27 +120,27 @@ export function jsonMember<T extends Function>(
 
     // jsonMember used as a decorator factory.
     return (target: Object, _propKey: string | symbol) => {
+        const decoratorName =
+            `@jsonMember on ${nameof(target.constructor)}.${String(_propKey)}`;
         const hasTypeThunk = typeof optionsOrPrototype === 'function';
         const typeThunk = hasTypeThunk
-            ? ensureTypeThunk(optionsOrPrototype as any)
+            ? ensureTypeThunk(optionsOrPrototype as any, decoratorName)
             : undefined;
         const options = (hasTypeThunk
             ? propertyKeyOrOptions
             : optionsOrPrototype) as IJsonMemberOptions ?? {};
         let typeDescriptor: TypeThunk | undefined;
-        const decoratorName =
-            `@jsonMember on ${nameof(target.constructor)}.${String(_propKey)}`;
 
         if (options.hasOwnProperty('constructor')) {
             if (hasTypeThunk) {
-                throw new Error('Cannot both define constructor and type. Only one allowed.');
+                throw new Error(
+                    'Cannot both define constructor option and type. Only one allowed.',
+                );
             }
 
             if (!isValueDefined(options.constructor)) {
-                logError(
-                    `${decoratorName}: cannot resolve specified property constructor at`
-                    + ' runtime.',
-                );
+                logError(`${decoratorName}: cannot resolve specified property constructor at \
+runtime. ${LAZY_TYPE_EXPLANATION}`);
                 return;
             }
 
@@ -168,10 +167,8 @@ export function jsonMember<T extends Function>(
             ) as Function | null | undefined;
 
             if (reflectCtor == null) {
-                logError(
-                    `${decoratorName}: cannot resolve detected property constructor at`
-                    + ` runtime.`,
-                );
+                logError(`${decoratorName}: cannot resolve detected property constructor at\
+runtime. ${LAZY_TYPE_EXPLANATION}`);
                 return;
             }
             typeDescriptor = () => ensureTypeDescriptor(reflectCtor);
