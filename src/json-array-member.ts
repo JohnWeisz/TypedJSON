@@ -46,11 +46,10 @@ export function jsonArrayMember(
     maybeTypeThunk: MaybeTypeThunk,
     options: IJsonArrayMemberOptions = {},
 ) {
-    const typeThunk: TypeThunk = ensureTypeThunk(maybeTypeThunk);
-
     return (target: Object, propKey: string | symbol) => {
         const decoratorName =
             `@jsonArrayMember on ${nameof(target.constructor)}.${String(propKey)}`;
+        const typeThunk: TypeThunk = ensureTypeThunk(maybeTypeThunk, decoratorName);
 
         const dimensions = options.dimensions == null ? 1 : options.dimensions;
         if (!isNaN(dimensions) && dimensions < 1) {

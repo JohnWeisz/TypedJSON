@@ -40,12 +40,11 @@ export function jsonMapMember(
     maybeValueThunk: MaybeTypeThunk,
     options: IJsonMapMemberOptions = {},
 ) {
-    const keyThunk = ensureTypeThunk(maybeKeyThunk);
-    const valueThunk = ensureTypeThunk(maybeValueThunk);
-
     return (target: Object, propKey: string | symbol) => {
         // For error messages
         const decoratorName = `@jsonMapMember on ${nameof(target.constructor)}.${String(propKey)}`;
+        const keyThunk = ensureTypeThunk(maybeKeyThunk, decoratorName);
+        const valueThunk = ensureTypeThunk(maybeValueThunk, decoratorName);
 
         // If ReflectDecorators is available, use it to check whether 'jsonMapMember' has been used
         // on a map. Warn if not.
