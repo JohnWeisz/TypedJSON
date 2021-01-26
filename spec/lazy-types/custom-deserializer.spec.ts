@@ -1,47 +1,9 @@
-import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
+import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../../src';
 
-describe('custom member deserializer', () => {
-    @jsonObject
-    class Person {
-        @jsonMember({deserializer: (json: any) => json[0]})
-        firstName: string;
-
-        @jsonMember
-        lastName: string;
-
-        getFullName() {
-            return `${this.firstName} ${this.lastName}`;
-        }
-    }
-
-    beforeAll(function () {
-        this.person = TypedJSON.parse('{ "firstName": ["John"], "lastName": "Doe" }', Person);
-    });
-
-    it('should properly deserialize', function () {
-        expect(this.person.firstName).toBe('John');
-        expect(this.person.lastName).toBe('Doe');
-    });
-
-    it('should return object of proper type', function () {
-        expect(this.person instanceof Person).toBeTruthy();
-    });
-
-    it('should return object with callable functions', function () {
-        expect(this.person.getFullName).toBeDefined();
-        expect(this.person.getFullName()).toBe('John Doe');
-    });
-
-    it('should not affect serialization', function () {
-        expect(TypedJSON.stringify(this.person, Person))
-            .toBe('{"firstName":"John","lastName":"Doe"}');
-    });
-});
-
-describe('custom array member deserializer', () => {
+describe('lazy, custom array member deserializer', () => {
     @jsonObject
     class Obj {
-        @jsonArrayMember(Number, {
+        @jsonArrayMember(() => Number, {
             deserializer: (json: any) => json.split(',').map((v) => parseInt(v, 10)),
         })
         nums: Array<number>;
@@ -77,7 +39,7 @@ describe('custom array member deserializer', () => {
     });
 });
 
-describe('custom delegating array member serializer', () => {
+describe('lazy, custom delegating array member serializer', () => {
     @jsonObject
     class Inner {
         @jsonMember
@@ -103,7 +65,7 @@ describe('custom delegating array member serializer', () => {
 
     @jsonObject
     class Obj {
-        @jsonArrayMember(Inner, {deserializer: objArrayDeserializer})
+        @jsonArrayMember(() => Inner, {deserializer: objArrayDeserializer})
         inners: Array<Inner>;
 
         @jsonMember

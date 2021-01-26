@@ -143,7 +143,7 @@ describe('basic serialization of', () => {
                 @jsonMember
                 bool: boolean = true;
 
-                @jsonArrayMember(() => String)
+                @jsonArrayMember(String)
                 arr: Array<string> = [];
 
                 @jsonMember
@@ -170,7 +170,7 @@ describe('basic serialization of', () => {
                 @jsonMember
                 bool: boolean;
 
-                @jsonArrayMember(() => String)
+                @jsonArrayMember(String)
                 arr: Array<string>;
 
                 @jsonMember

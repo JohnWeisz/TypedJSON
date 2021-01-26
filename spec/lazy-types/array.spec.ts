@@ -1,69 +1,7 @@
-import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
-import {Everything, IEverything} from './utils/everything';
+import {AnyT, jsonArrayMember, jsonObject, TypedJSON} from '../../src';
+import {Everything, IEverything} from '../utils/everything';
 
-describe('array of objects', () => {
-    @jsonObject
-    class Simple {
-        @jsonMember
-        strProp: string;
-
-        @jsonMember
-        numProp: number;
-
-        constructor(init?: {strProp: string; numProp: number}) {
-            if (init !== undefined) {
-                this.strProp = init.strProp;
-                this.numProp = init.numProp;
-            }
-        }
-
-        foo() {
-            return `${this.strProp}-${this.numProp}`;
-        }
-    }
-
-    it('deserializes empty array', () => {
-        const result = TypedJSON.parseAsArray('[]', Simple);
-        expect(result).toBeDefined();
-        expect(result.length).toBe(0);
-    });
-
-    it('serialized empty array', () => {
-        const result = TypedJSON.stringifyAsArray([], Simple);
-        expect(result).toBe('[]');
-    });
-
-    it('deserialized should be of proper type', () => {
-        const expectation = [
-            {strProp: 'delta', numProp: 4},
-            {strProp: 'bravo', numProp: 2},
-            {strProp: 'gamma', numProp: 0},
-        ];
-
-        const result = TypedJSON.parseAsArray(JSON.stringify(expectation), Simple);
-
-        expect(result.length).toBe(3, 'Deserialized array is of wrong length');
-        result.forEach((obj, index) => {
-            expect(obj instanceof Simple).toBeTruthy(`${index} was not of type Simple`);
-            expect(obj)
-                .toHaveProperties(expectation[index], '${index} was deserialized incorrectly');
-        });
-    });
-
-    it('serialized should contain all elements', () => {
-        const expectation = [
-            {strProp: 'delta', numProp: 4},
-            {strProp: 'bravo', numProp: 2},
-            {strProp: 'gamma', numProp: 0},
-        ];
-
-        const result = TypedJSON.stringifyAsArray(expectation.map(obj => new Simple(obj)), Simple);
-
-        expect(result).toBe(JSON.stringify(expectation));
-    });
-});
-
-describe('multidimensional arrays', () => {
+describe('lazy, multidimensional arrays', () => {
     interface IWithArrays {
         one: Array<IEverything>;
         two: Array<Array<IEverything>>;
@@ -73,16 +11,16 @@ describe('multidimensional arrays', () => {
 
     @jsonObject
     class WithArrays implements IWithArrays {
-        @jsonArrayMember(Everything)
+        @jsonArrayMember(() => Everything)
         one: Array<Everything>;
 
-        @jsonArrayMember(Everything, {dimensions: 2})
+        @jsonArrayMember(() => Everything, {dimensions: 2})
         two: Array<Array<Everything>>;
 
-        @jsonArrayMember(Everything, {dimensions: 6})
+        @jsonArrayMember(() => Everything, {dimensions: 6})
         deep: Array<Array<Array<Array<Array<Array<Everything>>>>>>;
 
-        @jsonArrayMember(WithArrays, {dimensions: 2})
+        @jsonArrayMember(() => WithArrays, {dimensions: 2})
         arrayWithArray?: Array<Array<WithArrays>>;
 
         constructor(init?: IWithArrays) {
@@ -167,10 +105,10 @@ describe('multidimensional arrays', () => {
     });
 });
 
-describe('array of raw objects', () => {
+describe('lazy, array of raw objects', () => {
     @jsonObject
     class Translations {
-        @jsonArrayMember(Object)
+        @jsonArrayMember(() => AnyT)
         localization: Array<any>;
     }
 

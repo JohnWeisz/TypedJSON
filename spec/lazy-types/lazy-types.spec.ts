@@ -9,7 +9,7 @@ import {
 import {A} from './a.model';
 import {B} from './b.model';
 
-describe('Lazy types', () => {
+describe('lazy, Lazy types', () => {
     describe('simple member', () => {
         @jsonObject
         class Root {

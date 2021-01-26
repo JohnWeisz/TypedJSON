@@ -1,7 +1,7 @@
-import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
-import {isEqual} from './utils/object-compare';
+import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../../src';
+import {isEqual} from '../utils/object-compare';
 
-describe('polymorphism in nested arrays', () => {
+describe('lazy, polymorphism in nested arrays', () => {
     abstract class Node {
         @jsonMember
         name: string;
@@ -18,10 +18,10 @@ describe('polymorphism in nested arrays', () => {
 
     @jsonObject
     class BigNode extends Node {
-        @jsonArrayMember(String)
+        @jsonArrayMember(() => String)
         inputs: Array<string>;
 
-        @jsonArrayMember(String)
+        @jsonArrayMember(() => String)
         outputs: Array<string>;
 
         constructor() {
@@ -33,10 +33,10 @@ describe('polymorphism in nested arrays', () => {
 
     @jsonObject({knownTypes: [BigNode, SmallNode]})
     class Graph {
-        @jsonArrayMember(Node, {dimensions: 2})
+        @jsonArrayMember(() => Node, {dimensions: 2})
         items: Array<Array<Node>>;
 
-        @jsonArrayMember(SmallNode, {dimensions: 2})
+        @jsonArrayMember(() => SmallNode, {dimensions: 2})
         smallItems: Array<Array<SmallNode>>;
 
         constructor() {
@@ -44,6 +44,8 @@ describe('polymorphism in nested arrays', () => {
             this.smallItems = [];
         }
     }
+
+    let portTypeIndex = 0;
 
     function randPortType() {
         const types = [
@@ -54,7 +56,7 @@ describe('polymorphism in nested arrays', () => {
             'void',
         ];
 
-        return types[Math.floor(Math.random() * types.length)];
+        return types[portTypeIndex++ % types.length];
     }
 
     function test(log: boolean) {
@@ -80,7 +82,7 @@ describe('polymorphism in nested arrays', () => {
             for (let j = 0; j < 8; j++) {
                 let node: Node;
 
-                if (Math.random() < 0.25) {
+                if (j % 2 === 0) {
                     const bigNode = new BigNode();
 
                     bigNode.inputs = [

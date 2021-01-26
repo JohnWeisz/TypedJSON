@@ -1,7 +1,7 @@
-import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
-import {IndexedObject} from '../src/types';
+import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../../src';
+import {IndexedObject} from '../../src/types';
 
-describe('polymorphism custom type hints', () => {
+describe('lazy, polymorphism custom type hints', () => {
     describe('should work for a base class', () => {
         @jsonObject({
             typeHintEmitter: (targetObject, sourceObject) => {
@@ -73,7 +73,7 @@ describe('polymorphism custom type hints', () => {
             @jsonMember
             name: string;
 
-            @jsonArrayMember(Employee)
+            @jsonArrayMember(() => Employee)
             employees: Array<Employee> = [];
 
             @jsonMember

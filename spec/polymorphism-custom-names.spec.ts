@@ -64,7 +64,7 @@ describe('polymorphic custom names', () => {
         @jsonMember
         name: string;
 
-        @jsonArrayMember(() => Employee, {name: 'company-employees'})
+        @jsonArrayMember(Employee, {name: 'company-employees'})
         employees: Array<Employee>;
 
         @jsonMember
@@ -75,15 +75,38 @@ describe('polymorphic custom names', () => {
         }
     }
 
-    function test(owner: Person) {
+    function test(log: boolean) {
         // Create a Company.
         const company = new Company();
         company.name = 'Json Types';
-        company.owner = owner;
+
+        switch (Math.floor(Math.random() * 4)) {
+            case 0:
+                company.owner = new Employee('John', 'White', 240000, new Date(1992, 5, 27));
+                break;
+
+            case 1:
+                company.owner = new Investor('John', 'White', 1700000);
+                break;
+
+            case 2:
+                company.owner = new PartTimeEmployee(
+                    'John',
+                    'White',
+                    160000,
+                    new Date(1992, 5, 27),
+                );
+                (company.owner as PartTimeEmployee).workHours = Math.floor(Math.random() * 40);
+                break;
+
+            default:
+                company.owner = new Person('John', 'White');
+                break;
+        }
 
         // Add employees.
         for (let j = 0; j < 20; j++) {
-            if (j % 2 === 0) {
+            if (Math.random() < 0.2) {
                 const newPartTimeEmployee = new PartTimeEmployee(
                     `firstname_${j}`,
                     `lastname_${j}`,
@@ -107,30 +130,18 @@ describe('polymorphic custom names', () => {
         const json = TypedJSON.stringify(company, Company);
         const reparsed = TypedJSON.parse(json, Company);
 
-        const success = isEqual(company, reparsed);
-
-        if (!success) {
-            console.log('Polymorphism test failed');
-            console.log('company', company);
-            console.log('json', JSON.parse(json));
-            console.log('reparsed', reparsed);
+        if (log) {
+            console.log('Test: polymorphism with custom names...');
+            console.log(company);
+            console.log(JSON.parse(json));
+            console.log(reparsed);
+            console.log('Test finished.');
         }
 
-        return success;
+        return isEqual(company, reparsed);
     }
 
     it('should work', () => {
-        expect(test(new Employee('John', 'White', 240000, new Date(1992, 5, 27)))).toBeTruthy();
-        expect(test(new Investor('John', 'White', 1700000))).toBeTruthy();
-        const partTimeEmployee = new PartTimeEmployee(
-            'John',
-            'White',
-            160000,
-            new Date(1992, 5, 27),
-        );
-
-        partTimeEmployee.workHours = 38;
-        expect(test(partTimeEmployee)).toBeTruthy();
-        expect(test(new Person('John', 'White'))).toBeTruthy();
+        expect(test(false)).toBeTruthy();
     });
 });

@@ -1,3 +1,5 @@
+import {MaybeTypeThunk, TypeThunk} from './types';
+
 export abstract class TypeDescriptor {
     protected constructor(readonly ctor: Function) {
     }
@@ -128,4 +130,17 @@ export function isTypelike(type: any): type is Typelike {
 
 export function ensureTypeDescriptor(type: Typelike): TypeDescriptor {
     return type instanceof TypeDescriptor ? type : new ConcreteTypeDescriptor(type);
+}
+
+export function ensureTypeThunk(typeThunkOrSerializable: MaybeTypeThunk): TypeThunk {
+    if (typeThunkOrSerializable instanceof TypeDescriptor) {
+        return () => typeThunkOrSerializable;
+    }
+
+    if (typeThunkOrSerializable.name !== '') {
+        // Function is not anonymous and as such should not be a thunk
+        return () => typeThunkOrSerializable;
+    }
+
+    return typeThunkOrSerializable as TypeThunk;
 }

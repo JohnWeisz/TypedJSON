@@ -1,10 +1,7 @@
-import {ArrayT, jsonMapMember} from '../src';
-import {jsonMember} from '../src/json-member';
-import {jsonObject} from '../src/json-object';
-import {TypedJSON} from '../src/parser';
-import {MapShape} from '../src/type-descriptor';
+import {ArrayT, jsonMapMember, jsonMember, jsonObject, TypedJSON} from '../../src';
+import {MapShape} from '../../src/type-descriptor';
 
-describe('map dictionary shape', () => {
+describe('lazy, map dictionary shape', () => {
     @jsonObject
     class Simple {
         @jsonMember
@@ -27,7 +24,7 @@ describe('map dictionary shape', () => {
 
     @jsonObject
     class DictMap {
-        @jsonMapMember(String, Simple, {shape: MapShape.OBJECT})
+        @jsonMapMember(() => String, () => Simple, {shape: MapShape.OBJECT})
         prop: Map<String, Simple>;
 
         getSetSize() {
@@ -74,7 +71,7 @@ describe('map dictionary shape', () => {
     });
 });
 
-describe('map of array dictionary shape', () => {
+describe('lazy, map of array dictionary shape', () => {
     @jsonObject
     class Simple {
         @jsonMember
@@ -97,7 +94,7 @@ describe('map of array dictionary shape', () => {
 
     @jsonObject
     class DictArrayMap {
-        @jsonMapMember(String, ArrayT(Simple), {shape: MapShape.OBJECT})
+        @jsonMapMember(() => String, () => ArrayT(Simple), {shape: MapShape.OBJECT})
         prop: Map<String, Array<Simple>>;
 
         getSetSize() {

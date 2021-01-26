@@ -1,6 +1,9 @@
 import {
     isReflectMetadataSupported,
+    isSubtypeOf,
+    isValueDefined,
     logError,
+    logWarning,
     MISSING_REFLECT_CONF_MSG,
     nameof,
 } from './helpers';
@@ -9,17 +12,24 @@ import {extractOptionBase, OptionsBase} from './options-base';
 import {
     ArrayTypeDescriptor,
     ensureTypeDescriptor,
+    ensureTypeThunk,
     MapTypeDescriptor,
     SetTypeDescriptor,
     TypeDescriptor,
 } from './type-descriptor';
-import {Constructor, IndexedObject, TypeThunk} from './types';
+import {Constructor, IndexedObject, MaybeTypeThunk, TypeThunk} from './types';
 
 declare abstract class Reflect {
     static getMetadata(metadataKey: string, target: any, targetKey: string | symbol): any;
 }
 
 export interface IJsonMemberOptions extends OptionsBase {
+    /**
+     * Sets the constructor of the property.
+     * Optional with ReflectDecorators.
+     */
+    constructor?: Function | TypeDescriptor | null;
+
     /** When set, indicates that the member must be present when deserializing. */
     isRequired?: boolean | null;
 
@@ -59,12 +69,12 @@ export function jsonMember(options: IJsonMemberOptions): PropertyDecorator;
  * options.
  */
 export function jsonMember(
-    type: TypeThunk,
+    type: MaybeTypeThunk,
     options?: IJsonMemberOptions,
 ): PropertyDecorator;
 
 export function jsonMember<T extends Function>(
-    optionsOrPrototype?: IndexedObject | IJsonMemberOptions | TypeThunk,
+    optionsOrPrototype?: IndexedObject | IJsonMemberOptions | MaybeTypeThunk,
     propertyKeyOrOptions?: string | symbol | IJsonMemberOptions,
 ): PropertyDecorator | void {
     if (propertyKeyOrOptions !== undefined
@@ -112,7 +122,9 @@ export function jsonMember<T extends Function>(
     // jsonMember used as a decorator factory.
     return (target: Object, _propKey: string | symbol) => {
         const hasTypeThunk = typeof optionsOrPrototype === 'function';
-        const typeThunk = hasTypeThunk ? optionsOrPrototype as TypeThunk : undefined;
+        const typeThunk = hasTypeThunk
+            ? ensureTypeThunk(optionsOrPrototype as any)
+            : undefined;
         const options = (hasTypeThunk
             ? propertyKeyOrOptions
             : optionsOrPrototype) as IJsonMemberOptions ?? {};
@@ -120,7 +132,33 @@ export function jsonMember<T extends Function>(
         const decoratorName =
             `@jsonMember on ${nameof(target.constructor)}.${String(_propKey)}`;
 
-        if (hasTypeThunk) {
+        if (options.hasOwnProperty('constructor')) {
+            if (hasTypeThunk) {
+                throw new Error('Cannot both define constructor and type. Only one allowed.');
+            }
+
+            if (!isValueDefined(options.constructor)) {
+                logError(
+                    `${decoratorName}: cannot resolve specified property constructor at`
+                    + ' runtime.',
+                );
+                return;
+            }
+
+            // Property constructor has been specified. Use ReflectDecorators (if available) to
+            // check whether that constructor is correct. Warn if not.
+            const newTypeDescriptor = ensureTypeDescriptor(options.constructor);
+            typeDescriptor = () => newTypeDescriptor;
+            if (isReflectMetadataSupported && !isSubtypeOf(
+                newTypeDescriptor.ctor,
+                Reflect.getMetadata('design:type', target, _propKey),
+            )) {
+                logWarning(
+                    `${decoratorName}: detected property type does not match`
+                    + ` 'constructor' option.`,
+                );
+            }
+        } else if (hasTypeThunk) {
             typeDescriptor = typeThunk;
         } else if (isReflectMetadataSupported) {
             const reflectCtor = Reflect.getMetadata(

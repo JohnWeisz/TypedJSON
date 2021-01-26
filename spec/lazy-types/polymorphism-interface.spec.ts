@@ -1,14 +1,20 @@
-import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
-import {isEqual} from './utils/object-compare';
+import {AnyT, jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../../src';
+import {isEqual} from '../utils/object-compare';
 
-describe('polymorphic abstract classes', () => {
-    abstract class Node {
-        @jsonMember
-        name: string;
+describe('lazy, polymorphic interfaces', () => {
+    interface Point {
+        x: number;
+        y: number;
     }
 
     @jsonObject
-    class SmallNode extends Node {
+    class SmallNode implements Point {
+        @jsonMember
+        x: number;
+
+        @jsonMember
+        y: number;
+
         @jsonMember
         inputType: string;
 
@@ -17,15 +23,20 @@ describe('polymorphic abstract classes', () => {
     }
 
     @jsonObject
-    class BigNode extends Node {
-        @jsonArrayMember(String)
+    class BigNode implements Point {
+        @jsonMember
+        x: number;
+
+        @jsonMember
+        y: number;
+
+        @jsonArrayMember(() => String)
         inputs: Array<string>;
 
-        @jsonArrayMember(String)
+        @jsonArrayMember(() => String)
         outputs: Array<string>;
 
         constructor() {
-            super();
             this.inputs = [];
             this.outputs = [];
         }
@@ -34,17 +45,19 @@ describe('polymorphic abstract classes', () => {
     @jsonObject({
         knownTypes: [BigNode, SmallNode],
     })
-    class Graph {
-        @jsonArrayMember(Node)
-        nodes: Array<Node>;
+    class GraphGrid {
+        @jsonArrayMember(() => AnyT)
+        points: Array<Point>;
 
         @jsonMember
-        root: Node;
+        root: Point;
 
         constructor() {
-            this.nodes = [];
+            this.points = [];
         }
     }
+
+    let portTypeIndex = 0;
 
     function randPortType() {
         const types = [
@@ -55,16 +68,16 @@ describe('polymorphic abstract classes', () => {
             'void',
         ];
 
-        return types[Math.floor(Math.random() * types.length)];
+        return types[portTypeIndex++ % types.length];
     }
 
     function test(log: boolean) {
-        const graph = new Graph();
+        const graph = new GraphGrid();
 
         for (let i = 0; i < 20; i++) {
-            let node: Node;
+            let point: Point;
 
-            if (Math.random() < 0.25) {
+            if (i % 2 === 0) {
                 const bigNode = new BigNode();
 
                 bigNode.inputs = [
@@ -77,30 +90,31 @@ describe('polymorphic abstract classes', () => {
                     randPortType(),
                 ];
 
-                node = bigNode;
+                point = bigNode;
             } else {
                 const smallNode = new SmallNode();
 
                 smallNode.inputType = randPortType();
                 smallNode.outputType = randPortType();
 
-                node = smallNode;
+                point = smallNode;
             }
 
-            node.name = `node_${i}`;
+            point.x = Math.random();
+            point.y = Math.random();
 
             if (i === 0) {
-                graph.root = node;
+                graph.root = point;
             } else {
-                graph.nodes.push(node);
+                graph.points.push(point);
             }
         }
 
-        const json = TypedJSON.stringify(graph, Graph);
-        const clone = TypedJSON.parse(json, Graph);
+        const json = TypedJSON.stringify(graph, GraphGrid);
+        const clone = TypedJSON.parse(json, GraphGrid);
 
         if (log) {
-            console.log('Test: polymorphism with abstract property types...');
+            console.log('Test: polymorphism with interface property types...');
             console.log(graph);
             console.log(JSON.parse(json));
             console.log(clone);

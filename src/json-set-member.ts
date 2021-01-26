@@ -1,8 +1,8 @@
 import {isReflectMetadataSupported, logError, MISSING_REFLECT_CONF_MSG, nameof} from './helpers';
 import {injectMetadataInformation} from './metadata';
 import {extractOptionBase, OptionsBase} from './options-base';
-import {SetT} from './type-descriptor';
-import {TypeThunk} from './types';
+import {ensureTypeThunk, SetT} from './type-descriptor';
+import {MaybeTypeThunk} from './types';
 
 declare abstract class Reflect {
     static getMetadata(metadataKey: string, target: any, targetKey: string | symbol): any;
@@ -31,11 +31,13 @@ export interface IJsonSetMemberOptions extends OptionsBase {
 /**
  * Specifies that the property is part of the object when serializing.
  * Use this decorator on properties of type Set<T>.
- * @param typeThunk Constructor of set elements (e.g. 'Number' for Set<number> or 'Date'
+ * @param maybeTypeThunk Constructor of set elements (e.g. 'Number' for Set<number> or 'Date'
  * for Set<Date>).
  * @param options Additional options.
  */
-export function jsonSetMember(typeThunk: TypeThunk, options: IJsonSetMemberOptions = {}) {
+export function jsonSetMember(maybeTypeThunk: MaybeTypeThunk, options: IJsonSetMemberOptions = {}) {
+    const typeThunk = ensureTypeThunk(maybeTypeThunk);
+
     return (target: Object, propKey: string | symbol) => {
         // For error messages
         const decoratorName = `@jsonSetMember on ${nameof(target.constructor)}.${String(propKey)}`;

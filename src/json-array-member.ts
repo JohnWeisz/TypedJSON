@@ -4,10 +4,10 @@ import {extractOptionBase, OptionsBase} from './options-base';
 import {
     ArrayTypeDescriptor,
     ensureTypeDescriptor,
-    isTypelike,
+    ensureTypeThunk,
     TypeDescriptor,
 } from './type-descriptor';
-import {TypeThunk} from './types';
+import {MaybeTypeThunk, TypeThunk} from './types';
 
 declare abstract class Reflect {
     static getMetadata(metadataKey: string, target: any, targetKey: string | symbol): any;
@@ -38,14 +38,16 @@ export interface IJsonArrayMemberOptions extends OptionsBase {
 
 /**
  * Specifies that a property, of type array, is part of an object when serializing.
- * @param typeThunk Constructor of array elements (e.g. 'Number' for 'number[]', or 'Date'
+ * @param maybeTypeThunk Constructor of array elements (e.g. 'Number' for 'number[]', or 'Date'
  * for 'Date[]').
  * @param options Additional options.
  */
 export function jsonArrayMember(
-    typeThunk: TypeThunk,
+    maybeTypeThunk: MaybeTypeThunk,
     options: IJsonArrayMemberOptions = {},
 ) {
+    const typeThunk: TypeThunk = ensureTypeThunk(maybeTypeThunk);
+
     return (target: Object, propKey: string | symbol) => {
         const decoratorName =
             `@jsonArrayMember on ${nameof(target.constructor)}.${String(propKey)}`;

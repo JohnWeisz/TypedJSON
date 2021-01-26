@@ -1,17 +1,15 @@
-import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
-import {isEqual} from './utils/object-compare';
+import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../../src';
+import {isEqual} from '../utils/object-compare';
 
-describe('polymorphism', () => {
+describe('lazy, polymorphic custom names', () => {
     @jsonObject
     class Person {
-        @jsonMember
+        @jsonMember({name: 'first-name'})
         firstName: string;
 
-        @jsonMember
+        @jsonMember({name: 'last-name'})
         lastName: string;
 
-        constructor();
-        constructor(firstName: string, lastName: string);
         constructor(firstName?: string, lastName?: string) {
             if (firstName !== undefined && lastName !== undefined) {
                 this.firstName = firstName;
@@ -41,15 +39,15 @@ describe('polymorphism', () => {
         }
     }
 
-    @jsonObject
+    @jsonObject({name: 'part-time-employee'})
     class PartTimeEmployee extends Employee {
-        @jsonMember
+        @jsonMember({name: 'work-hours'})
         workHours: number;
     }
 
-    @jsonObject
+    @jsonObject()
     class Investor extends Person {
-        @jsonMember
+        @jsonMember({name: 'invest-amount'})
         investAmount: number;
 
         constructor();
@@ -61,12 +59,12 @@ describe('polymorphism', () => {
         }
     }
 
-    @jsonObject({knownTypes: [PartTimeEmployee, Investor]})
+    @jsonObject({name: 'company', knownTypes: [PartTimeEmployee, Investor]})
     class Company {
         @jsonMember
         name: string;
 
-        @jsonArrayMember(Employee)
+        @jsonArrayMember(() => Employee, {name: 'company-employees'})
         employees: Array<Employee>;
 
         @jsonMember
@@ -77,38 +75,15 @@ describe('polymorphism', () => {
         }
     }
 
-    function test(log: boolean) {
+    function test(owner: Person) {
         // Create a Company.
         const company = new Company();
         company.name = 'Json Types';
-
-        switch (Math.floor(Math.random() * 4)) {
-            case 0:
-                company.owner = new Employee('John', 'White', 240000, new Date(1992, 5, 27));
-                break;
-
-            case 1:
-                company.owner = new Investor('John', 'White', 1700000);
-                break;
-
-            case 2:
-                company.owner = new PartTimeEmployee(
-                    'John',
-                    'White',
-                    160000,
-                    new Date(1992, 5, 27),
-                );
-                (company.owner as PartTimeEmployee).workHours = Math.floor(Math.random() * 40);
-                break;
-
-            default:
-                company.owner = new Person('John', 'White');
-                break;
-        }
+        company.owner = owner;
 
         // Add employees.
         for (let j = 0; j < 20; j++) {
-            if (Math.random() < 0.2) {
+            if (j % 2 === 0) {
                 const newPartTimeEmployee = new PartTimeEmployee(
                     `firstname_${j}`,
                     `lastname_${j}`,
@@ -132,18 +107,30 @@ describe('polymorphism', () => {
         const json = TypedJSON.stringify(company, Company);
         const reparsed = TypedJSON.parse(json, Company);
 
-        if (log) {
-            console.log('Test: polymorphism...');
-            console.log(company);
-            console.log(JSON.parse(json));
-            console.log(reparsed);
-            console.log('Test finished.');
+        const success = isEqual(company, reparsed);
+
+        if (!success) {
+            console.log('Polymorphism test failed');
+            console.log('company', company);
+            console.log('json', JSON.parse(json));
+            console.log('reparsed', reparsed);
         }
 
-        return isEqual(company, reparsed);
+        return success;
     }
 
     it('should work', () => {
-        expect(test(false)).toBeTruthy();
+        expect(test(new Employee('John', 'White', 240000, new Date(1992, 5, 27)))).toBeTruthy();
+        expect(test(new Investor('John', 'White', 1700000))).toBeTruthy();
+        const partTimeEmployee = new PartTimeEmployee(
+            'John',
+            'White',
+            160000,
+            new Date(1992, 5, 27),
+        );
+
+        partTimeEmployee.workHours = 38;
+        expect(test(partTimeEmployee)).toBeTruthy();
+        expect(test(new Person('John', 'White'))).toBeTruthy();
     });
 });

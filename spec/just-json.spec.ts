@@ -63,7 +63,7 @@ describe('json (without automatic stringify)', () => {
             propStr: String;
             @jsonMember
             propNum: number;
-            @jsonArrayMember(() => String)
+            @jsonArrayMember(String)
             propArr: Array<String>;
             @jsonMember
             propDate: Date;
