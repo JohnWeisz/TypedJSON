@@ -78,13 +78,13 @@ import { jsonObject, jsonArrayMember, jsonSetMember, jsonMapMember, TypedJSON } 
 @jsonObject
 class MyDataClass
 {
-    @jsonArrayMember(() => Number)
+    @jsonArrayMember(Number)
     public prop1: number[];
 
-    @jsonSetMember(() => String)
+    @jsonSetMember(String)
     public prop2: Set<string>;
     
-    @jsonMapMember(() => Number, () => MySecondDataClass)
+    @jsonMapMember(Number, MySecondDataClass)
     public prop3: Map<number, MySecondDataClass>;
 }
 ```
@@ -117,10 +117,10 @@ class MyDataClass
     @jsonMember
     public prop1: MySecondDataClass;
     
-    @jsonArrayMember(() => MySecondDataClass)
+    @jsonArrayMember(MySecondDataClass)
     public arrayProp: MySecondDataClass[];
 
-    @jsonMapMember(() => Number, () => MySecondDataClass)
+    @jsonMapMember(Number, MySecondDataClass)
     public mapProp: Map<number, MySecondDataClass>;
 }
 ```
@@ -133,7 +133,7 @@ import {Any, jsonObject, jsonMember} from 'typedjson';
 
 @jsonObject
 class Something {
-    @jsonMember(() => Any)
+    @jsonMember(Any)
     anythingGoes: any;
 }
 ```
@@ -150,11 +150,11 @@ Without ReflectDecorators, `@jsonMember` requires an additional type argument, b
   class MyDataClass
   {
 -     @jsonMember
-+     @jsonMember(() => Number)
++     @jsonMember(Number)
       public prop1: number;
 
 -     @jsonMember
-+     @jsonMember(() => MySecondDataClass)
++     @jsonMember(MySecondDataClass)
       public prop2: MySecondDataClass;
   }
 ```
@@ -236,6 +236,27 @@ class Model {
 }
 ```
 
+## Circular references and using types before they are defined
+In case you have to use a type before it is defined, or your find yourself in need a data structure with circular references, errors can occur. To resolve these errors, specify the type lazily by using an arrow function as follows: 
+
+```diff
+  import {jsonObject, jsonMember} from 'typedjson';
+
+  @jsonObject
+  class Foo {
+-     @jsonMember(Bar)
++     @jsonMember(() => Bar)
+      bar: Bar;
+  }
+  
+  @jsonObject
+  class Bar {
+-     @jsonMember(Foo)
++     @jsonMember(() => Foo)
+      foo: Foo;
+  }
+```
+
 ## Limitations
 
 ### Type-definitions
@@ -267,10 +288,10 @@ import { jsonObject, jsonArrayMember, TypedJSON } from 'typedjson';
 @jsonObject
 class MyDataClass
 {
-    @jsonArrayMember(() => Number, { dimensions: 2 })
+    @jsonArrayMember(Number, { dimensions: 2 })
     public prop1: number[][];
 
-    @jsonArrayMember(() => Number, { dimensions: 3 })
+    @jsonArrayMember(Number, { dimensions: 3 })
     public prop2: number[][][];
 }
 ```
