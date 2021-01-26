@@ -1,4 +1,4 @@
-import {AnyT, jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
+import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
 import {isEqual} from './utils/object-compare';
 
 describe('polymorphic interfaces', () => {
@@ -30,10 +30,10 @@ describe('polymorphic interfaces', () => {
         @jsonMember
         y: number;
 
-        @jsonArrayMember(() => String)
+        @jsonArrayMember(String)
         inputs: Array<string>;
 
-        @jsonArrayMember(() => String)
+        @jsonArrayMember(String)
         outputs: Array<string>;
 
         constructor() {
@@ -46,7 +46,7 @@ describe('polymorphic interfaces', () => {
         knownTypes: [BigNode, SmallNode],
     })
     class GraphGrid {
-        @jsonArrayMember(() => AnyT)
+        @jsonArrayMember(Object)
         points: Array<Point>;
 
         @jsonMember
@@ -57,8 +57,6 @@ describe('polymorphic interfaces', () => {
         }
     }
 
-    let portTypeIndex = 0;
-
     function randPortType() {
         const types = [
             'string',
@@ -68,7 +66,7 @@ describe('polymorphic interfaces', () => {
             'void',
         ];
 
-        return types[portTypeIndex++ % types.length];
+        return types[Math.floor(Math.random() * types.length)];
     }
 
     function test(log: boolean) {
@@ -77,7 +75,7 @@ describe('polymorphic interfaces', () => {
         for (let i = 0; i < 20; i++) {
             let point: Point;
 
-            if (i % 2 === 0) {
+            if (Math.random() < 0.25) {
                 const bigNode = new BigNode();
 
                 bigNode.inputs = [

@@ -1,8 +1,8 @@
 import {isReflectMetadataSupported, logError, MISSING_REFLECT_CONF_MSG, nameof} from './helpers';
 import {injectMetadataInformation} from './metadata';
 import {extractOptionBase, OptionsBase} from './options-base';
-import {MapOptions, MapT} from './type-descriptor';
-import {TypeThunk} from './types';
+import {ensureTypeThunk, MapOptions, MapT} from './type-descriptor';
+import {MaybeTypeThunk} from './types';
 
 declare abstract class Reflect {
     static getMetadata(metadataKey: string, target: any, targetKey: string | symbol): any;
@@ -31,15 +31,18 @@ export interface IJsonMapMemberOptions extends OptionsBase, Partial<MapOptions> 
 /**
  * Specifies that the property is part of the object when serializing.
  * Use this decorator on properties of type Map<K, V>.
- * @param keyThunk Constructor of map keys (e.g. 'Number' for 'Map<number, Date>').
- * @param valueThunk Constructor of map values (e.g. 'Date' for 'Map<number, Date>').
+ * @param maybeKeyThunk Constructor of map keys (e.g. 'Number' for 'Map<number, Date>').
+ * @param maybeValueThunk Constructor of map values (e.g. 'Date' for 'Map<number, Date>').
  * @param options Additional options.
  */
 export function jsonMapMember(
-    keyThunk: TypeThunk,
-    valueThunk: TypeThunk,
+    maybeKeyThunk: MaybeTypeThunk,
+    maybeValueThunk: MaybeTypeThunk,
     options: IJsonMapMemberOptions = {},
 ) {
+    const keyThunk = ensureTypeThunk(maybeKeyThunk);
+    const valueThunk = ensureTypeThunk(maybeValueThunk);
+
     return (target: Object, propKey: string | symbol) => {
         // For error messages
         const decoratorName = `@jsonMapMember on ${nameof(target.constructor)}.${String(propKey)}`;

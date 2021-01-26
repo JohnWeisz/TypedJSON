@@ -1,7 +1,7 @@
-import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
-import {isEqual} from './utils/object-compare';
+import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../../src';
+import {isEqual} from '../utils/object-compare';
 
-describe('polymorphic abstract classes', () => {
+describe('lazy, polymorphic abstract classes', () => {
     abstract class Node {
         @jsonMember
         name: string;
@@ -18,10 +18,10 @@ describe('polymorphic abstract classes', () => {
 
     @jsonObject
     class BigNode extends Node {
-        @jsonArrayMember(String)
+        @jsonArrayMember(() => String)
         inputs: Array<string>;
 
-        @jsonArrayMember(String)
+        @jsonArrayMember(() => String)
         outputs: Array<string>;
 
         constructor() {
@@ -35,7 +35,7 @@ describe('polymorphic abstract classes', () => {
         knownTypes: [BigNode, SmallNode],
     })
     class Graph {
-        @jsonArrayMember(Node)
+        @jsonArrayMember(() => Node)
         nodes: Array<Node>;
 
         @jsonMember
@@ -46,6 +46,8 @@ describe('polymorphic abstract classes', () => {
         }
     }
 
+    let portTypeIndex = 0;
+
     function randPortType() {
         const types = [
             'string',
@@ -55,7 +57,7 @@ describe('polymorphic abstract classes', () => {
             'void',
         ];
 
-        return types[Math.floor(Math.random() * types.length)];
+        return types[portTypeIndex++ % types.length];
     }
 
     function test(log: boolean) {
@@ -64,7 +66,7 @@ describe('polymorphic abstract classes', () => {
         for (let i = 0; i < 20; i++) {
             let node: Node;
 
-            if (Math.random() < 0.25) {
+            if (i % 2 === 0) {
                 const bigNode = new BigNode();
 
                 bigNode.inputs = [

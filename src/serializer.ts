@@ -1,4 +1,3 @@
-import {DeserializerFn} from './deserializer';
 import {
     identity,
     isInstanceOf,

@@ -1,4 +1,4 @@
-import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
+import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../../src';
 
 TypedJSON.setGlobalConfig({
     errorHandler: e => {
@@ -9,7 +9,7 @@ TypedJSON.setGlobalConfig({
 const date2000 = '2000-01-01T00:00:00.000Z';
 const date3000 = '3000-01-01T00:00:00.000Z';
 
-describe('mapped types', () => {
+describe('lazy, mapped types', () => {
     class CustomType {
         value: any;
 
@@ -36,31 +36,6 @@ describe('mapped types', () => {
         one: 1,
         two: 2,
     };
-
-    describe('global', () => {
-        TypedJSON.mapType(CustomType, {
-            deserializer: json => new CustomType(json),
-            serializer: value => value.value,
-        });
-
-        it('deserializes', () => {
-            const result = TypedJSON.parse(testData, MappedTypesSpec);
-
-            expect(result.one).toBeInstanceOf(CustomType);
-            expect(result.one.hasSucceeded()).toBeTrue();
-            expect(result.two).toBeInstanceOf(CustomType);
-            expect(result.two.hasSucceeded()).toBeTrue();
-        });
-
-        it('serializes', () => {
-            const test = new MappedTypesSpec();
-            test.one = new CustomType(1);
-            test.two = new CustomType(2);
-            const result = TypedJSON.toPlainJson(test, MappedTypesSpec);
-
-            expect(result).toEqual(testData);
-        });
-    });
 
     describe('instance', () => {
         const typedJson = new TypedJSON(MappedTypesSpec);
@@ -92,7 +67,7 @@ describe('mapped types', () => {
         @jsonObject
         class MappedTypeWithConstructor {
 
-            @jsonMember(CustomType)
+            @jsonMember(() => CustomType)
             nullable: any;
         }
 
@@ -205,7 +180,7 @@ describe('mapped types', () => {
         @jsonObject
         class MappedTypeWithArray {
 
-            @jsonArrayMember(String)
+            @jsonArrayMember(() => String)
             array: Array<string>;
         }
 
@@ -232,7 +207,7 @@ describe('mapped types', () => {
         @jsonObject
         class MappedTypeWithArray {
 
-            @jsonArrayMember(CustomType)
+            @jsonArrayMember(() => CustomType)
             array: Array<CustomType>;
         }
 

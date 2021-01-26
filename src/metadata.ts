@@ -1,7 +1,7 @@
 import {isDirectlySerializableNativeType, isTypeTypedArray, logError, nameof} from './helpers';
 import {OptionsBase} from './options-base';
 import {TypeDescriptor} from './type-descriptor';
-import {IndexedObject, Serializable, TypeThunk} from './types';
+import {IndexedObject, Serializable} from './types';
 
 export const METADATA_FIELD_KEY = '__typedJsonJsonObjectMetadataInformation__';
 
