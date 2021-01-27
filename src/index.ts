@@ -2,10 +2,8 @@ export {
     TypedJSON,
     ITypedJSONSettings,
     JsonTypes,
-    defaultTypeResolver,
-    defaultTypeEmitter,
 } from './parser';
-export {TypeResolver, TypeHintEmitter, JsonObjectMetadata} from './metadata';
+export {JsonObjectMetadata} from './metadata';
 export {
     jsonObject,
     IJsonObjectOptions,
@@ -13,6 +11,11 @@ export {
     IJsonObjectOptionsWithInitializer,
     IJsonObjectOptionsBase,
 } from './json-object';
+export {
+    discriminatorProperty,
+    jsonInheritance,
+    ObjectInheritanceOptions,
+} from './json-inheritance';
 export {jsonMember, IJsonMemberOptions} from './json-member';
 export {jsonArrayMember, IJsonArrayMemberOptions} from './json-array-member';
 export {jsonSetMember, IJsonSetMemberOptions} from './json-set-member';

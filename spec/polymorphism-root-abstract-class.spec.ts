@@ -1,6 +1,12 @@
-import {jsonMember, jsonObject, TypedJSON} from '../src';
+import {jsonArrayMember, jsonInheritance, jsonMember, jsonObject, TypedJSON} from '../src';
 
 describe('single class', () => {
+    @jsonInheritance({
+        resolveType: data => {
+            return Bob;
+        },
+    })
+    @jsonObject
     abstract class Person {
         @jsonMember
         firstName?: string;
@@ -23,13 +29,10 @@ describe('single class', () => {
         }
     }
 
-    // todo we need something better
-    jsonObject({knownTypes: [Bob]})(Person);
-
     describe('deserialized', () => {
         beforeAll(function () {
             this.person = TypedJSON.parse(
-                '{ "__type": "Bob", "firstName": "John", "lastName": "Doe", "pounds": 40 }',
+                '{ "firstName": "John", "lastName": "Doe", "pounds": 40 }',
                 Person,
             );
         });
@@ -52,7 +55,7 @@ describe('single class', () => {
             person.pounds = 30;
             // todo fix types so they accept abstract
             expect(TypedJSON.stringify(person, Person))
-                .toBe('{"firstName":"John","lastName":"Doe","pounds":30,"__type":"Bob"}');
+                .toBe('{"firstName":"John","lastName":"Doe","pounds":30}');
         });
     });
 });

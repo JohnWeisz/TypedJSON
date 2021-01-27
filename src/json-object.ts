@@ -1,27 +1,10 @@
-import {JsonObjectMetadata, TypeHintEmitter, TypeResolver} from './metadata';
+import {JsonObjectMetadata} from './metadata';
 import {extractOptionBase, OptionsBase} from './options-base';
 import {Serializable} from './types';
 
 export type InitializerCallback<T> = (sourceObject: T, rawSourceObject: T) => T;
 
 export interface IJsonObjectOptionsBase extends OptionsBase {
-    /**
-     * An array of known types to recognize when encountering type-hints.
-     */
-    knownTypes?: Array<Function> | null;
-
-    /**
-     * A function that will emit a type hint on the resulting JSON. It will override the global
-     * typeEmitter.
-     */
-    typeHintEmitter?: TypeHintEmitter | null;
-
-    /**
-     * A function that given a source object will resolve the type that should be instantiated.
-     * It will override the global type resolver.
-     */
-    typeResolver?: TypeResolver | null;
-
     /**
      * The name of a static or instance method to call when deserialization
      * of the object is completed.
@@ -105,13 +88,6 @@ export function jsonObject<T extends Object>(
         objectMetadata.onDeserializedMethodName = options.onDeserialized;
         objectMetadata.beforeSerializationMethodName = options.beforeSerialization;
 
-        if (options.typeResolver != null) {
-            objectMetadata.typeResolver = options.typeResolver;
-        }
-        if (options.typeHintEmitter != null) {
-            objectMetadata.typeHintEmitter = options.typeHintEmitter;
-        }
-
         // T extend Object so it is fine
         objectMetadata.initializerCallback = options.initializer as any;
         if (options.name != null) {
@@ -120,12 +96,6 @@ export function jsonObject<T extends Object>(
         const optionsBase = extractOptionBase(options);
         if (optionsBase !== undefined) {
             objectMetadata.options = optionsBase;
-        }
-
-        if (options.knownTypes != null) {
-            options.knownTypes
-                .filter(knownType => Boolean(knownType))
-                .forEach(knownType => objectMetadata.knownTypes.add(knownType));
         }
     }
 

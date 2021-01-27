@@ -1,7 +1,17 @@
-import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
+import {jsonArrayMember, jsonInheritance, jsonMember, jsonObject, TypedJSON} from '../src';
 import {isEqual} from './utils/object-compare';
 
 describe('polymorphism in nested arrays', () => {
+    @jsonInheritance({
+        resolveType: data => {
+            if ('inputType' in data) {
+                return SmallNode;
+            } else {
+                return BigNode;
+            }
+        },
+    })
+    @jsonObject
     abstract class Node {
         @jsonMember
         name: string;
@@ -31,7 +41,7 @@ describe('polymorphism in nested arrays', () => {
         }
     }
 
-    @jsonObject({knownTypes: [BigNode, SmallNode]})
+    @jsonObject
     class Graph {
         @jsonArrayMember(Node, {dimensions: 2})
         items: Array<Array<Node>>;
@@ -45,6 +55,8 @@ describe('polymorphism in nested arrays', () => {
         }
     }
 
+    let portTypeIndex = 0;
+
     function randPortType() {
         const types = [
             'string',
@@ -54,7 +66,7 @@ describe('polymorphism in nested arrays', () => {
             'void',
         ];
 
-        return types[Math.floor(Math.random() * types.length)];
+        return types[portTypeIndex++ % types.length];
     }
 
     function test(log: boolean) {
@@ -80,7 +92,7 @@ describe('polymorphism in nested arrays', () => {
             for (let j = 0; j < 8; j++) {
                 let node: Node;
 
-                if (Math.random() < 0.25) {
+                if (j % 2 === 0) {
                     const bigNode = new BigNode();
 
                     bigNode.inputs = [

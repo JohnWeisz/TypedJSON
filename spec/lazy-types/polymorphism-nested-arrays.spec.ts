@@ -1,7 +1,17 @@
-import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../../src';
+import {jsonArrayMember, jsonInheritance, jsonMember, jsonObject, TypedJSON} from '../../src';
 import {isEqual} from '../utils/object-compare';
 
 describe('lazy, polymorphism in nested arrays', () => {
+    @jsonInheritance({
+        resolveType: data => {
+            if ('inputType' in data) {
+                return SmallNode;
+            } else {
+                return BigNode;
+            }
+        },
+    })
+    @jsonObject
     abstract class Node {
         @jsonMember
         name: string;
@@ -31,7 +41,7 @@ describe('lazy, polymorphism in nested arrays', () => {
         }
     }
 
-    @jsonObject({knownTypes: [BigNode, SmallNode]})
+    @jsonObject
     class Graph {
         @jsonArrayMember(() => Node, {dimensions: 2})
         items: Array<Array<Node>>;
