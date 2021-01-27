@@ -161,14 +161,14 @@ class MyDataClass
 ```
 
 ### Any type
-In case you don't want TypedJSON to make any conversion the `Any` type can be used. 
+In case you don't want TypedJSON to make any conversion the `AnyT` type can be used. 
 
 ```typescript
-import {Any, jsonObject, jsonMember} from 'typedjson';
+import {AnyT, jsonObject, jsonMember} from 'typedjson';
 
 @jsonObject
 class Something {
-    @jsonMember(Any)
+    @jsonMember(AnyT)
     anythingGoes: any;
 }
 ```
