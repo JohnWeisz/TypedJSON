@@ -89,7 +89,7 @@ TypedJSON.mapType(Decimal, {
 class MappedTypes {
 
     @jsonMember
-    cryptoKey: BigInt;
+    cryptoKey: bigint;
 
     @jsonMember
     money: Decimal;
