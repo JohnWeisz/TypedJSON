@@ -76,12 +76,12 @@ import {jsonObject, jsonMember, TypedJSON} from 'typedjson';
 import * as Decimal from 'decimal.js'; // Or any other library your type originates from
 
 TypedJSON.mapType(BigInt, {
-    deserializer: json => value == null ? value : new BigInt(json),
+    deserializer: json => json == null ? json : BigInt(json),
     serializer: value => value == null ? value : value.toString(),
 });
 
 TypedJSON.mapType(Decimal, {
-    deserializer: json => value == null ? value : new Decimal(json),
+    deserializer: json => json == null ? json : new Decimal(json),
     serializer: value => value == null ? value : value.toString(),
 });
 
