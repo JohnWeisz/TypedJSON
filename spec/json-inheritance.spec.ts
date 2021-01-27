@@ -11,6 +11,7 @@ describe('jsonInheritance', () => {
         @jsonInheritance({
             onSerializeType: (source, result) => {
                 result['test'] = 'hey';
+                return result;
             },
             resolveType: data => {
                 if ('badgeId' in data) {

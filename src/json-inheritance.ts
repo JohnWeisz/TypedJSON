@@ -6,7 +6,7 @@ export interface ObjectInheritanceOptions {
     /**
      * Function to be used to mutate the resulting serialization given the source object.
      */
-    onSerializeType?: (source: any, result: {[k: string]: any}) => void;
+    onSerializeType?: (source: any, result: {[k: string]: any}) => {[k: string]: any};
 
     /**
      * Given the data to be parsed, return the matching subtype.
@@ -78,6 +78,7 @@ export function discriminatorProperty(
     return {
         onSerializeType: (source, result) => {
             result[property] = getReverseMapping().get(source.constructor);
+            return result;
         },
         resolveType: data => {
             return types()[data[property]];

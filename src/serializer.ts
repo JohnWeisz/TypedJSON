@@ -231,7 +231,7 @@ function convertAsObject(
             }
         });
 
-        sourceMeta.onSerializeType?.(sourceObject, targetObject);
+        targetObject = sourceMeta.onSerializeType?.(sourceObject, targetObject) ?? targetObject;
     }
 
     return targetObject;

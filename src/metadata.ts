@@ -59,7 +59,7 @@ export class JsonObjectMetadata {
     /**
      * Function to be used to mutate the resulting serialization given the source object.
      */
-    onSerializeType?: (source: any, result: {[k: string]: any}) => void;
+    onSerializeType?: (source: any, result: {[k: string]: any}) => {[k: string]: any};
 
     beforeSerializationMethodName?: string | null;
 
