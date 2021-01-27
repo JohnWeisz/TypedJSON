@@ -60,14 +60,23 @@ export interface DiscriminatorPropertyOptions {
 export function discriminatorProperty(
     {property, types}: DiscriminatorPropertyOptions,
 ): ObjectInheritanceOptions {
+    let resolvedTypes: {[k: string]: Serializable<any>} | undefined;
     let reverseMapping: Map<Function, string> | undefined;
+
+    const getResolvedTypes = () => {
+        if (resolvedTypes === undefined) {
+            resolvedTypes = types();
+        }
+
+        return resolvedTypes;
+    };
 
     // Create a map for O(1) type-to-discriminator-lookup once.
     const getReverseMapping = () => {
         if (reverseMapping === undefined) {
-            const reverseMapItems: Array<[Function, string]> = Object.keys(types())
+            const reverseMapItems: Array<[Function, string]> = Object.keys(getResolvedTypes())
                 .map(discriminator => {
-                    return [types()[discriminator].prototype.constructor, discriminator];
+                    return [getResolvedTypes()[discriminator].prototype.constructor, discriminator];
                 });
             reverseMapping = new Map<Function, string>(reverseMapItems);
         }
@@ -81,7 +90,7 @@ export function discriminatorProperty(
             return result;
         },
         resolveType: data => {
-            return types()[data[property]];
+            return getResolvedTypes()[data[property]];
         },
     };
 }
