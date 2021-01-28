@@ -1,5 +1,6 @@
 import {LAZY_TYPE_EXPLANATION} from './helpers';
-import {MaybeTypeThunk, TypeThunk} from './types';
+import {IJsonMemberOptions} from './json-member';
+import {IndexedObject, MaybeTypeThunk, TypeThunk} from './types';
 
 export abstract class TypeDescriptor {
     protected constructor(readonly ctor: Function) {
@@ -151,4 +152,13 @@ export function ensureTypeThunk(
     }
 
     return typeThunkOrSerializable as TypeThunk;
+}
+
+/**
+ * Checks if the given value is a `MaybeTypeThunk`.
+ */
+export function isMaybeTypeThunk(
+    type: IndexedObject | IJsonMemberOptions | MaybeTypeThunk | undefined | null,
+): type is MaybeTypeThunk {
+    return type === 'function' || type instanceof TypeDescriptor;
 }
