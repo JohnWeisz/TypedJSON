@@ -173,7 +173,7 @@ runtime. ${LAZY_TYPE_EXPLANATION}`);
             ) as Function | null | undefined;
 
             if (reflectCtor == null) {
-                logError(`${decoratorName}: cannot resolve detected property constructor at\
+                logError(`${decoratorName}: cannot resolve detected property constructor at \
 runtime. ${LAZY_TYPE_EXPLANATION}`);
                 return;
             }
