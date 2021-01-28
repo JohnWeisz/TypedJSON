@@ -277,7 +277,7 @@ class Model {
 
 Because of how decorators work at runtime, dependent class declaration order matters in TypedJSON. If a dependency is referenced before it is declared, it will result in an undefined reference and cause errors:
 
-```
+```typescript
 @jsonObject
 class Foo {
     @jsonMember // error, because Bar is only defined later
