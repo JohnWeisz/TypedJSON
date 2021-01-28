@@ -14,7 +14,6 @@ import {
     ArrayTypeDescriptor,
     ensureTypeDescriptor,
     ensureTypeThunk,
-    isMaybeTypeThunk,
     MapTypeDescriptor,
     SetTypeDescriptor,
     TypeDescriptor,
@@ -79,8 +78,7 @@ export function jsonMember<T extends Function>(
     optionsOrPrototype?: IndexedObject | IJsonMemberOptions | MaybeTypeThunk,
     propertyKeyOrOptions?: string | symbol | IJsonMemberOptions,
 ): PropertyDecorator | void {
-    if (propertyKeyOrOptions !== undefined
-        && (typeof propertyKeyOrOptions === 'string' || typeof propertyKeyOrOptions === 'symbol')) {
+    if (typeof propertyKeyOrOptions === 'string' || typeof propertyKeyOrOptions === 'symbol') {
         const property = propertyKeyOrOptions as string;
         const prototype = optionsOrPrototype as IndexedObject;
         // For error messages.
@@ -120,16 +118,24 @@ runtime. Potential solutions:
     }
 
     // jsonMember used as a decorator factory.
-    return (target: Object, _propKey: string | symbol) => {
-        const decoratorName =
-            `@jsonMember on ${nameof(target.constructor)}.${String(_propKey)}`;
-        const typeThunk = isMaybeTypeThunk(optionsOrPrototype)
-            ? ensureTypeThunk(optionsOrPrototype, decoratorName)
-            : undefined;
-        const options: IJsonMemberOptions = (typeThunk === undefined
-            ? optionsOrPrototype
-            : propertyKeyOrOptions) as IJsonMemberOptions ?? {};
-        let typeDescriptor: TypeThunk | undefined;
+    return jsonMemberDecoratorFactory(optionsOrPrototype, propertyKeyOrOptions);
+}
+
+function jsonMemberDecoratorFactory(
+    optionsOrType: IJsonMemberOptions | MaybeTypeThunk | undefined,
+    options: IJsonMemberOptions | undefined,
+): PropertyDecorator {
+    return (target, property) => {
+        const decoratorName = `@jsonMember on ${nameof(target.constructor)}.${String(property)}`;
+        let typeThunk: TypeThunk | undefined;
+
+        if (typeof optionsOrType === 'function' || optionsOrType instanceof TypeDescriptor) {
+            typeThunk = ensureTypeThunk(optionsOrType, decoratorName);
+        } else {
+            options = optionsOrType;
+        }
+
+        options = options ?? {};
 
         if (options.hasOwnProperty('constructor')) {
             if (typeThunk !== undefined) {
@@ -147,10 +153,10 @@ runtime. ${LAZY_TYPE_EXPLANATION}`);
             // Property constructor has been specified. Use ReflectDecorators (if available) to
             // check whether that constructor is correct. Warn if not.
             const newTypeDescriptor = ensureTypeDescriptor(options.constructor);
-            typeDescriptor = () => newTypeDescriptor;
+            typeThunk = () => newTypeDescriptor;
             if (isReflectMetadataSupported && !isSubtypeOf(
                 newTypeDescriptor.ctor,
-                Reflect.getMetadata('design:type', target, _propKey),
+                Reflect.getMetadata('design:type', target, property),
             )) {
                 logWarning(
                     `${decoratorName}: detected property type does not match`
@@ -158,12 +164,12 @@ runtime. ${LAZY_TYPE_EXPLANATION}`);
                 );
             }
         } else if (typeThunk !== undefined) {
-            typeDescriptor = typeThunk;
+            // Do nothing
         } else if (isReflectMetadataSupported) {
             const reflectCtor = Reflect.getMetadata(
                 'design:type',
                 target,
-                _propKey,
+                property,
             ) as Function | null | undefined;
 
             if (reflectCtor == null) {
@@ -171,27 +177,27 @@ runtime. ${LAZY_TYPE_EXPLANATION}`);
 runtime. ${LAZY_TYPE_EXPLANATION}`);
                 return;
             }
-            typeDescriptor = () => ensureTypeDescriptor(reflectCtor);
+            typeThunk = () => ensureTypeDescriptor(reflectCtor);
         } else if (options.deserializer === undefined) {
             logError(`${decoratorName}: Cannot determine type`);
             return;
         }
 
-        const typeToTest = typeDescriptor?.();
+        const typeToTest = typeThunk?.();
 
         if (typeToTest !== undefined && isSpecialPropertyType(decoratorName, typeToTest)) {
             return;
         }
 
-        injectMetadataInformation(target, _propKey, {
-            type: typeDescriptor === undefined
+        injectMetadataInformation(target, property, {
+            type: typeThunk === undefined
                 ? undefined
-                : () => ensureTypeDescriptor(typeDescriptor!()),
+                : () => ensureTypeDescriptor(typeThunk!()),
             emitDefaultValue: options.emitDefaultValue,
             isRequired: options.isRequired,
             options: extractOptionBase(options),
-            key: _propKey.toString(),
-            name: options.name ?? _propKey.toString(),
+            key: property.toString(),
+            name: options.name ?? property.toString(),
             deserializer: options.deserializer,
             serializer: options.serializer,
         });

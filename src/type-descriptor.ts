@@ -153,12 +153,3 @@ export function ensureTypeThunk(
 
     return typeThunkOrSerializable as TypeThunk;
 }
-
-/**
- * Checks if the given value is a `MaybeTypeThunk`.
- */
-export function isMaybeTypeThunk(
-    type: IndexedObject | IJsonMemberOptions | MaybeTypeThunk | undefined | null,
-): type is MaybeTypeThunk {
-    return type === 'function' || type instanceof TypeDescriptor;
-}
