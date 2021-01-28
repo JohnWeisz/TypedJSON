@@ -271,28 +271,57 @@ class Model {
 }
 ```
 
-## Circular references and using types before they are defined
-In case you have to use a type before it is defined, or your find yourself in need a data structure with circular references, errors can occur. To resolve these errors, specify the type lazily by using an arrow function as follows: 
+## Limitations
+
+### Declaration order &amp; circular class dependencies
+
+Because of how decorators work at runtime, dependent class declaration order matters in TypedJSON. If a dependency is referenced before it is declared, it will result in an undefined reference and cause errors:
+
+```
+@jsonObject
+class Foo {
+    @jsonMember // error, because Bar is only defined later
+    bar: Bar;
+    
+    @jsonMember(Bar) // error, because Bar is only defined later
+    baz: Bar;
+}
+
+
+@jsonObject
+class Bar {
+    @jsonMember
+    foo: Foo;
+}
+```
+
+This can be resolved by fixing the declaration order of your dependent classes (i.e. by moving `Bar` before `Foo` in the above example).
+
+In cases where this is not possible (most commonly because of a circular class-dependency), the more flexible lazy type definition syntax can be used instead:
 
 ```diff
   import {jsonObject, jsonMember} from 'typedjson';
 
   @jsonObject
   class Foo {
--     @jsonMember(Bar)
+-     @jsonMember
 +     @jsonMember(() => Bar)
       bar: Bar;
+  
+-     @jsonMember(Bar)
++     @jsonMember(() => Bar)
+      baz: Bar;
   }
   
   @jsonObject
   class Bar {
--     @jsonMember(Foo)
+-     @jsonMember
 +     @jsonMember(() => Foo)
       foo: Foo;
   }
 ```
 
-## Limitations
+_Note: this is necessary even when inferring the type from the TypeScript type-annotation, requiring the use of an explicit lazy type definition at all times._
 
 ### Type-definitions
 
@@ -314,7 +343,7 @@ Instead, prefer creating the necessary class-structure for your object tree.
 
 ### Multi-dimensional arrays
 
-TypedJSON only supports multi-dimensional arrays of a single type (can be polymorphic), and requires specifying the array dimension:
+TypedJSON only supports multi-dimensional arrays of a single type (can be polymorphic), and requires specifying the array dimension to do so:
 
 ```typescript
 import 'reflect-metadata';
