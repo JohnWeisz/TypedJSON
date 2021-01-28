@@ -14,6 +14,7 @@ import {
     ArrayTypeDescriptor,
     ensureTypeDescriptor,
     ensureTypeThunk,
+    isMaybeTypeThunk,
     MapTypeDescriptor,
     SetTypeDescriptor,
     TypeDescriptor,
@@ -122,17 +123,16 @@ runtime. Potential solutions:
     return (target: Object, _propKey: string | symbol) => {
         const decoratorName =
             `@jsonMember on ${nameof(target.constructor)}.${String(_propKey)}`;
-        const hasTypeThunk = typeof optionsOrPrototype === 'function';
-        const typeThunk = hasTypeThunk
-            ? ensureTypeThunk(optionsOrPrototype as any, decoratorName)
+        const typeThunk = isMaybeTypeThunk(optionsOrPrototype)
+            ? ensureTypeThunk(optionsOrPrototype, decoratorName)
             : undefined;
-        const options = (hasTypeThunk
-            ? propertyKeyOrOptions
-            : optionsOrPrototype) as IJsonMemberOptions ?? {};
+        const options: IJsonMemberOptions = (typeThunk === undefined
+            ? optionsOrPrototype
+            : propertyKeyOrOptions) as IJsonMemberOptions ?? {};
         let typeDescriptor: TypeThunk | undefined;
 
         if (options.hasOwnProperty('constructor')) {
-            if (hasTypeThunk) {
+            if (typeThunk !== undefined) {
                 throw new Error(
                     'Cannot both define constructor option and type. Only one allowed.',
                 );
@@ -157,7 +157,7 @@ runtime. ${LAZY_TYPE_EXPLANATION}`);
                     + ` 'constructor' option.`,
                 );
             }
-        } else if (hasTypeThunk) {
+        } else if (typeThunk !== undefined) {
             typeDescriptor = typeThunk;
         } else if (isReflectMetadataSupported) {
             const reflectCtor = Reflect.getMetadata(
