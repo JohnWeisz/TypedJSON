@@ -18,6 +18,7 @@ import {
     MaybeTypeThunk,
     SetTypeDescriptor,
     TypeDescriptor,
+    Typelike,
     TypeThunk,
 } from './type-descriptor';
 import {Constructor, IndexedObject} from './types';
@@ -31,7 +32,7 @@ export interface IJsonMemberOptions extends OptionsBase {
      * Sets the constructor of the property.
      * Optional with ReflectDecorators.
      */
-    constructor?: Function | TypeDescriptor | null;
+    constructor?: Typelike | null;
 
     /** When set, indicates that the member must be present when deserializing. */
     isRequired?: boolean | null;
@@ -206,11 +207,11 @@ runtime. ${LAZY_TYPE_EXPLANATION}`);
     };
 }
 
-function isConstructorEqual(type: TypeDescriptor | Function, constructor: Constructor<any>) {
+function isConstructorEqual(type: Typelike, constructor: Constructor<any>) {
     return type instanceof TypeDescriptor ? type.ctor === constructor : type === constructor;
 }
 
-function isSpecialPropertyType(decoratorName: string, typeDescriptor: TypeDescriptor | Function) {
+function isSpecialPropertyType(decoratorName: string, typeDescriptor: Typelike) {
     if (!(typeDescriptor instanceof ArrayTypeDescriptor)
         && isConstructorEqual(typeDescriptor, Array)) {
         logError(`${decoratorName}: property is an Array. Use the jsonArrayMember decorator to`
