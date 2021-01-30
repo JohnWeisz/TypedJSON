@@ -181,11 +181,6 @@ export class Deserializer<T> {
     retrievePreserveNull(memberOptions?: OptionsBase): boolean {
         return getOptionValue('preserveNull', mergeOptions(this.options, memberOptions));
     }
-
-    private isExpectedMapShape(source: any, expectedShape: MapShape): boolean {
-        return (expectedShape === MapShape.ARRAY && Array.isArray(source))
-            || (expectedShape === MapShape.OBJECT && typeof source === 'object');
-    }
 }
 
 function throwTypeMismatchError(

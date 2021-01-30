@@ -24,6 +24,9 @@
     "test": "yarn run test:base node_modules/jasmine/bin/jasmine.js",
     "test:base": "TS_NODE_PROJECT=tsconfig/tsconfig.spec.json node -r ts-node/register",
     "test:inspect": "yarn run test:base --inspect-brk node_modules/jasmine/bin/jasmine.js",
+    "test:ts": "run-p test:ts:*",
+    "test:ts:src": "tsc -p tsconfig/tsconfig.app-strict.json",
+    "test:ts:spec": "tsc -p tsconfig/tsconfig.spec-strict.json",
     "version": "yarn run build"
   },
   "repository": {

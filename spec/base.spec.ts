@@ -213,6 +213,8 @@ describe('basic serialization of', () => {
                 return this._getterOnly;
             }
 
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
             private _setterOnly: string = 'setter';
             @jsonMember
             set setterOnly(val: string) {
