@@ -1,8 +1,7 @@
 import {isReflectMetadataSupported, logError, MISSING_REFLECT_CONF_MSG, nameof} from './helpers';
 import {injectMetadataInformation} from './metadata';
 import {extractOptionBase, OptionsBase} from './options-base';
-import {ensureTypeThunk, SetT} from './type-descriptor';
-import {MaybeTypeThunk} from './types';
+import {ensureTypeThunk, MaybeTypeThunk, SetT} from './type-descriptor';
 
 declare abstract class Reflect {
     static getMetadata(metadataKey: string, target: any, targetKey: string | symbol): any;

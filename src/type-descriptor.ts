@@ -1,5 +1,5 @@
 import {LAZY_TYPE_EXPLANATION} from './helpers';
-import {MaybeTypeThunk, TypeThunk} from './types';
+import {Serializable} from './types';
 
 export abstract class TypeDescriptor {
     protected constructor(readonly ctor: Function) {
@@ -124,6 +124,9 @@ export const AnyT = new ConcreteTypeDescriptor(() => undefined);
 // export function DictT(elementType: Typelike): DictionaryTypeDescriptor {
 //     return new DictionaryTypeDescriptor(ensureTypeDescriptor(elementType));
 // }
+
+export type TypeThunk = () => Serializable<any> | TypeDescriptor;
+export type MaybeTypeThunk = Serializable<any> | TypeDescriptor | TypeThunk;
 
 export function isTypelike(type: any): type is Typelike {
     return type != null && (typeof type === 'function' || type instanceof TypeDescriptor);
