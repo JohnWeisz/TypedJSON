@@ -1,6 +1,5 @@
 import {LAZY_TYPE_EXPLANATION} from './helpers';
-import {IJsonMemberOptions} from './json-member';
-import {IndexedObject, MaybeTypeThunk, TypeThunk} from './types';
+import {MaybeTypeThunk, TypeThunk} from './types';
 
 export abstract class TypeDescriptor {
     protected constructor(readonly ctor: Function) {
