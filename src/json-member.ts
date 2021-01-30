@@ -15,10 +15,12 @@ import {
     ensureTypeDescriptor,
     ensureTypeThunk,
     MapTypeDescriptor,
+    MaybeTypeThunk,
     SetTypeDescriptor,
     TypeDescriptor,
+    TypeThunk,
 } from './type-descriptor';
-import {Constructor, IndexedObject, MaybeTypeThunk, TypeThunk} from './types';
+import {Constructor, IndexedObject} from './types';
 
 declare abstract class Reflect {
     static getMetadata(metadataKey: string, target: any, targetKey: string | symbol): any;
