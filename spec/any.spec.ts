@@ -1,11 +1,6 @@
 import {AnyT, jsonArrayMember, jsonMember, jsonObject, jsonSetMember, TypedJSON} from '../src';
 
 describe('AnyT', () => {
-    class Foo {
-        constructor(public foo: string) {
-        }
-    }
-
     describe('on a simple class property', () => {
         @jsonObject
         class SimplePropertyAny {
@@ -26,7 +21,7 @@ describe('AnyT', () => {
         });
 
         it('should deserialize class instance correctly', () => {
-            const foo = new Foo('bar');
+            const foo = {foo: 'bar'};
             const result = TypedJSON.parse({
                 any: foo,
                 anyNullable: foo,
@@ -36,7 +31,7 @@ describe('AnyT', () => {
         });
 
         it('should serialize class instances correctly', () => {
-            const foo = new Foo('bar');
+            const foo = {foo: 'bar'};
             const simplePropertyAny = new SimplePropertyAny();
             simplePropertyAny.any = foo;
             simplePropertyAny.anyNullable = foo;
@@ -68,7 +63,7 @@ describe('AnyT', () => {
         });
 
         it('should deserialize class instance correctly', () => {
-            const foo = new Foo('bar');
+            const foo = {foo: 'bar'};
             const result = TypedJSON.parse({
                 any: [foo],
                 anyNullable: [foo],
@@ -80,7 +75,7 @@ describe('AnyT', () => {
         });
 
         it('should serialize class instances correctly', () => {
-            const foo = new Foo('bar');
+            const foo = {foo: 'bar'};
             const arrayPropertyAny = new ArrayPropertyAny();
             arrayPropertyAny.any = [foo];
             arrayPropertyAny.anyNullable = [foo];
@@ -116,7 +111,7 @@ describe('AnyT', () => {
         });
 
         it('should deserialize class instance correctly', () => {
-            const foo = new Foo('bar');
+            const foo = {foo: 'bar'};
             const result = TypedJSON.parse({
                 any: [foo, foo],
                 anyNullable: [foo, foo],
@@ -128,7 +123,7 @@ describe('AnyT', () => {
         });
 
         it('should serialize class instances correctly', () => {
-            const foo = new Foo('bar');
+            const foo = {foo: 'bar'};
             const setPropertyAny = new SetPropertyAny();
             setPropertyAny.any = new Set([foo, foo]);
             setPropertyAny.anyNullable = new Set([foo, foo]);
