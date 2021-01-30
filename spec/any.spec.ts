@@ -26,14 +26,13 @@ describe('AnyT', () => {
         });
 
         it('should deserialize class instance correctly', () => {
+            const foo = new Foo('bar');
             const result = TypedJSON.parse({
-                any: new Foo('bar'),
-                anyNullable: new Foo('bar'),
+                any: foo,
+                anyNullable: foo,
             }, SimplePropertyAny);
-            expect(result.any).toBeInstanceOf(Foo);
-            expect(result.any.foo).toEqual('bar');
-            expect(result.anyNullable).toBeInstanceOf(Foo);
-            expect(result.anyNullable.foo).toEqual('bar');
+            expect(result.any).toEqual(foo);
+            expect(result.anyNullable).toEqual(foo);
         });
     });
 
@@ -59,16 +58,15 @@ describe('AnyT', () => {
         });
 
         it('should deserialize class instance correctly', () => {
+            const foo = new Foo('bar');
             const result = TypedJSON.parse({
-                any: [new Foo('bar')],
-                anyNullable: [new Foo('bar')],
+                any: [foo],
+                anyNullable: [foo],
             }, ArrayPropertyAny);
             expect(result.any).toBeInstanceOf(Array);
-            expect(result.any[0]).toBeInstanceOf(Foo);
-            expect(result.any[0].foo).toEqual('bar');
+            expect(result.any[0]).toEqual(foo);
             expect(result.anyNullable).toBeInstanceOf(Array);
-            expect(result.anyNullable[0]).toBeInstanceOf(Foo);
-            expect(result.anyNullable[0].foo).toEqual('bar');
+            expect(result.anyNullable[0]).toEqual(foo);
         });
     });
 
@@ -91,10 +89,10 @@ describe('AnyT', () => {
             }, SetPropertyAny);
             expect(result.any).toBeInstanceOf(Set);
             expect(result.any.size).toBe(1);
-            expect(result.any.values().next().value.foo).toEqual('bar');
+            expect(result.any.values().next().value).toEqual(foo);
             expect(result.anyNullable).toBeInstanceOf(Set);
             expect(result.anyNullable.size).toBe(1);
-            expect(result.anyNullable.values().next().value.foo).toEqual('bar');
+            expect(result.anyNullable.values().next().value).toEqual(foo);
         });
 
         it('should deserialize class instance correctly', () => {
@@ -104,13 +102,9 @@ describe('AnyT', () => {
                 anyNullable: [foo, foo],
             }, SetPropertyAny);
             expect(result.any).toBeInstanceOf(Set);
-            const firstValueAny = result.any.values().next().value;
-            expect(firstValueAny).toBeInstanceOf(Foo);
-            expect(firstValueAny.foo).toEqual('bar');
+            expect(result.any.values().next().value).toBe(foo);
             expect(result.anyNullable).toBeInstanceOf(Set);
-            const firstValueAnyNullable = result.anyNullable.values().next().value;
-            expect(firstValueAnyNullable).toBeInstanceOf(Foo);
-            expect(firstValueAnyNullable.foo).toEqual('bar');
+            expect(result.anyNullable.values().next().value).toBe(foo);
         });
     });
 
