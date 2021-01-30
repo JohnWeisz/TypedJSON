@@ -137,7 +137,3 @@ export function jsonObject<T extends Object>(
         return decorator;
     }
 }
-
-function isSubClass<T>(target: Serializable<T>) {
-    return;
-}

@@ -1,4 +1,4 @@
-import {LAZY_TYPE_EXPLANATION, logError} from './helpers';
+import {LAZY_TYPE_EXPLANATION} from './helpers';
 import {MaybeTypeThunk, TypeThunk} from './types';
 
 export abstract class TypeDescriptor {

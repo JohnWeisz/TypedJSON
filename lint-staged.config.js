@@ -4,8 +4,8 @@ function mapFilenames(filenames) {
 
 module.exports = {
     '*': () => [
-        'tsc -p tsconfig/tsconfig.app.json',
         'yarn run test',
+        'yarn run test:ts',
     ],
     '*.ts': (filenames) => [
         `eslint --fix --cache ${mapFilenames(filenames)}`,
