@@ -14,6 +14,8 @@ import {
     ArrayTypeDescriptor,
     ensureTypeDescriptor,
     ensureTypeThunk,
+    isTypelike,
+    isTypeThunk,
     MapTypeDescriptor,
     MaybeTypeThunk,
     SetTypeDescriptor,
@@ -132,7 +134,7 @@ function jsonMemberDecoratorFactory(
         const decoratorName = `@jsonMember on ${nameof(target.constructor)}.${String(property)}`;
         let typeThunk: TypeThunk | undefined;
 
-        if (typeof optionsOrType === 'function' || optionsOrType instanceof TypeDescriptor) {
+        if (isTypelike(optionsOrType) || isTypeThunk(optionsOrType)) {
             typeThunk = ensureTypeThunk(optionsOrType, decoratorName);
         } else {
             options = optionsOrType;

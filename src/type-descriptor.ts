@@ -132,6 +132,10 @@ export function isTypelike(type: any): type is Typelike {
     return type != null && (typeof type === 'function' || type instanceof TypeDescriptor);
 }
 
+export function isTypeThunk(candidate: any): candidate is TypeThunk {
+    return typeof candidate === 'function' && candidate.name === '';
+}
+
 export function ensureTypeDescriptor(type: Typelike): TypeDescriptor {
     return type instanceof TypeDescriptor ? type : new ConcreteTypeDescriptor(type);
 }
@@ -144,14 +148,9 @@ export function ensureTypeThunk(
         throw new Error(`No type given on ${decoratorName}. ${LAZY_TYPE_EXPLANATION}`);
     }
 
-    if (typeThunkOrSerializable instanceof TypeDescriptor) {
-        return () => typeThunkOrSerializable;
+    if (isTypeThunk(typeThunkOrSerializable)) {
+        return typeThunkOrSerializable;
     }
 
-    if (typeThunkOrSerializable.name !== '') {
-        // Function is not anonymous and as such should not be a thunk
-        return () => typeThunkOrSerializable;
-    }
-
-    return typeThunkOrSerializable as TypeThunk;
+    return () => typeThunkOrSerializable;
 }
