@@ -30,7 +30,7 @@ describe('AnyT', () => {
             expect(result.anyNullable).toEqual(foo);
         });
 
-        it('should serialize class instances correctly', () => {
+        it('should serialize with referential equality', () => {
             const foo = {foo: 'bar'};
             const simplePropertyAny = new SimplePropertyAny();
             simplePropertyAny.any = foo;
@@ -74,7 +74,7 @@ describe('AnyT', () => {
             expect(result.anyNullable[0]).toEqual(foo);
         });
 
-        it('should serialize class instances correctly', () => {
+        it('should serialize with referential equality', () => {
             const foo = {foo: 'bar'};
             const arrayPropertyAny = new ArrayPropertyAny();
             arrayPropertyAny.any = [foo];
@@ -110,7 +110,7 @@ describe('AnyT', () => {
             expect(result.anyNullable.values().next().value).toEqual(foo);
         });
 
-        it('should deserialize class instance correctly', () => {
+        it('should deserialize with referential equality', () => {
             const foo = {foo: 'bar'};
             const result = TypedJSON.parse({
                 any: [foo, foo],
@@ -122,7 +122,7 @@ describe('AnyT', () => {
             expect(result.anyNullable.values().next().value).toBe(foo);
         });
 
-        it('should serialize class instances correctly', () => {
+        it('should serialize with referential equality', () => {
             const foo = {foo: 'bar'};
             const setPropertyAny = new SetPropertyAny();
             setPropertyAny.any = new Set([foo, foo]);
