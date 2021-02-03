@@ -42,8 +42,11 @@ export function jsonSetMember(maybeTypeThunk: MaybeTypeThunk, options: IJsonSetM
 
         // If ReflectDecorators is available, use it to check whether 'jsonSetMember' has been used
         // on a set. Warn if not.
-        if (isReflectMetadataSupported
-            && Reflect.getMetadata('design:type', target, propKey) !== Set) {
+        const reflectedType = isReflectMetadataSupported
+            ? Reflect.getMetadata('design:type', target, propKey)
+            : null;
+
+        if (reflectedType != null && reflectedType !== Set && reflectedType !== Object) {
             logError(`${decoratorName}: property is not a Set. ${MISSING_REFLECT_CONF_MSG}`);
             return;
         }
