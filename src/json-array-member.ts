@@ -60,8 +60,11 @@ export function jsonArrayMember(
 
         // If ReflectDecorators is available, use it to check whether 'jsonArrayMember' has been
         // used on an array.
-        if (isReflectMetadataSupported
-            && Reflect.getMetadata('design:type', target, propKey) !== Array) {
+        const reflectedType = isReflectMetadataSupported
+            ? Reflect.getMetadata('design:type', target, propKey)
+            : null;
+
+        if (reflectedType != null && reflectedType !== Array && reflectedType !== Object) {
             logError(`${decoratorName}: property is not an Array. ${MISSING_REFLECT_CONF_MSG}`);
             return;
         }

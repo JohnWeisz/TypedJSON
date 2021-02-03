@@ -47,8 +47,11 @@ export function jsonMapMember(
 
         // If ReflectDecorators is available, use it to check whether 'jsonMapMember' has been used
         // on a map. Warn if not.
-        if (isReflectMetadataSupported
-            && Reflect.getMetadata('design:type', target, propKey) !== Map) {
+        const reflectedType = isReflectMetadataSupported
+            ? Reflect.getMetadata('design:type', target, propKey)
+            : null;
+
+        if (reflectedType != null && reflectedType !== Map && reflectedType !== Object) {
             logError(`${decoratorName}: property is not a Map. ${MISSING_REFLECT_CONF_MSG}`);
             return;
         }
