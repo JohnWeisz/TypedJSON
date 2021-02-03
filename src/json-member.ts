@@ -142,7 +142,7 @@ function jsonMemberDecoratorFactory(
 
         options = options ?? {};
 
-        if (options.hasOwnProperty('constructor')) {
+        if (Object.prototype.hasOwnProperty.call(options, 'constructor')) {
             if (typeThunk !== undefined) {
                 throw new Error(
                     'Cannot both define constructor option and type. Only one allowed.',

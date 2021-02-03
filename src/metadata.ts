@@ -108,7 +108,7 @@ export class JsonObjectMetadata {
         }
 
         let metadata: JsonObjectMetadata | undefined;
-        if (prototype.hasOwnProperty(METADATA_FIELD_KEY) === true) {
+        if (Object.prototype.hasOwnProperty.call(prototype, METADATA_FIELD_KEY)) {
             // The class prototype contains own jsonObject metadata
             metadata = prototype[METADATA_FIELD_KEY];
         }
@@ -128,7 +128,7 @@ export class JsonObjectMetadata {
     }
 
     static ensurePresentInPrototype(prototype: IndexedObject): JsonObjectMetadata {
-        if (prototype.hasOwnProperty(METADATA_FIELD_KEY)) {
+        if (Object.prototype.hasOwnProperty.call(prototype, METADATA_FIELD_KEY)) {
             return prototype[METADATA_FIELD_KEY];
         }
         // Target has no JsonObjectMetadata associated with it yet, create it now.

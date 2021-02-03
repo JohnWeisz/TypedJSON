@@ -73,4 +73,3 @@ overrides:
           functions: false
           variables: true
           typedefs: true
-      no-prototype-builtins: off # @todo check if this should remain off
