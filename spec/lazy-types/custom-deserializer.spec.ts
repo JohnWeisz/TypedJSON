@@ -1,4 +1,5 @@
 import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../../src';
+import {CustomDeserializerParams} from '../../src/metadata';
 
 describe('lazy, custom array member deserializer', () => {
     @jsonObject
@@ -51,14 +52,10 @@ describe('lazy, custom delegating array member serializer', () => {
     }
 
     function objArrayDeserializer(
-        values: Array<{prop: string; shouldDeserialize: boolean}> | undefined,
+        params: CustomDeserializerParams<Array<{prop: string; shouldDeserialize: boolean}>>,
     ) {
-        if (values === undefined) {
-            return;
-        }
-
         return TypedJSON.parseAsArray(
-            values.filter(value => value.shouldDeserialize),
+            params.json.filter(value => value.shouldDeserialize),
             Inner,
         );
     }

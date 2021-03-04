@@ -1,9 +1,12 @@
 import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../../src';
+import {CustomSerializerParams} from '../../src/metadata';
 
 describe('lazy, custom array member serializer', () => {
     @jsonObject
     class Obj {
-        @jsonArrayMember(() => Number, {serializer: (values: Array<number>) => values.join(',')})
+        @jsonArrayMember(() => Number, {
+            serializer: (params: CustomSerializerParams<Array<number>>) => params.value.join(','),
+        })
         nums: Array<number>;
 
         @jsonMember
