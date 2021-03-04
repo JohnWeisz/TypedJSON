@@ -35,10 +35,10 @@ export interface IJsonArrayMemberOptions extends OptionsBase {
      * When set, this deserializer will be used to deserialize the member. The callee must assure
      * the correct type.
      */
-    deserializer?: ((params: CustomDeserializerParams) => any) | null;
+    deserializer?: ((params: CustomDeserializerParams<any>) => any) | null;
 
     /** When set, this serializer will be used to serialize the member. */
-    serializer?: ((params: CustomSerializerParams) => any) | null;
+    serializer?: ((params: CustomSerializerParams<any>) => any) | null;
 }
 
 /**
