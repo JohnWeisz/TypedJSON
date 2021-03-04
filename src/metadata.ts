@@ -5,6 +5,20 @@ import {IndexedObject, Serializable} from './types';
 
 export const METADATA_FIELD_KEY = '__typedJsonJsonObjectMetadataInformation__';
 
+export type TypeCustomDeserializer = (
+    (
+        json: any,
+        fallback: (sourceObject: any, typeDescriptor: TypeDescriptor) => any
+    ) => any
+);
+
+export type TypeCustomSerializer = (
+    (
+        value: any,
+        fallback: (sourceObject: any, typeDescriptor: TypeDescriptor) => any
+    ) => any
+);
+
 export type TypeResolver = (
     sourceObject: IndexedObject,
     knownTypes: Map<string, Function>,
@@ -36,10 +50,10 @@ export interface JsonMemberMetadata {
     options?: OptionsBase | null;
 
     /** Custom deserializer to use. */
-    deserializer?: ((json: any) => any) | null;
+    deserializer?: TypeCustomDeserializer | null;
 
     /** Custom serializer to use. */
-    serializer?: ((value: any) => any) | null;
+    serializer?: TypeCustomSerializer | null;
 }
 
 export class JsonObjectMetadata {

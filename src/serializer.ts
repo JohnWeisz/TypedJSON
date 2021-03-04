@@ -241,7 +241,14 @@ function convertAsObject(
             const objMemberOptions = mergeOptions(classOptions, objMemberMetadata.options);
             let serialized;
             if (objMemberMetadata.serializer != null) {
-                serialized = objMemberMetadata.serializer(sourceObject[objMemberMetadata.key]);
+                serialized = objMemberMetadata.serializer(
+                    sourceObject[objMemberMetadata.key],
+                    (so, td) =>
+                        serializer.convertSingleValue(
+                            so,
+                            td
+                        )
+                );
             } else if (objMemberMetadata.type == null) {
                 throw new TypeError(
                     `Could not serialize ${objMemberMetadata.name}, there is`
