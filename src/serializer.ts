@@ -243,11 +243,7 @@ function convertAsObject(
             if (objMemberMetadata.serializer != null) {
                 serialized = objMemberMetadata.serializer(
                     sourceObject[objMemberMetadata.key],
-                    (so, td) =>
-                        serializer.convertSingleValue(
-                            so,
-                            td
-                        )
+                    (so, td) => serializer.convertSingleValue(so, td)
                 );
             } else if (objMemberMetadata.type == null) {
                 throw new TypeError(

@@ -299,8 +299,7 @@ function convertAsObject<T>(
             if (objMemberMetadata.deserializer != null) {
                 revivedValue = objMemberMetadata.deserializer(
                     objMemberValue,
-                    (so, td) =>
-                        deserializer.convertSingleValue(so, td, knownTypes)
+                    (so, td) => deserializer.convertSingleValue(so, td, knownTypes)
                 );
             } else if (objMemberMetadata.type == null) {
                 throw new TypeError(
