@@ -5,7 +5,9 @@ describe('lazy, custom array member deserializer', () => {
     @jsonObject
     class Obj {
         @jsonArrayMember(() => Number, {
-            deserializer: (json: any) => json.split(',').map((v) => parseInt(v, 10)),
+            deserializer: (
+                params: CustomDeserializerParams<any>,
+            ) => params.json.split(',').map((v) => parseInt(v, 10)),
         })
         nums: Array<number>;
 
