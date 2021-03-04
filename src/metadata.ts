@@ -5,19 +5,23 @@ import {IndexedObject, Serializable} from './types';
 
 export const METADATA_FIELD_KEY = '__typedJsonJsonObjectMetadataInformation__';
 
+export interface TypeCustomDeserializerParams {
+    json: any;
+    fallback: (sourceObject: any, typeDescriptor: TypeDescriptor) => any;
+}
+
 export type TypeCustomDeserializer = (
-    (
-        json: any,
-        fallback: (sourceObject: any, typeDescriptor: TypeDescriptor) => any
-    ) => any
-);
+    params: TypeCustomDeserializerParams
+) => any;
+
+export interface TypeCustomSerializerParams {
+    value: any;
+    fallback: (sourceObject: any, typeDescriptor: TypeDescriptor) => any;
+}
 
 export type TypeCustomSerializer = (
-    (
-        value: any,
-        fallback: (sourceObject: any, typeDescriptor: TypeDescriptor) => any
-    ) => any
-);
+    params: TypeCustomSerializerParams
+) => any;
 
 export type TypeResolver = (
     sourceObject: IndexedObject,

@@ -297,10 +297,10 @@ function convertAsObject<T>(
 
             let revivedValue;
             if (objMemberMetadata.deserializer != null) {
-                revivedValue = objMemberMetadata.deserializer(
-                    objMemberValue,
-                    (so, td) => deserializer.convertSingleValue(so, td, knownTypes)
-                );
+                revivedValue = objMemberMetadata.deserializer({
+                    json: objMemberValue,
+                    fallback: (so, td) => deserializer.convertSingleValue(so, td, knownTypes)
+                });
             } else if (objMemberMetadata.type == null) {
                 throw new TypeError(
                     `Cannot deserialize ${objMemberDebugName} there is`
