@@ -1,9 +1,14 @@
 import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
+import {CustomDeserializerParams} from '../src/metadata';
 
 describe('custom member deserializer', () => {
     @jsonObject
     class Person {
-        @jsonMember({deserializer: (json: any) => json[0]})
+        @jsonMember({
+            deserializer: (
+                params: CustomDeserializerParams<any>,
+            ) => params.json[0],
+        })
         firstName: string;
 
         @jsonMember
@@ -42,7 +47,7 @@ describe('custom array member deserializer', () => {
     @jsonObject
     class Obj {
         @jsonArrayMember(Number, {
-            deserializer: (json: any) => json.split(',').map((v) => parseInt(v, 10)),
+            deserializer: params => params.json.split(',').map((v) => parseInt(v, 10)),
         })
         nums: Array<number>;
 
@@ -89,15 +94,10 @@ describe('custom delegating array member serializer', () => {
     }
 
     function objArrayDeserializer(
-        values: Array<{prop: string; shouldDeserialize: boolean}> | undefined,
+        params: CustomDeserializerParams<Array<{prop: string; shouldDeserialize: boolean}>>,
     ) {
-        if (values === undefined) {
-            return;
-        }
-
-        return TypedJSON.parseAsArray(
-            values.filter(value => value.shouldDeserialize),
-            Inner,
+        return params.json.filter(value => value.shouldDeserialize).map(
+            value => params.fallback(value, Inner),
         );
     }
 

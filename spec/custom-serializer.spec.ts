@@ -1,9 +1,14 @@
 import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
+import {CustomSerializerParams} from '../src/metadata';
 
 describe('custom member serializer', () => {
     @jsonObject
     class Person {
-        @jsonMember({serializer: (value: string) => value.split(' ')})
+        @jsonMember({
+            serializer: (
+                params: CustomSerializerParams<string>,
+            ) => params.value.split(' '),
+        })
         firstName: string;
 
         @jsonMember
@@ -39,7 +44,9 @@ describe('custom member serializer', () => {
 describe('custom array member serializer', () => {
     @jsonObject
     class Obj {
-        @jsonArrayMember(Number, {serializer: (values: Array<number>) => values.join(',')})
+        @jsonArrayMember(() => Number, {
+            serializer: (params: CustomSerializerParams<Array<number>>) => params.value.join(','),
+        })
         nums: Array<number>;
 
         @jsonMember
@@ -88,10 +95,9 @@ describe('custom delegating array member serializer', () => {
         }
     }
 
-    function objArraySerializer(values: Array<Inner>) {
-        return TypedJSON.toPlainArray(
-            values.filter(value => value.shouldSerialize),
-            Inner,
+    function objArraySerializer(params: CustomSerializerParams<Array<Inner>>) {
+        return params.value.filter(value => value.shouldSerialize).map(
+            value => params.fallback(value, Inner),
         );
     }
 

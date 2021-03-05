@@ -1,18 +1,18 @@
 import {isDirectlySerializableNativeType, isTypeTypedArray, logError, nameof} from './helpers';
 import {OptionsBase} from './options-base';
 import {TypeDescriptor} from './type-descriptor';
-import {IndexedObject, Serializable} from './types';
+import {Constructor, IndexedObject, Serializable} from './types';
 
 export const METADATA_FIELD_KEY = '__typedJsonJsonObjectMetadataInformation__';
 
 export interface CustomDeserializerParams<T> {
     json: T;
-    fallback: (sourceObject: any, typeDescriptor: TypeDescriptor) => any;
+    fallback: (sourceObject: any, constructor: Constructor<any>) => any;
 }
 
 export interface CustomSerializerParams<T> {
     value: T;
-    fallback: (sourceObject: any, typeDescriptor: TypeDescriptor) => any;
+    fallback: (sourceObject: any, constructor: Constructor<any>) => any;
 }
 
 export type TypeResolver = (

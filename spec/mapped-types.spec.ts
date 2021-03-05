@@ -39,8 +39,8 @@ describe('mapped types', () => {
 
     describe('global', () => {
         TypedJSON.mapType(CustomType, {
-            deserializer: json => new CustomType(json),
-            serializer: value => value.value,
+            deserializer: params => new CustomType(params.json),
+            serializer: params => params.value.value,
         });
 
         it('deserializes', () => {
@@ -65,8 +65,8 @@ describe('mapped types', () => {
     describe('instance', () => {
         const typedJson = new TypedJSON(MappedTypesSpec);
         typedJson.mapType(CustomType, {
-            deserializer: json => new CustomType(json),
-            serializer: value => value.value,
+            deserializer: params => new CustomType(params.json),
+            serializer: params => params.value.value,
         });
 
         it('deserializes', () => {
@@ -98,8 +98,8 @@ describe('mapped types', () => {
 
         const typedJson = new TypedJSON(MappedTypeWithConstructor);
         const CustomTypeMap = {
-            deserializer: json => new CustomType(json),
-            serializer: value => value.value,
+            deserializer: params => new CustomType(params.json),
+            serializer: params => params.value.value,
         };
         typedJson.mapType(CustomType, CustomTypeMap);
 
@@ -123,13 +123,13 @@ describe('mapped types', () => {
 
     it('can be overwritten with deserializer/serializer prop', () => {
         const jsonMemberOptions = {
-            deserializer: json => new CustomType(0),
-            serializer: value => 1,
+            deserializer: params => new CustomType(0),
+            serializer: params => 1,
         };
 
         const CustomTypeMap = {
-            deserializer: json => new CustomType(json),
-            serializer: value => value.value,
+            deserializer: params => new CustomType(params.json),
+            serializer: params => params.value.value,
         };
 
         spyOn(CustomTypeMap, 'serializer').and.callThrough();
@@ -171,7 +171,7 @@ describe('mapped types', () => {
 
         const typedJson = new TypedJSON(OnlyDeSerializer);
         typedJson.mapType<Date, Date>(Date, {
-            deserializer: value => new Date(new Date(value).setFullYear(3000)),
+            deserializer: params => new Date(new Date(params.json).setFullYear(3000)),
         });
 
         const parsed = typedJson.parse({date: date2000});
@@ -190,7 +190,7 @@ describe('mapped types', () => {
 
         const typedJson = new TypedJSON(OnlySerializer);
         typedJson.mapType(Date, {
-            serializer: value => new Date(value.setFullYear(3000)).toISOString(),
+            serializer: params => new Date(params.value.setFullYear(3000)).toISOString(),
         });
 
         const test = new OnlySerializer();
@@ -211,8 +211,8 @@ describe('mapped types', () => {
 
         const typedJson = new TypedJSON(MappedTypeWithArray);
         const ArrayTypeMap = {
-            deserializer: json => ['deserialized'],
-            serializer: value => ['serialized'],
+            deserializer: params => ['deserialized'],
+            serializer: params => ['serialized'],
         };
 
         typedJson.mapType(Array, ArrayTypeMap);
@@ -238,8 +238,8 @@ describe('mapped types', () => {
 
         const typedJson = new TypedJSON(MappedTypeWithArray);
         const CustomTypeMap = {
-            deserializer: json => new CustomType(json),
-            serializer: value => value.value,
+            deserializer: params => new CustomType(params.json),
+            serializer: params => params.value.value,
         };
         typedJson.mapType(CustomType, CustomTypeMap);
 

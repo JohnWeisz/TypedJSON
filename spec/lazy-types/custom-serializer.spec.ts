@@ -55,10 +55,9 @@ describe('lazy, custom delegating array member serializer', () => {
         }
     }
 
-    function objArraySerializer(values: Array<Inner>) {
-        return TypedJSON.toPlainArray(
-            values.filter(value => value.shouldSerialize),
-            Inner,
+    function objArraySerializer(params: CustomSerializerParams<Array<Inner>>) {
+        return params.value.filter(value => value.shouldSerialize).map(
+            value => params.fallback(value, Inner),
         );
     }
 

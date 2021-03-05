@@ -5,6 +5,7 @@ import {
     AnyT,
     ArrayTypeDescriptor,
     ConcreteTypeDescriptor,
+    ensureTypeDescriptor,
     MapShape,
     MapTypeDescriptor,
     SetTypeDescriptor,
@@ -299,7 +300,11 @@ function convertAsObject<T>(
             if (objMemberMetadata.deserializer != null) {
                 revivedValue = objMemberMetadata.deserializer({
                     json: objMemberValue,
-                    fallback: (so, td) => deserializer.convertSingleValue(so, td, knownTypes),
+                    fallback: (so, td) => deserializer.convertSingleValue(
+                        so,
+                        ensureTypeDescriptor(td),
+                        knownTypes,
+                    ),
                 });
             } else if (objMemberMetadata.type == null) {
                 throw new TypeError(

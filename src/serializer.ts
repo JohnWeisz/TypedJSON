@@ -11,6 +11,7 @@ import {
     AnyT,
     ArrayTypeDescriptor,
     ConcreteTypeDescriptor,
+    ensureTypeDescriptor,
     MapShape,
     MapTypeDescriptor,
     SetTypeDescriptor,
@@ -243,7 +244,10 @@ function convertAsObject(
             if (objMemberMetadata.serializer != null) {
                 serialized = objMemberMetadata.serializer({
                     value: sourceObject[objMemberMetadata.key],
-                    fallback: (so, td) => serializer.convertSingleValue(so, td),
+                    fallback: (so, td) => serializer.convertSingleValue(
+                        so,
+                        ensureTypeDescriptor(td),
+                    ),
                 });
             } else if (objMemberMetadata.type == null) {
                 throw new TypeError(
