@@ -1,6 +1,6 @@
-import { defaultTypeResolver, Deserializer } from './deserializer';
-import { logError, logWarning, nameof, parseToJSObject } from './helpers';
-import { createArrayType } from './json-array-member';
+import {defaultTypeResolver, Deserializer} from './deserializer';
+import {logError, logWarning, nameof, parseToJSObject} from './helpers';
+import {createArrayType} from './json-array-member';
 import {
     CustomDeserializerParams,
     CustomSerializerParams,
@@ -8,13 +8,13 @@ import {
     TypeHintEmitter,
     TypeResolver,
 } from './metadata';
-import { extractOptionBase, OptionsBase } from './options-base';
-import { defaultTypeEmitter, Serializer } from './serializer';
-import { ensureTypeDescriptor, MapT, SetT } from './type-descriptor';
-import { Constructor, IndexedObject, Serializable } from './types';
+import {extractOptionBase, OptionsBase} from './options-base';
+import {defaultTypeEmitter, Serializer} from './serializer';
+import {ensureTypeDescriptor, MapT, SetT} from './type-descriptor';
+import {Constructor, IndexedObject, Serializable} from './types';
 
 export type JsonTypes = Object | boolean | string | number | null | undefined;
-export { defaultTypeResolver, defaultTypeEmitter };
+export {defaultTypeResolver, defaultTypeEmitter};
 
 export interface MappedTypeConverters<T> {
 
