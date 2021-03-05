@@ -67,6 +67,12 @@ const object3 = serializer.parse('{ "prop1": 1, "prop2": "2" }');
 object3 instanceof MyDataClass; // true
 ```
 
+Note TypedJSON supports parsing arrays and maps at root level as well. Those methods are defined in [parser.ts](https://github.com/JohnWeisz/TypedJSON/blob/master/src/parser.ts). Here is an example showing how to parse a json array:
+```typescript
+const object4 = serializer.parseAsArray('[{ "prop1": 1, "prop2": "2" }]');
+object4; // [ MyDataClass { prop1: 1, prop2: '2' } ]
+```
+
 ### Mapping types
 
 At times, you might find yourself using a custom type such as `Point`, `Decimal`, or `BigInt`. In this case, `TypedJSON.mapType` can be used to define serialization and deserialization functions to prevent the need of repeating on each member. Example:
