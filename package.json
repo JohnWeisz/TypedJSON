@@ -1,6 +1,6 @@
 {
   "name": "typedjson",
-  "version": "1.7.0",
+  "version": "1.8.0-rc1",
   "description": "Typed JSON parsing and serializing for TypeScript that preserves type information, using decorators. Parse JSON into actual class instances.",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm5/index.js",
