@@ -1,7 +1,13 @@
 import {defaultTypeResolver, Deserializer} from './deserializer';
 import {logError, logWarning, nameof, parseToJSObject} from './helpers';
 import {createArrayType} from './json-array-member';
-import {JsonObjectMetadata, TypeHintEmitter, TypeResolver} from './metadata';
+import {
+    CustomDeserializerParams,
+    CustomSerializerParams,
+    JsonObjectMetadata,
+    TypeHintEmitter,
+    TypeResolver,
+} from './metadata';
 import {extractOptionBase, OptionsBase} from './options-base';
 import {defaultTypeEmitter, Serializer} from './serializer';
 import {ensureTypeDescriptor, MapT, SetT} from './type-descriptor';
@@ -15,12 +21,12 @@ export interface MappedTypeConverters<T> {
     /**
      * Use this deserializer to convert a JSON value to the type.
      */
-    deserializer?: ((json: any) => T | null | undefined) | null;
+    deserializer?: ((json: any, params: CustomDeserializerParams) => T | null | undefined) | null;
 
     /**
      * Use this serializer to convert a type back to JSON.
      */
-    serializer?: ((value: T | null | undefined) => any) | null;
+    serializer?: ((value: T | null | undefined, params: CustomSerializerParams) => any) | null;
 }
 
 export interface ITypedJSONSettings extends OptionsBase {
@@ -399,26 +405,13 @@ export class TypedJSON<T> {
     parse(object: any): T | undefined {
         const json = parseToJSObject(object, this.rootConstructor);
 
-        const rootMetadata = JsonObjectMetadata.getFromConstructor(this.rootConstructor);
         let result: T | undefined;
-        const knownTypes = new Map<string, Function>();
-
-        this.globalKnownTypes.filter(ktc => ktc).forEach(knownTypeCtor => {
-            knownTypes.set(this.nameResolver(knownTypeCtor), knownTypeCtor);
-        });
-
-        if (rootMetadata !== undefined) {
-            rootMetadata.processDeferredKnownTypes();
-            rootMetadata.knownTypes.forEach(knownTypeCtor => {
-                knownTypes.set(this.nameResolver(knownTypeCtor), knownTypeCtor);
-            });
-        }
 
         try {
             result = this.deserializer.convertSingleValue(
                 json,
                 ensureTypeDescriptor(this.rootConstructor),
-                knownTypes,
+                this.getKnownTypes(),
             ) as T;
         } catch (e) {
             this.errorHandler(e);
@@ -552,6 +545,23 @@ export class TypedJSON<T> {
         return JSON.stringify(this.toPlainMap(object, keyConstructor), this.replacer, this.indent);
     }
 
+    private getKnownTypes(): Map<string, Function> {
+        const rootMetadata = JsonObjectMetadata.getFromConstructor(this.rootConstructor);
+        const knownTypes = new Map<string, Function>();
+
+        this.globalKnownTypes.filter(ktc => ktc).forEach(knownTypeCtor => {
+            knownTypes.set(this.nameResolver(knownTypeCtor), knownTypeCtor);
+        });
+
+        if (rootMetadata !== undefined) {
+            rootMetadata.processDeferredKnownTypes();
+            rootMetadata.knownTypes.forEach(knownTypeCtor => {
+                knownTypes.set(this.nameResolver(knownTypeCtor), knownTypeCtor);
+            });
+        }
+        return knownTypes;
+    }
+
     private _mapKnownTypes(constructors: Array<Constructor<any>>) {
         const map = new Map<string, Constructor<any>>();
 
@@ -565,15 +575,34 @@ export class TypedJSON<T> {
         converters: MappedTypeConverters<R>,
     ): void {
         if (converters.deserializer != null) {
-            this.deserializer.setDeserializationStrategy(type, (value) => {
-                return converters.deserializer!(value);
-            });
+            this.deserializer.setDeserializationStrategy(
+                type,
+                value => converters.deserializer!(
+                    value,
+                    {
+                        fallback: (so, td) => this.deserializer.convertSingleValue(
+                            so,
+                            ensureTypeDescriptor(td),
+                            this.getKnownTypes(),
+                        ),
+                    },
+                ),
+            );
         }
 
         if (converters.serializer != null) {
-            this.serializer.setSerializationStrategy(type, (value) => {
-                return converters.serializer!(value);
-            });
+            this.serializer.setSerializationStrategy(
+                type,
+                value => converters.serializer!(
+                    value,
+                    {
+                        fallback: (so, td) => this.serializer.convertSingleValue(
+                            so,
+                            ensureTypeDescriptor(td),
+                        ),
+                    },
+                ),
+            );
         }
     }
 }

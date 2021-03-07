@@ -1,4 +1,5 @@
 import {jsonArrayMember, jsonMember, jsonObject, TypedJSON} from '../src';
+import {CustomDeserializerParams} from '../src/metadata';
 
 describe('custom member deserializer', () => {
     @jsonObject
@@ -98,6 +99,66 @@ describe('custom delegating array member serializer', () => {
         return TypedJSON.parseAsArray(
             values.filter(value => value.shouldDeserialize),
             Inner,
+        );
+    }
+
+    @jsonObject
+    class Obj {
+        @jsonArrayMember(Inner, {deserializer: objArrayDeserializer})
+        inners: Array<Inner>;
+
+        @jsonMember
+        str: string;
+    }
+
+    beforeAll(function () {
+        this.obj = TypedJSON.parse(
+            JSON.stringify({
+                inners: [
+                    {
+                        prop: 'something',
+                        shouldDeserialize: false,
+                    },
+                    {
+                        prop: 'gogo',
+                        shouldDeserialize: true,
+                    },
+                ],
+                str: 'Text',
+            }),
+            Obj,
+        );
+    });
+
+    it('should properly serialize', function () {
+        expect(this.obj).toBeDefined();
+        expect(this.obj instanceof Obj).toBeTruthy();
+        expect(this.obj.str).toEqual('Text');
+        expect(this.obj.inners.length).toEqual(1);
+        expect(this.obj.inners[0] instanceof Inner).toBeTruthy();
+        expect(this.obj.inners[0]).not.toHaveProperties(['shouldDeserialize']);
+        expect(this.obj.inners[0]).toHaveProperties({prop: 'gogo'});
+        expect(this.obj.inners[0].woo()).toEqual('hoo');
+    });
+});
+
+describe('custom delegating array member serializer with fallback', () => {
+    @jsonObject
+    class Inner {
+        @jsonMember
+        prop: string;
+
+        woo(): string {
+            return 'hoo';
+        }
+    }
+
+    function objArrayDeserializer(
+        json: Array<{prop: string; shouldDeserialize: boolean}>,
+        params: CustomDeserializerParams,
+    ) {
+        return json.filter(value => value.shouldDeserialize).map(
+            value => params.fallback(value, Inner),
         );
     }
 

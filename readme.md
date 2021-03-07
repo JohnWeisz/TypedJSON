@@ -237,6 +237,28 @@ class UsingMoment {
 
 Note, that with those custom function you get full control over the serialization and deserialization process. This means, you will also receive any undefined (even if a property is not present), and null values. Basically, anything that comes in with an input json.
 
+Custom deserializing and serializing functions can also fall back to the current runtime, so you don't need to create and configure a new one:
+
+```typescript
+function objArrayDeserializer(
+    json: Array<{prop: string; shouldDeserialize: boolean}>,
+    params: CustomDeserializerParams,
+) {
+    return json.filter(value => value.shouldDeserialize).map(
+        value => params.fallback(value, Inner),
+    );
+}
+
+@jsonObject
+class Obj {
+    @jsonArrayMember(Inner, {deserializer: objArrayDeserializer})
+    inners: Array<Inner>;
+
+    @jsonMember
+    str: string;
+}
+```
+
 #### Different property name in JSON and class
 
 You can provide a name for a property if it differs between a serialized JSON and your class definition.

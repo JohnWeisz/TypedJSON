@@ -11,6 +11,7 @@ import {
     AnyT,
     ArrayTypeDescriptor,
     ConcreteTypeDescriptor,
+    ensureTypeDescriptor,
     MapShape,
     MapTypeDescriptor,
     SetTypeDescriptor,
@@ -241,7 +242,15 @@ function convertAsObject(
             const objMemberOptions = mergeOptions(classOptions, objMemberMetadata.options);
             let serialized;
             if (objMemberMetadata.serializer != null) {
-                serialized = objMemberMetadata.serializer(sourceObject[objMemberMetadata.key]);
+                serialized = objMemberMetadata.serializer(
+                    sourceObject[objMemberMetadata.key],
+                    {
+                        fallback: (so, td) => serializer.convertSingleValue(
+                            so,
+                            ensureTypeDescriptor(td),
+                        ),
+                    },
+                );
             } else if (objMemberMetadata.type == null) {
                 throw new TypeError(
                     `Could not serialize ${objMemberMetadata.name}, there is`

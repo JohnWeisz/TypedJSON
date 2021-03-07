@@ -5,6 +5,7 @@ import {
     AnyT,
     ArrayTypeDescriptor,
     ConcreteTypeDescriptor,
+    ensureTypeDescriptor,
     MapShape,
     MapTypeDescriptor,
     SetTypeDescriptor,
@@ -297,7 +298,16 @@ function convertAsObject<T>(
 
             let revivedValue;
             if (objMemberMetadata.deserializer != null) {
-                revivedValue = objMemberMetadata.deserializer(objMemberValue);
+                revivedValue = objMemberMetadata.deserializer(
+                    objMemberValue,
+                    {
+                        fallback: (so, td) => deserializer.convertSingleValue(
+                            so,
+                            ensureTypeDescriptor(td),
+                            knownTypes,
+                        ),
+                    },
+                );
             } else if (objMemberMetadata.type == null) {
                 throw new TypeError(
                     `Cannot deserialize ${objMemberDebugName} there is`
