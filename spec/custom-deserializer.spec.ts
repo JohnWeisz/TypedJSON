@@ -5,7 +5,6 @@ describe('custom member deserializer', () => {
     @jsonObject
     class Person {
         @jsonMember({deserializer: (json: any) => json[0]})
-
         firstName: string;
 
         @jsonMember
