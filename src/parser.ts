@@ -21,12 +21,12 @@ export interface MappedTypeConverters<T> {
     /**
      * Use this deserializer to convert a JSON value to the type.
      */
-    deserializer?: ((json: any, params: CustomDeserializerParams) => any) | null;
+    deserializer?: ((json: any, params: CustomDeserializerParams) => T | null | undefined) | null;
 
     /**
      * Use this serializer to convert a type back to JSON.
      */
-    serializer?: ((value: any, params: CustomSerializerParams) => any) | null;
+    serializer?: ((value: T | null | undefined, params: CustomSerializerParams) => any) | null;
 }
 
 export interface ITypedJSONSettings extends OptionsBase {
