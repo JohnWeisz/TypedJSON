@@ -5,7 +5,6 @@ describe('custom member serializer', () => {
     @jsonObject
     class Person {
         @jsonMember({serializer: (value: string) => value.split(' ')})
-
         firstName: string;
 
         @jsonMember
