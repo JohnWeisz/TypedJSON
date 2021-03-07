@@ -5,7 +5,7 @@ describe('lazy, custom array member serializer', () => {
     @jsonObject
     class Obj {
         @jsonArrayMember(() => Number, {
-            serializer: (params: CustomSerializerParams<Array<number>>) => params.value.join(','),
+            serializer: (value: Array<number>) => value.join(','),
         })
         nums: Array<number>;
 
@@ -55,9 +55,9 @@ describe('lazy, custom delegating array member serializer', () => {
         }
     }
 
-    function objArraySerializer(params: CustomSerializerParams<Array<Inner>>) {
-        return params.value.filter(value => value.shouldSerialize).map(
-            value => params.fallback(value, Inner),
+    function objArraySerializer(value: Array<Inner>, params: CustomSerializerParams) {
+        return value.filter(inner => inner.shouldSerialize).map(
+            inner => params.fallback(inner, Inner),
         );
     }
 

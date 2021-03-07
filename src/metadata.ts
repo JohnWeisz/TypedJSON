@@ -5,13 +5,11 @@ import {Constructor, IndexedObject, Serializable} from './types';
 
 export const METADATA_FIELD_KEY = '__typedJsonJsonObjectMetadataInformation__';
 
-export interface CustomDeserializerParams<T> {
-    json: T;
+export interface CustomDeserializerParams {
     fallback: (sourceObject: any, constructor: Constructor<any>) => any;
 }
 
-export interface CustomSerializerParams<T> {
-    value: T;
+export interface CustomSerializerParams {
     fallback: (sourceObject: any, constructor: Constructor<any>) => any;
 }
 
@@ -46,10 +44,10 @@ export interface JsonMemberMetadata {
     options?: OptionsBase | null;
 
     /** Custom deserializer to use. */
-    deserializer?: ((params: CustomDeserializerParams<any>) => any) | null;
+    deserializer?: ((json: any, params: CustomDeserializerParams) => any) | null;
 
     /** Custom serializer to use. */
-    serializer?: ((params: CustomSerializerParams<any>) => any) | null;
+    serializer?: ((value: any, params: CustomSerializerParams) => any) | null;
 }
 
 export class JsonObjectMetadata {

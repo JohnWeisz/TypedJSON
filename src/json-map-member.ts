@@ -25,10 +25,10 @@ export interface IJsonMapMemberOptions extends OptionsBase, Partial<MapOptions> 
      * When set, this deserializer will be used to deserialize the member. The callee must assure
      * the correct type.
      */
-    deserializer?: ((params: CustomDeserializerParams<any>) => any) | null;
+    deserializer?: ((json: any, params: CustomDeserializerParams) => any) | null;
 
     /** When set, this serializer will be used to serialize the member. */
-    serializer?: ((params: CustomSerializerParams<any>) => any) | null;
+    serializer?: ((value: any, params: CustomSerializerParams) => any) | null;
 }
 
 /**

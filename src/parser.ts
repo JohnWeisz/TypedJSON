@@ -21,12 +21,12 @@ export interface MappedTypeConverters<T> {
     /**
      * Use this deserializer to convert a JSON value to the type.
      */
-    deserializer?: ((params: CustomDeserializerParams<any>) => any) | null;
+    deserializer?: ((json: any, params: CustomDeserializerParams) => any) | null;
 
     /**
      * Use this serializer to convert a type back to JSON.
      */
-    serializer?: ((params: CustomSerializerParams<any>) => any) | null;
+    serializer?: ((value: any, params: CustomSerializerParams) => any) | null;
 }
 
 export interface ITypedJSONSettings extends OptionsBase {
@@ -577,27 +577,31 @@ export class TypedJSON<T> {
         if (converters.deserializer != null) {
             this.deserializer.setDeserializationStrategy(
                 type,
-                value => converters.deserializer!({
-                    json: value,
-                    fallback: (so, td) => this.deserializer.convertSingleValue(
-                        so,
-                        ensureTypeDescriptor(td),
-                        this.getKnownTypes(),
-                    ),
-                }),
+                value => converters.deserializer!(
+                    value,
+                    {
+                        fallback: (so, td) => this.deserializer.convertSingleValue(
+                            so,
+                            ensureTypeDescriptor(td),
+                            this.getKnownTypes(),
+                        ),
+                    },
+                ),
             );
         }
 
         if (converters.serializer != null) {
             this.serializer.setSerializationStrategy(
                 type,
-                value => converters.serializer!({
-                    value: value,
-                    fallback: (so, td) => this.serializer.convertSingleValue(
-                        so,
-                        ensureTypeDescriptor(td),
-                    ),
-                }),
+                value => converters.serializer!(
+                    value,
+                    {
+                        fallback: (so, td) => this.serializer.convertSingleValue(
+                            so,
+                            ensureTypeDescriptor(td),
+                        ),
+                    },
+                ),
             );
         }
     }

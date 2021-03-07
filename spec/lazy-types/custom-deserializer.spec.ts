@@ -6,8 +6,8 @@ describe('lazy, custom array member deserializer', () => {
     class Obj {
         @jsonArrayMember(() => Number, {
             deserializer: (
-                params: CustomDeserializerParams<string>,
-            ) => params.json.split(',').map((v) => parseInt(v, 10)),
+                json: string,
+            ) => json.split(',').map((v) => parseInt(v, 10)),
         })
         nums: Array<number>;
 
@@ -54,9 +54,10 @@ describe('lazy, custom delegating array member serializer', () => {
     }
 
     function objArrayDeserializer(
-        params: CustomDeserializerParams<Array<{prop: string; shouldDeserialize: boolean}>>,
+        json: Array<{prop: string; shouldDeserialize: boolean}>,
+        params: CustomDeserializerParams,
     ) {
-        return params.json.filter(value => value.shouldDeserialize).map(
+        return json.filter(value => value.shouldDeserialize).map(
             value => params.fallback(value, Inner),
         );
     }
