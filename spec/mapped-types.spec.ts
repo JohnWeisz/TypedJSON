@@ -171,7 +171,7 @@ describe('mapped types', () => {
 
         const typedJson = new TypedJSON(OnlyDeSerializer);
         typedJson.mapType<Date, Date>(Date, {
-            deserializer: json => new Date(new Date(json).setFullYear(3000)),
+            deserializer: value => new Date(new Date(value).setFullYear(3000)),
         });
 
         const parsed = typedJson.parse({date: date2000});
