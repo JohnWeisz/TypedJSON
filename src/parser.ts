@@ -237,7 +237,7 @@ export class TypedJSON<T> {
         keyCtor: Serializable<K>,
         valueCtor: Serializable<V>,
         settings?: ITypedJSONSettings,
-    ): IndexedObject | Array<{ key: any; value: any }> | undefined {
+    ): IndexedObject | Array<{key: any; value: any}> | undefined {
         return new TypedJSON(valueCtor, settings).toPlainMap(object, keyCtor);
     }
 
@@ -502,7 +502,7 @@ export class TypedJSON<T> {
     toPlainMap<K>(
         object: Map<K, T>,
         keyConstructor: Serializable<K>,
-    ): IndexedObject | Array<{ key: any; value: any }> | undefined {
+    ): IndexedObject | Array<{key: any; value: any}> | undefined {
         try {
             return this.serializer.convertSingleValue(
                 object,
