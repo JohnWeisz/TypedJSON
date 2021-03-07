@@ -41,7 +41,6 @@ describe('custom array member serializer', () => {
     @jsonObject
     class Obj {
         @jsonArrayMember(Number, {serializer: (values: Array<number>) => values.join(',')})
-
         nums: Array<number>;
 
         @jsonMember
