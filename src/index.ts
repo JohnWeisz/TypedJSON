@@ -25,6 +25,7 @@ export {
     MapT,
     Typelike,
     MapOptions,
+    MapShape,
     SetTypeDescriptor,
     ArrayTypeDescriptor,
     MapTypeDescriptor,
