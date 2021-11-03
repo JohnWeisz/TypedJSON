@@ -4,6 +4,7 @@ export {
     JsonTypes,
     defaultTypeResolver,
     defaultTypeEmitter,
+    MappedTypeConverters
 } from './parser';
 export {TypeResolver, TypeHintEmitter, JsonObjectMetadata} from './metadata';
 export {
