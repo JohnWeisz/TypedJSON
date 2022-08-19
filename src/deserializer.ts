@@ -20,6 +20,7 @@ export function defaultTypeResolver(
     if (sourceObject.__type != null) {
         return knownTypes.get(sourceObject.__type);
     }
+    return undefined;
 }
 
 export type DeserializerFn<T, TD extends TypeDescriptor, Raw> = (

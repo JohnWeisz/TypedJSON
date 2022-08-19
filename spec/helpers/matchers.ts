@@ -96,7 +96,7 @@ beforeEach(() => {
         const secondAsInt8Array: Int8Array | undefined = tryAsInt8Array(second);
 
         if (firstAsInt8Array === undefined || secondAsInt8Array === undefined) {
-            return;
+            return undefined;
         }
 
         if (firstAsInt8Array.length !== secondAsInt8Array.length) {
@@ -112,6 +112,7 @@ function tryAsInt8Array(obj: any): Int8Array | undefined {
     } else if (ArrayBuffer.isView(obj)) {
         return new Int8Array(obj.buffer);
     }
+    return undefined;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-namespace

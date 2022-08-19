@@ -1,6 +1,13 @@
 {
   "extends": "./tsconfig.app.json",
   "compilerOptions": {
-    "noUnusedLocals": true
+    "noUnusedLocals": true,
+    "strict": true,
+    "allowJs": false,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true,
+    "noImplicitReturns": true,
+    "preserveConstEnums": true
   }
 }

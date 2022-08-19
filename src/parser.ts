@@ -467,6 +467,7 @@ export class TypedJSON<T> {
         } catch (e) {
             this.errorHandler(e);
         }
+        return undefined;
     }
 
     toPlainArray(object: Array<T>, dimensions?: 1): Array<Object>;
@@ -489,6 +490,7 @@ export class TypedJSON<T> {
         } catch (e) {
             this.errorHandler(e);
         }
+        return undefined;
     }
 
     toPlainSet(object: Set<T>): Array<Object> | undefined {
@@ -497,6 +499,7 @@ export class TypedJSON<T> {
         } catch (e) {
             this.errorHandler(e);
         }
+        return undefined;
     }
 
     toPlainMap<K>(
@@ -511,6 +514,7 @@ export class TypedJSON<T> {
         } catch (e) {
             this.errorHandler(e);
         }
+        return undefined;
     }
 
     /**
