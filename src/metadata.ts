@@ -112,7 +112,7 @@ export class JsonObjectMetadata {
     static getFromConstructor<T>(ctor: Serializable<T>): JsonObjectMetadata | undefined {
         const prototype = ctor.prototype;
         if (prototype == null) {
-            return;
+            return undefined;
         }
 
         let metadata: JsonObjectMetadata | undefined;
@@ -133,6 +133,8 @@ export class JsonObjectMetadata {
             // we do not store the metadata here to not modify builtin prototype
             return primitiveMeta;
         }
+
+        return undefined;
     }
 
     static ensurePresentInPrototype(prototype: IndexedObject): JsonObjectMetadata {
